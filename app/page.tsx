@@ -287,8 +287,8 @@ export default function Page() {
     [cart],
   );
 
-  const promoDiscount = cartSubtotal >= 200 ? 40 : 0;
-  const cartTotal = cartSubtotal - promoDiscount;
+  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartTotal = cartSubtotal;
 
   const selectedPrice = useMemo(() => {
     const sizeEntry = selectedProduct.sizes.find((size) => size.label === selectedSize);
@@ -335,6 +335,21 @@ export default function Page() {
         )
         .filter((item) => item.quantity > 0),
     );
+  }
+
+  function selectCategory(category: string) {
+    setActiveCategory(category);
+    const firstProduct =
+      category === "All"
+        ? products[0]
+        : products.find((product) => product.category === category);
+
+    if (!firstProduct) return;
+
+    setSelectedProductId(firstProduct.id);
+    setSelectedFlavor(firstProduct.flavors[0]);
+    setSelectedSize(firstProduct.sizes[0].label);
+    setSelectedBoba(false);
   }
 
   function handleBundleSelection(index: number, productId: string, flavor: string, size: string) {
@@ -416,7 +431,7 @@ export default function Page() {
           <div className="topbar-meta">
             <span>Eat, Drink & Good Vibes</span>
             <button className="secondary-btn" onClick={() => setCheckoutOpen(true)}>
-              Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)})
+              Cart ({cartItemCount})
             </button>
           </div>
         </header>
@@ -430,7 +445,7 @@ export default function Page() {
             Browse the menu, build a barkada bundle, and complete a simple walk-in order flow for the Home Café menu.
           </p>
           <div className="hero-actions">
-            <button className="primary-btn" onClick={() => setActiveCategory("All")}>Order Now</button>
+            <a className="primary-btn" href="#menu" onClick={() => setActiveCategory("All")}>Order Now</a>
             <button className="ghost-btn" onClick={() => setCheckoutOpen(true)}>View Cart</button>
           </div>
         </div>
@@ -443,18 +458,27 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="category-bar container-shell">
-        <div className="tab-row">
+      <section className="category-bar container-shell" aria-label="Menu categories">
+        <div className="tab-row" role="group" aria-label="Filter menu by category">
           {categories.map((category) => (
             <button
               key={category}
               className={activeCategory === category ? "tab active" : "tab"}
-              onClick={() => setActiveCategory(category)}
+              aria-pressed={activeCategory === category}
+              onClick={() => selectCategory(category)}
             >
               {category}
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="menu-intro container-shell" id="menu">
+        <div>
+          <p className="section-kicker">THE HOME CAFÉ MENU</p>
+          <h2>Find your new favorite.</h2>
+        </div>
+        <p>Illustrative product previews · Menu prices in Philippine pesos</p>
       </section>
 
       <section className="menu-grid container-shell">
@@ -464,6 +488,7 @@ export default function Page() {
               key={product.id}
               type="button"
               className={selectedProductId === product.id ? "product-card selected" : "product-card"}
+              aria-pressed={selectedProductId === product.id}
               onClick={() => {
                 setSelectedProductId(product.id);
                 setSelectedFlavor(product.flavors[0]);
@@ -529,8 +554,9 @@ export default function Page() {
             </div>
 
             <div className="selection-block check-row">
-              <label>Approved add-on: Boba pearls</label>
+              <label htmlFor="boba-addon">Approved add-on: Boba pearls</label>
               <input
+                id="boba-addon"
                 type="checkbox"
                 checked={selectedBoba}
                 onChange={(event) => setSelectedBoba(event.target.checked)}
@@ -549,7 +575,7 @@ export default function Page() {
           <div className="panel-block">
             <div className="panel-header">
               <h3>Cart</h3>
-              <span>{cart.reduce((sum, item) => sum + item.quantity, 0)} items</span>
+              <span>{cartItemCount} {cartItemCount === 1 ? "item" : "items"}</span>
             </div>
             {cart.length === 0 ? (
               <p className="empty-state">Your cart is empty.</p>
@@ -560,14 +586,14 @@ export default function Page() {
                     <div>
                       <strong>{getProductById(item.productId).name}</strong>
                       <small>
-                        {item.flavor} • {item.size}
+                        {item.flavor} / {item.size}
                         {item.addBoba ? " • Boba +₱10" : ""}
                       </small>
                     </div>
                     <div className="cart-controls">
-                      <button type="button" onClick={() => updateCartQuantity(item.id, -1)}>-</button>
+                      <button type="button" aria-label={`Remove one ${item.flavor} ${item.size}`} onClick={() => updateCartQuantity(item.id, -1)}>-</button>
                       <span>{item.quantity}</span>
-                      <button type="button" onClick={() => updateCartQuantity(item.id, 1)}>+</button>
+                      <button type="button" aria-label={`Add one ${item.flavor} ${item.size}`} onClick={() => updateCartQuantity(item.id, 1)}>+</button>
                     </div>
                   </div>
                 ))}
@@ -575,7 +601,7 @@ export default function Page() {
             )}
             <div className="totals-box">
               <div><span>Subtotal</span><strong>{formatMoney(cartSubtotal)}</strong></div>
-              <div><span>Promo</span><strong>-{formatMoney(promoDiscount)}</strong></div>
+              <div><span>Promotion</span><strong className="promo-state">Pending approval</strong></div>
               <div className="grand-total"><span>Total</span><strong>{formatMoney(cartTotal)}</strong></div>
             </div>
             <button className="primary-btn full" onClick={() => setCheckoutOpen(true)}>Checkout</button>
@@ -708,12 +734,28 @@ export default function Page() {
         </div>
       </section>
 
+      <div className="mobile-cart-bar" role="region" aria-label="Current cart summary">
+        <div>
+          <strong>{formatMoney(cartTotal)}</strong>
+          <span>{cartItemCount} {cartItemCount === 1 ? "item" : "items"} in your cart</span>
+        </div>
+        <button className="primary-btn" onClick={() => setCheckoutOpen(true)}>
+          View cart
+        </button>
+      </div>
+
       {checkoutOpen ? (
         <div className="checkout-sheet" onClick={() => setCheckoutOpen(false)}>
-          <div className="checkout-card" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="checkout-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="checkout-title"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="panel-header">
-              <h3>Checkout</h3>
-              <button className="close-btn" onClick={() => setCheckoutOpen(false)}>×</button>
+              <h3 id="checkout-title">Checkout</h3>
+              <button className="close-btn" aria-label="Close checkout" onClick={() => setCheckoutOpen(false)}>×</button>
             </div>
 
             <label className="field-row">
@@ -750,7 +792,7 @@ export default function Page() {
             </div>
             <div className="totals-box summary-box">
               <div><span>Subtotal</span><strong>{formatMoney(cartSubtotal)}</strong></div>
-              <div><span>Promo</span><strong>-{formatMoney(promoDiscount)}</strong></div>
+              <div><span>Promotion</span><strong className="promo-state">Pending approval</strong></div>
               <div className="grand-total"><span>Total</span><strong>{formatMoney(cartTotal)}</strong></div>
             </div>
             <button className="primary-btn full" onClick={() => setCheckoutOpen(false)}>
