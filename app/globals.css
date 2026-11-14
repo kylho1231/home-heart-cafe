@@ -595,11 +595,81 @@ select:focus-visible {
   line-height: 1.1;
 }
 
+.menu-category-note {
+  margin: 5px 0 0;
+  color: var(--cocoa-soft);
+  font-size: 0.75rem;
+}
+
 .menu-intro > p {
   margin: 0 0 3px;
   color: var(--muted);
   font-size: 0.72rem;
   text-align: right;
+}
+
+.menu-tools {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.menu-tools > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.menu-search {
+  display: flex;
+  width: min(300px, 100%);
+  min-height: 42px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+}
+
+.menu-search:focus-within {
+  border-color: #cf8da3;
+  box-shadow: 0 0 0 3px rgb(180 35 86 / 10%);
+}
+
+.menu-search svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--muted);
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.menu-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--cocoa);
+  font-size: 0.76rem;
+}
+
+.menu-search input::placeholder {
+  color: #84736d;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 .menu-grid {
@@ -614,6 +684,25 @@ select:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.menu-empty {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 4px;
+  padding: 32px 18px;
+  border: 1px dashed #dccac0;
+  border-radius: var(--radius-card);
+  color: var(--muted);
+  text-align: center;
+}
+
+.menu-empty strong {
+  color: var(--cocoa);
+}
+
+.menu-empty span {
+  font-size: 0.8rem;
 }
 
 .product-card {
@@ -799,6 +888,26 @@ select:focus-visible {
   font-weight: 800;
 }
 
+.selected-product-summary {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #f0e2e5;
+  border-radius: var(--radius-control);
+  background: var(--blush-soft);
+}
+
+.selected-product-summary strong {
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.selected-product-summary p {
+  margin: 5px 0 0;
+  color: var(--cocoa-soft);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
 .chip-grid {
   display: flex;
   flex-wrap: wrap;
@@ -844,6 +953,14 @@ select:focus-visible {
 .check-row > label {
   margin: 0;
   color: var(--cocoa);
+}
+
+.check-row label small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 500;
 }
 
 .check-row input {
@@ -1008,6 +1125,31 @@ select:focus-visible {
   font-size: 1.45rem;
 }
 
+.bundle-kind {
+  display: grid;
+  min-width: min(280px, 48%);
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.bundle-kind select {
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  color: var(--cocoa);
+  font-size: 0.74rem;
+}
+
+.bundle-description {
+  margin: 14px 0 0;
+  color: var(--cocoa-soft);
+  font-size: 0.75rem;
+}
+
 .bundle-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1060,6 +1202,27 @@ select:focus-visible {
   color: var(--raspberry-dark);
   font-size: 0.83rem;
   font-weight: 900;
+}
+
+.promo-note {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 13px 15px;
+  border: 1px solid #ead8a6;
+  border-radius: 14px;
+  background: #fff8df;
+}
+
+.promo-note strong {
+  color: #684b19;
+  font-size: 0.8rem;
+}
+
+.promo-note span {
+  color: #705b38;
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 
 .operations {
@@ -1370,7 +1533,16 @@ select:focus-visible {
     padding-top: 18px;
   }
 
-  .menu-intro > p {
+  .menu-tools {
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .menu-search {
+    width: 100%;
+  }
+
+  .menu-tools > p {
     text-align: left;
   }
 
@@ -1481,11 +1653,16 @@ select:focus-visible {
 
   .bundle-card > .panel-header {
     align-items: flex-start;
+    flex-direction: column;
   }
 
   .bundle-card > .panel-header h3 {
     max-width: 15ch;
     font-size: 1.25rem;
+  }
+
+  .bundle-kind {
+    width: 100%;
   }
 
   .bundle-slot {

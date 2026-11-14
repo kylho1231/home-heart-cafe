@@ -1,0 +1,130 @@
+{
+  "cafeName": "Home Café",
+  "currency": "PHP",
+  "categories": [
+    {
+      "category": "Cream Cheese Series",
+      "notes": "Includes real cream cheese walling",
+      "items": [
+        { "name": "Chocolate Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Blueberry Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Mango Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Strawberry Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Cookies & Cream Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Okinawa Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Taro Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Matcha Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Red Velvet Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Wintermelon Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } },
+        { "name": "Dark Chocolate Cream Cheese", "prices": { "12oz": 49, "16oz": 59, "22oz": 79 } }
+      ]
+    },
+    {
+      "category": "Milk Tea Series",
+      "notes": "Starts at 39 pesos",
+      "items": [
+        { "name": "Chocolate Milk Tea", "prices": { "12oz": 39 } },
+        { "name": "Matcha Milk Tea", "prices": { "12oz": 39 } },
+        { "name": "Red Velvet Milk Tea", "prices": { "12oz": 39 } },
+        { "name": "Dark Chocolate Milk Tea", "prices": { "12oz": 39 } },
+        { "name": "Wintermelon Milk Tea", "prices": { "12oz": 39 } },
+        { "name": "Okinawa Milk Tea", "prices": { "12oz": 39 } },
+        { "name": "Taro Milk Tea", "prices": { "12oz": 39 } },
+        { "name": "Cookies & Cream Milk Tea", "prices": { "12oz": 39 } }
+      ]
+    },
+    {
+      "category": "Milky Bomb Tea",
+      "items": [
+        { "name": "Mango Milky Bomb Tea", "prices": { "12oz": 40, "16oz": 50, "22oz": 60 } },
+        { "name": "Blueberry Milky Bomb Tea", "prices": { "12oz": 40, "16oz": 50, "22oz": 60 } }
+      ]
+    },
+    {
+      "category": "Fruit Soda",
+      "items": [
+        { "name": "Peach Mango Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } },
+        { "name": "Four Seasons Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } },
+        { "name": "Grapes Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } },
+        { "name": "Yogurt Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } },
+        { "name": "Mango Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } },
+        { "name": "Green Apple Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } },
+        { "name": "Strawberry Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } },
+        { "name": "Blueberry Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } },
+        { "name": "Blue Lemonade Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } },
+        { "name": "Lychee Fruit Soda", "prices": { "12oz": 29, "16oz": 39, "22oz": 49 } }
+      ]
+    },
+    {
+      "category": "Yakult Fruit Soda",
+      "items": [
+        { "name": "Yakult Mango", "prices": { "22oz": 65 } },
+        { "name": "Yakult Grapes", "prices": { "22oz": 65 } },
+        { "name": "Yakult Blueberry", "prices": { "22oz": 65 } }
+      ]
+    },
+    {
+      "category": "Coffee Series",
+      "items": [
+        { "name": "Americano", "prices": { "12oz": 69, "16oz": 79 } },
+        { "name": "Hazelnut Latte", "prices": { "12oz": 69, "16oz": 79 } },
+        { "name": "Matcha Latte", "prices": { "12oz": 69, "16oz": 79 } },
+        { "name": "French Vanilla", "prices": { "12oz": 69, "16oz": 79 } },
+        { "name": "Salted Caramel", "prices": { "12oz": 69, "16oz": 79 } },
+        { "name": "Spanish Latte", "prices": { "12oz": 69, "16oz": 79 } }
+      ]
+    },
+    {
+      "category": "Float Series",
+      "items": [
+        { "name": "Chuckie Float", "prices": { "12oz": 50, "16oz": 60 } },
+        {
+          "name": "Coke Float",
+          "description": "Classic Coke topped with vanilla ice cream and chocolate syrup",
+          "prices": { "16oz": 50 }
+        },
+        {
+          "name": "Sprite Float",
+          "description": "Refreshing Sprite topped with vanilla ice cream and strawberry glaze",
+          "prices": { "16oz": 50 }
+        },
+        {
+          "name": "Matcha Float",
+          "description": "Smooth and creamy matcha topped with vanilla ice cream and matcha glaze",
+          "prices": { "12oz": 50, "regular": 65 }
+        },
+        { "name": "Double Chocolate Float", "prices": { "12oz": 50 } },
+        { "name": "Coffee Float", "prices": { "regular": 65 } },
+        { "name": "Ube Float", "prices": { "12oz": 50 } }
+      ]
+    },
+    {
+      "category": "Snacks",
+      "items": [
+        { "name": "Salt French Fries", "prices": { "Medium": 40, "Large": 60 } },
+        { "name": "Cheese French Fries", "prices": { "Medium": 40, "Large": 60 } },
+        { "name": "Onion French Fries", "prices": { "Medium": 40, "Large": 60 } }
+      ]
+    }
+  ],
+  "addOns": [
+    { "name": "Extra Boba Pearls", "price": 10 }
+  ],
+  "bundlesAndPromos": [
+    {
+      "name": "Barkada Bundle (Fruit Soda)",
+      "includes": ["3x 12oz Fruit Soda", "1x Large Fries"],
+      "price": 135
+    },
+    {
+      "name": "Barkada Bundle (Milk Tea)",
+      "includes": ["3x 12oz Milk Tea", "1x Large Fries"],
+      "price": 155
+    },
+    {
+      "name": "Free Medium Fries Promo",
+      "condition": "Buy drinks worth at least 200 PHP",
+      "reward": "Free Medium Fries"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import catalogSource from "./menu-data.json";
 
 type Product = {
   id: string;
@@ -23,159 +24,175 @@ type CartItem = {
   quantity: number;
   addBoba: boolean;
   basePrice: number;
+  bundleName?: string;
+  bundleSelections?: string[];
 };
 
-const categories = [
-  "All",
-  "Cream Cheese Series",
-  "Milk Tea Series",
-  "Fruit Soda",
-  "Yakult Fruit Soda",
-  "Milky Bomb Tea",
-  "Coffee Series",
-  "Float Series",
-  "French Fries",
-];
+function isCartItem(value: unknown): value is CartItem {
+  if (typeof value !== "object" || value === null) return false;
+  const item = value as Record<string, unknown>;
+  return (
+    typeof item.id === "string" &&
+    typeof item.productId === "string" &&
+    typeof item.flavor === "string" &&
+    typeof item.size === "string" &&
+    typeof item.quantity === "number" &&
+    typeof item.addBoba === "boolean" &&
+    typeof item.basePrice === "number" &&
+    (item.bundleName === undefined || typeof item.bundleName === "string") &&
+    (item.bundleSelections === undefined ||
+      (Array.isArray(item.bundleSelections) &&
+        item.bundleSelections.every((selection) => typeof selection === "string")))
+  );
+}
 
-const products: Product[] = [
-  {
-    id: "cream-cheese-strawberry",
-    name: "Cream Cheese Strawberry",
-    category: "Cream Cheese Series",
-    description: "Strawberry cream cheese float with a soft pink finish.",
-    flavors: ["Strawberry", "Mango", "Blueberry", "Chocolate", "Matcha", "Taro", "Okinawa", "Cookies & Cream", "Dark Chocolate", "Wintermelon", "Red Velvet"],
-    sizes: [
-      { label: "12 oz", price: 49 },
-      { label: "16 oz", price: 59 },
-      { label: "22 oz", price: 79 },
-    ],
-    colors: ["#f7b5d2", "#f3d7e5"],
-    accent: "#c52f68",
-    badge: "Best seller",
-  },
-  {
-    id: "milk-tea-cookies-cream",
-    name: "Milk Tea Cookies & Cream",
-    category: "Milk Tea Series",
-    description: "Classic milk tea with a mellow creamy finish.",
-    flavors: ["Cookies & Cream", "Taro", "Okinawa", "Wintermelon", "Dark Chocolate", "Red Velvet", "Matcha", "Chocolate"],
-    sizes: [
-      { label: "12 oz", price: 39 },
-      { label: "16 oz", price: 0 },
-      { label: "22 oz", price: 0 },
-    ],
-    colors: ["#e5d1a8", "#f5e3d8"],
-    accent: "#8d6d52",
-    badge: "Draft price",
-    ownerReview: "Owner approval required for 16 oz and 22 oz variants.",
-  },
-  {
-    id: "fruit-soda-blueberry",
-    name: "Fruit Soda Blueberry",
-    category: "Fruit Soda",
-    description: "Sparkling fruit soda in a bright, refreshing finish.",
-    flavors: ["Blueberry", "Strawberry", "Green Apple", "Mango", "Yogurt", "Grapes", "Four Seasons", "Peach Mango", "Blue Lemonade"],
-    sizes: [
-      { label: "12 oz", price: 29 },
-      { label: "16 oz", price: 39 },
-      { label: "22 oz", price: 49 },
-    ],
-    colors: ["#b0c7ff", "#dfe7ff"],
-    accent: "#2d5c8f",
-  },
-  {
-    id: "yakult-fruit-soda-blueberry",
-    name: "Yakult Fruit Soda Blueberry",
-    category: "Yakult Fruit Soda",
-    description: "Yakult fruit soda with a crisp fruit finish.",
-    flavors: ["Yakult Blueberry", "Yakult Grapes", "Yakult Mango"],
-    sizes: [
-      { label: "22 oz", price: 65 },
-    ],
-    colors: ["#90b2ff", "#e2f0ff"],
-    accent: "#2a4a95",
-  },
-  {
-    id: "milky-bomb-tea-blueberry",
-    name: "Milky Bomb Tea Blueberry",
-    category: "Milky Bomb Tea",
-    description: "Creamy milk tea with soft fruit notes and pearls.",
-    flavors: ["Blueberry", "Mango"],
-    sizes: [
-      { label: "12 oz", price: 40 },
-      { label: "16 oz", price: 50 },
-      { label: "22 oz", price: 60 },
-    ],
-    colors: ["#b7beff", "#edf2ff"],
-    accent: "#5362c4",
-  },
-  {
-    id: "coffee-spanish-latte",
-    name: "Spanish Latte",
-    category: "Coffee Series",
-    description: "Sweet coffee blend with a caramel cream impression.",
-    flavors: ["Spanish Latte", "Salted Caramel", "French Vanilla", "Matcha Latte", "Hazelnut Latte", "Americano"],
-    sizes: [
-      { label: "12 oz", price: 69 },
-      { label: "16 oz", price: 79 },
-    ],
-    colors: ["#dfb88d", "#f5e0bf"],
-    accent: "#7a492d",
-  },
-  {
-    id: "double-chocolate-float",
-    name: "Double Chocolate Float",
-    category: "Float Series",
-    description: "Chocolate float with a creamy top and syrup finish.",
-    flavors: ["Double Chocolate Float", "Coffee Float", "Ube Float", "Coke Float", "Sprite Float", "Matcha Float"],
-    sizes: [
-      { label: "12 oz", price: 50 },
-      { label: "16 oz", price: 60 },
-    ],
-    colors: ["#8d5a3a", "#eac48d"],
-    accent: "#5b2d14",
-    ownerReview: "Matcha Float price conflicts between posters; owner confirmation needed.",
-  },
-  {
-    id: "fries-salt",
-    name: "French Fries",
-    category: "French Fries",
-    description: "Crispy fries served in a branded Home Café sleeve.",
-    flavors: ["Salt", "Cheese", "Onion"],
-    sizes: [
-      { label: "Medium", price: 40 },
-      { label: "Large", price: 60 },
-    ],
-    colors: ["#f0b17a", "#f1d8a8"],
-    accent: "#c77b2b",
-  },
-  {
-    id: "barkada-fruit-soda",
-    name: "Fruit Soda Barkada Bundle",
-    category: "Bundles",
-    description: "Three 12 oz fruit sodas plus one large fries.",
-    flavors: ["Blueberry", "Strawberry", "Green Apple", "Mango"],
-    sizes: [{ label: "Bundle", price: 135 }],
-    colors: ["#f8d7db", "#f4a6bf"],
-    accent: "#ce4e7d",
-    badge: "PROMO",
-  },
-];
+type CatalogCategory = {
+  category: string;
+  notes?: string;
+  items: {
+    name: string;
+    description?: string;
+    prices: Record<string, number | undefined>;
+  }[];
+};
 
-const bundleSlots = [
-  { label: "Drink 1" },
-  { label: "Drink 2" },
-  { label: "Drink 3" },
-  { label: "Fries" },
-];
+type CatalogBundle = {
+  name: string;
+  includes: string[];
+  price: number;
+};
 
-const friesFlavorOptions = ["Salt", "Cheese", "Onion"];
+type CatalogPromotion = {
+  name: string;
+  condition: string;
+  reward: string;
+};
+
+type CatalogBundleOrPromotion = {
+  name: string;
+  includes?: string[];
+  price?: number;
+  condition?: string;
+  reward?: string;
+};
+
+type MenuCatalog = {
+  cafeName: string;
+  currency: string;
+  categories: CatalogCategory[];
+  addOns: { name: string; price: number }[];
+  bundlesAndPromos: CatalogBundleOrPromotion[];
+};
+
+const menuData: MenuCatalog = catalogSource;
+const categories = ["All", ...menuData.categories.map(({ category }) => category)];
+const paidBundles = menuData.bundlesAndPromos.filter(
+  (bundle): bundle is CatalogBundle =>
+    typeof bundle.price === "number" && Array.isArray(bundle.includes),
+);
+const freeFriesPromotion = menuData.bundlesAndPromos.find(
+  (promotion): promotion is CatalogPromotion =>
+    typeof promotion.condition === "string" &&
+    typeof promotion.reward === "string",
+);
+const friesFlavorOptions = menuData.categories
+  .find(({ category }) => category === "Snacks")
+  ?.items.map(({ name }) => name) ?? [];
+
+const productPalettes: Record<string, { colors: [string, string]; accent: string }> = {
+  "Cream Cheese Series": { colors: ["#f4afc8", "#f9e1e9"], accent: "#b42356" },
+  "Milk Tea Series": { colors: ["#d0aa82", "#f1e2cf"], accent: "#815538" },
+  "Milky Bomb Tea": { colors: ["#c1c5f4", "#f0eefa"], accent: "#6265b9" },
+  "Fruit Soda": { colors: ["#a9c5ff", "#e4edff"], accent: "#3d5d9c" },
+  "Yakult Fruit Soda": { colors: ["#ffc6d2", "#fff0ed"], accent: "#bf4169" },
+  "Coffee Series": { colors: ["#c99563", "#efdab9"], accent: "#70442d" },
+  "Float Series": { colors: ["#9b684d", "#f0d7b1"], accent: "#70452f" },
+  Snacks: { colors: ["#edbd73", "#f6e1bb"], accent: "#b8782b" },
+};
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function formatSizeLabel(size: string) {
+  const ounceSize = size.match(/^(\d+)oz$/i);
+  if (ounceSize) return `${ounceSize[1]} oz`;
+  return size === "regular" ? "Regular" : size;
+}
+
+function requireMenuPrice(
+  productName: string,
+  size: string,
+  price: number | undefined,
+) {
+  if (price === undefined) {
+    throw new Error(`Missing price for ${productName} (${size}).`);
+  }
+  return price;
+}
+
+function getProductPalette(category: string, name: string) {
+  const palette = productPalettes[category] ?? productPalettes["Coffee Series"];
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes("strawberry")) {
+    return { colors: ["#f5adc4", "#fae3e7"] as [string, string], accent: "#b42356" };
+  }
+  if (lowerName.includes("blueberry") || lowerName.includes("blue lemonade")) {
+    return { colors: ["#9cb8fa", "#e2ecff"] as [string, string], accent: "#3e5ba0" };
+  }
+  if (lowerName.includes("mango") || lowerName.includes("peach")) {
+    return { colors: ["#f1bb73", "#fff0cb"] as [string, string], accent: "#a65a25" };
+  }
+  if (lowerName.includes("matcha") || lowerName.includes("green apple")) {
+    return { colors: ["#b1c38a", "#edf0d5"] as [string, string], accent: "#4e6942" };
+  }
+  if (lowerName.includes("taro") || lowerName.includes("ube")) {
+    return { colors: ["#b6a4de", "#eee6f8"] as [string, string], accent: "#665090" };
+  }
+  return palette;
+}
+
+const products: Product[] = menuData.categories.flatMap((category) =>
+  category.items.map((item) => {
+    const palette = getProductPalette(category.category, item.name);
+    return {
+      id: slugify(item.name),
+      name: item.name,
+      category: category.category,
+      description: item.description ?? "",
+      flavors: [item.name],
+      sizes: Object.entries(item.prices).map(([label, price]) => ({
+        label: formatSizeLabel(label),
+        price: requireMenuPrice(item.name, label, price),
+      })),
+      colors: palette.colors,
+      accent: palette.accent,
+    };
+  }),
+);
+
+const bundleChoices = paidBundles.map((bundle) => ({
+  ...bundle,
+  id: slugify(bundle.name),
+  drinkCategory: bundle.name.includes("Fruit Soda") ? "Fruit Soda" : "Milk Tea Series",
+}));
+
+function getBundleDrinks(category: string) {
+  return products.filter(
+    (product) =>
+      product.category === category &&
+      product.sizes.some((size) => size.label === "12 oz"),
+  );
+}
 
 const ownerReviewItems = [
-  "Milk Tea Series 16 oz and 22 oz pricing needs owner approval.",
-  "Matcha Float has conflicting pricing between the general menu and the float poster.",
   "The small label near the bottom of the fruit soda section says 'Iced Coffee' and should be reviewed before publication.",
-  "The drink-spend promotion needs eligible products and active dates confirmed.",
+  "Extra Boba Pearls compatibility has not been configured for specific drinks.",
+  "Free fries promotion terms such as eligible drinks, stacking, and redemption limits need owner confirmation.",
 ];
 
 const queueItems = [
@@ -196,6 +213,15 @@ function getProductById(productId: string) {
   return products.find((product) => product.id === productId) ?? products[0];
 }
 
+function getCartItemTitle(item: CartItem) {
+  return item.bundleName ?? getProductById(item.productId).name;
+}
+
+function getCartItemDescription(item: CartItem) {
+  if (item.bundleSelections) return item.bundleSelections.join(" · ");
+  return `${item.size}${item.addBoba ? ` · Boba +${formatMoney(menuData.addOns[0].price)}` : ""}`;
+}
+
 function CupArt({ product, flavor, size }: { product: Product; flavor: string; size: string; }) {
   const match = product.sizes.find((entry) => entry.label === size) ?? product.sizes[0];
   const fill = product.colors[0];
@@ -206,7 +232,7 @@ function CupArt({ product, flavor, size }: { product: Product; flavor: string; s
       <div className="cup-body" style={{ background: `linear-gradient(180deg, ${fill}, ${product.colors[1]})` }}>
         <div className="cup-ripple" style={{ background: product.accent }} />
         <div className="cup-label">
-          <span>{product.name.split(" ").slice(0, 2).join(" ")}</span>
+          <span>Home Café</span>
           <small>{flavor}</small>
         </div>
       </div>
@@ -219,16 +245,16 @@ function CupArt({ product, flavor, size }: { product: Product; flavor: string; s
 }
 
 function FriesArt({ flavor }: { flavor: string }) {
-  const flavorMap: Record<string, string> = {
-    Salt: "#f0d586",
-    Cheese: "#f0bb4d",
-    Onion: "#cda85c",
-  };
+  const flavorColor = flavor.toLowerCase().includes("cheese")
+    ? "#f0bb4d"
+    : flavor.toLowerCase().includes("onion")
+      ? "#cda85c"
+      : "#f0d586";
 
   return (
     <div className="fries-stage">
       <div className="fries-cup" style={{ background: `linear-gradient(180deg, #f4e8d7, #f4d2a5)` }}>
-        <div className="fries-label" style={{ background: flavorMap[flavor] }}>{flavor}</div>
+        <div className="fries-label" style={{ background: flavorColor }}>{flavor}</div>
         <div className="fries-stack">
           {Array.from({ length: 8 }).map((_, index) => (
             <span key={index} style={{ background: `linear-gradient(180deg, ${index % 2 === 0 ? "#f5d089" : "#f7e4a5"}, #e4ab45)` }} />
@@ -241,41 +267,64 @@ function FriesArt({ flavor }: { flavor: string }) {
 
 export default function Page() {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartHydrated, setCartHydrated] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(products[0].id);
   const [selectedFlavor, setSelectedFlavor] = useState(products[0].flavors[0]);
   const [selectedSize, setSelectedSize] = useState(products[0].sizes[0].label);
   const [selectedBoba, setSelectedBoba] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [bundleSelections, setBundleSelections] = useState([
-    { productId: products[0].id, flavor: products[0].flavors[0], size: products[0].sizes[0].label },
-    { productId: products[1].id, flavor: products[1].flavors[0], size: products[1].sizes[0].label },
-    { productId: products[2].id, flavor: products[2].flavors[0], size: products[2].sizes[0].label },
-    { productId: "fries-salt", flavor: "Salt", size: "Large" },
-  ]);
-  const [bundleFriesFlavor, setBundleFriesFlavor] = useState("Salt");
+  const [bundleId, setBundleId] = useState(bundleChoices[0].id);
+  const [bundleDrinkIds, setBundleDrinkIds] = useState(() =>
+    Array.from({ length: 3 }, () => getBundleDrinks(bundleChoices[0].drinkCategory)[0].id),
+  );
+  const [bundleFriesId, setBundleFriesId] = useState(
+    products.find((product) => product.category === "Snacks")?.id ?? "",
+  );
   const [customerName, setCustomerName] = useState("Guest");
   const [paymentMethod, setPaymentMethod] = useState("Pay at counter");
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("home-heart-cart");
-    if (saved) {
-      try {
-        setCart(JSON.parse(saved));
-      } catch {
-        setCart([]);
+    const saved = window.localStorage.getItem("home-heart-cart-v2");
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      if (saved) {
+        try {
+          const parsed: unknown = JSON.parse(saved);
+          if (!Array.isArray(parsed) || !parsed.every(isCartItem)) {
+            throw new Error("Stored cart has an invalid shape.");
+          }
+          setCart(parsed);
+        } catch (error) {
+          console.error("Could not restore the saved cart.", error);
+        }
       }
-    }
+      setCartHydrated(true);
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("home-heart-cart", JSON.stringify(cart));
-  }, [cart]);
+    if (!cartHydrated) return;
+    window.localStorage.setItem("home-heart-cart-v2", JSON.stringify(cart));
+  }, [cart, cartHydrated]);
 
   const filteredProducts = useMemo(() => {
-    if (activeCategory === "All") return products;
-    return products.filter((product) => product.category === activeCategory);
-  }, [activeCategory]);
+    const query = searchTerm.trim().toLowerCase();
+    return products.filter((product) => {
+      const matchesCategory =
+        activeCategory === "All" || product.category === activeCategory;
+      const matchesSearch =
+        !query ||
+        product.name.toLowerCase().includes(query) ||
+        product.category.toLowerCase().includes(query);
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeCategory, searchTerm]);
 
   const selectedProduct = useMemo(
     () => getProductById(selectedProductId),
@@ -289,15 +338,21 @@ export default function Page() {
 
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = cartSubtotal;
+  const activeBundle =
+    bundleChoices.find((bundle) => bundle.id === bundleId) ?? bundleChoices[0];
+  const activeBundleDrinks = getBundleDrinks(activeBundle.drinkCategory);
+  const activeCategoryNote =
+    menuData.categories.find(({ category }) => category === activeCategory)?.notes;
+  const bobaAddon = menuData.addOns.find((addon) => addon.name === "Extra Boba Pearls");
 
   const selectedPrice = useMemo(() => {
     const sizeEntry = selectedProduct.sizes.find((size) => size.label === selectedSize);
-    return (sizeEntry?.price ?? 0) + (selectedBoba ? 10 : 0);
-  }, [selectedProduct, selectedSize, selectedBoba]);
+    return (sizeEntry?.price ?? 0) + (selectedBoba ? (bobaAddon?.price ?? 0) : 0);
+  }, [selectedProduct, selectedSize, selectedBoba, bobaAddon]);
 
   function addLineItem(product: Product, flavor: string, size: string, addBoba: boolean, quantity = 1) {
     const sizeEntry = product.sizes.find((entry) => entry.label === size) ?? product.sizes[0];
-    const linePrice = (sizeEntry?.price ?? 0) + (addBoba ? 10 : 0);
+    const linePrice = (sizeEntry?.price ?? 0) + (addBoba ? (bobaAddon?.price ?? 0) : 0);
     const key = `${product.id}-${flavor}-${size}-${addBoba ? "boba" : "plain"}`;
 
     setCart((current) => {
@@ -339,6 +394,7 @@ export default function Page() {
 
   function selectCategory(category: string) {
     setActiveCategory(category);
+    setSearchTerm("");
     const firstProduct =
       category === "All"
         ? products[0]
@@ -352,72 +408,56 @@ export default function Page() {
     setSelectedBoba(false);
   }
 
-  function handleBundleSelection(index: number, productId: string, flavor: string, size: string) {
-    setBundleSelections((current) => {
-      const next = [...current];
-      next[index] = { productId, flavor, size };
-      return next;
-    });
-  }
-
   function addBundleToCart() {
-    const bundleDrinks = bundleSelections.slice(0, 3);
-    const friesItem = bundleSelections[3];
-    const hasMissing = bundleDrinks.some((drink) => !drink.productId || !drink.size) || !friesItem.productId;
+    const selectedDrinks = bundleDrinkIds.map((id) =>
+      activeBundleDrinks.find((product) => product.id === id),
+    );
+    const friesProduct = products.find((product) => product.id === bundleFriesId);
+    const friesIsLarge = friesProduct?.sizes.some(
+      (size) => size.label === "Large",
+    );
+    const validDrinks = selectedDrinks.filter(
+      (product): product is Product => product !== undefined,
+    );
 
-    if (hasMissing) {
-      window.alert("Please select all drink slots and a fries option to complete the bundle.");
+    if (
+      validDrinks.length !== 3 ||
+      !friesProduct ||
+      friesProduct.category !== "Snacks" ||
+      !friesIsLarge
+    ) {
+      window.alert("Select three eligible 12 oz drinks and one large fries flavor.");
       return;
     }
 
+    const selections = [
+      ...validDrinks.map((product) => product.name),
+      `${friesProduct.name} (Large)`,
+    ];
+    const lineId = `${activeBundle.id}:${bundleDrinkIds.join("|")}:${bundleFriesId}`;
     setCart((current) => {
-      const next = [...current];
-      bundleDrinks.forEach((drink) => {
-        const product = getProductById(drink.productId);
-        const sizeEntry = product.sizes.find((entry) => entry.label === drink.size) ?? product.sizes[0];
-        const key = `${product.id}-${drink.flavor}-${drink.size}-plain`;
-        const existing = next.find((item) => item.id === key);
-        if (existing) {
-          existing.quantity += 1;
-        } else {
-          next.push({
-            id: key,
-            productId: product.id,
-            flavor: drink.flavor,
-            size: drink.size,
-            quantity: 1,
-            addBoba: false,
-            basePrice: sizeEntry.price,
-          });
-        }
-      });
-
-      const friesProduct = getProductById(friesItem.productId);
-      const friesSize = friesItem.size || "Large";
-      const friesKey = `${friesProduct.id}-${bundleFriesFlavor}-${friesSize}-plain`;
-      const existingFries = next.find((item) => item.id === friesKey);
-      if (existingFries) {
-        existingFries.quantity += 1;
-      } else {
-        next.push({
-          id: friesKey,
-          productId: friesProduct.id,
-          flavor: bundleFriesFlavor,
-          size: friesSize,
+      const existing = current.find((item) => item.id === lineId);
+      if (existing) {
+        return current.map((item) =>
+          item.id === lineId ? { ...item, quantity: item.quantity + 1 } : item,
+        );
+      }
+      return [
+        ...current,
+        {
+          id: lineId,
+          productId: "",
+          flavor: "",
+          size: "Bundle",
           quantity: 1,
           addBoba: false,
-          basePrice: friesProduct.sizes.find((entry) => entry.label === friesSize)?.price ?? 60,
-        });
-      }
-
-      return next;
+          basePrice: activeBundle.price,
+          bundleName: activeBundle.name,
+          bundleSelections: selections,
+        },
+      ];
     });
     setCheckoutOpen(true);
-  }
-
-  function getSelectedProductForSlot(slotIndex: number) {
-    const selection = bundleSelections[slotIndex];
-    return getProductById(selection.productId);
   }
 
   return (
@@ -445,7 +485,7 @@ export default function Page() {
             Browse the menu, build a barkada bundle, and complete a simple walk-in order flow for the Home Café menu.
           </p>
           <div className="hero-actions">
-            <a className="primary-btn" href="#menu" onClick={() => setActiveCategory("All")}>Order Now</a>
+            <a className="primary-btn" href="#menu" onClick={() => selectCategory("All")}>Order Now</a>
             <button className="ghost-btn" onClick={() => setCheckoutOpen(true)}>View Cart</button>
           </div>
         </div>
@@ -477,12 +517,36 @@ export default function Page() {
         <div>
           <p className="section-kicker">THE HOME CAFÉ MENU</p>
           <h2>Find your new favorite.</h2>
+          {activeCategoryNote ? (
+            <p className="menu-category-note">{activeCategoryNote}</p>
+          ) : null}
         </div>
-        <p>Illustrative product previews · Menu prices in Philippine pesos</p>
+        <div className="menu-tools">
+          <label className="menu-search">
+            <span className="sr-only">Search menu</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="10.8" cy="10.8" r="6.8" />
+              <path d="m16 16 4.5 4.5" />
+            </svg>
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search drinks & fries"
+            />
+          </label>
+          <p>Illustrative previews · Prices in Philippine pesos</p>
+        </div>
       </section>
 
       <section className="menu-grid container-shell">
         <div className="product-list">
+          {filteredProducts.length === 0 ? (
+            <div className="menu-empty" role="status">
+              <strong>No menu items found</strong>
+              <span>Try a different search or category.</span>
+            </div>
+          ) : null}
           {filteredProducts.map((product) => (
             <button
               key={product.id}
@@ -504,9 +568,9 @@ export default function Page() {
                   <h3>{product.name}</h3>
                   {product.badge ? <span className="badge">{product.badge}</span> : null}
                 </div>
-                <p>{product.description}</p>
+                {product.description ? <p>{product.description}</p> : null}
                 <div className="card-price-row">
-                  <strong>{formatMoney(product.sizes[0].price || 0)}</strong>
+                  <strong>{formatMoney(product.sizes[0].price)}</strong>
                   <span>{product.sizes[0].label}</span>
                 </div>
               </div>
@@ -521,20 +585,9 @@ export default function Page() {
               <span>{selectedProduct.category}</span>
             </div>
 
-            <div className="selection-block">
-              <label>Flavor</label>
-              <div className="chip-grid">
-                {selectedProduct.flavors.map((flavor) => (
-                  <button
-                    key={flavor}
-                    type="button"
-                    className={selectedFlavor === flavor ? "chip active" : "chip"}
-                    onClick={() => setSelectedFlavor(flavor)}
-                  >
-                    {flavor}
-                  </button>
-                ))}
-              </div>
+            <div className="selected-product-summary">
+              <strong>{selectedProduct.name}</strong>
+              {selectedProduct.description ? <p>{selectedProduct.description}</p> : null}
             </div>
 
             <div className="selection-block">
@@ -554,11 +607,16 @@ export default function Page() {
             </div>
 
             <div className="selection-block check-row">
-              <label htmlFor="boba-addon">Approved add-on: Boba pearls</label>
+              <label htmlFor="boba-addon">
+                {bobaAddon?.name ?? "Extra Boba Pearls"} (+{formatMoney(bobaAddon?.price ?? 0)})
+                <small>Availability by drink needs owner confirmation.</small>
+              </label>
               <input
                 id="boba-addon"
                 type="checkbox"
-                checked={selectedBoba}
+                checked={false}
+                disabled
+                title="Boba compatibility has not been configured."
                 onChange={(event) => setSelectedBoba(event.target.checked)}
               />
             </div>
@@ -584,16 +642,13 @@ export default function Page() {
                 {cart.map((item) => (
                   <div key={item.id} className="cart-item">
                     <div>
-                      <strong>{getProductById(item.productId).name}</strong>
-                      <small>
-                        {item.flavor} / {item.size}
-                        {item.addBoba ? " • Boba +₱10" : ""}
-                      </small>
+                      <strong>{getCartItemTitle(item)}</strong>
+                      <small>{getCartItemDescription(item)}</small>
                     </div>
                     <div className="cart-controls">
-                      <button type="button" aria-label={`Remove one ${item.flavor} ${item.size}`} onClick={() => updateCartQuantity(item.id, -1)}>-</button>
+                      <button type="button" aria-label={`Remove one ${getCartItemTitle(item)}`} onClick={() => updateCartQuantity(item.id, -1)}>-</button>
                       <span>{item.quantity}</span>
-                      <button type="button" aria-label={`Add one ${item.flavor} ${item.size}`} onClick={() => updateCartQuantity(item.id, 1)}>+</button>
+                      <button type="button" aria-label={`Add one ${getCartItemTitle(item)}`} onClick={() => updateCartQuantity(item.id, 1)}>+</button>
                     </div>
                   </div>
                 ))}
@@ -613,92 +668,92 @@ export default function Page() {
         <div className="bundle-card">
           <div className="panel-header">
             <h3>Barkada bundle builder</h3>
-            <span>3 drinks + 1 fries</span>
+            <label className="bundle-kind">
+              <span>Bundle type</span>
+              <select
+                value={bundleId}
+                onChange={(event) => {
+                  const nextBundle =
+                    bundleChoices.find((bundle) => bundle.id === event.target.value) ??
+                    bundleChoices[0];
+                  setBundleId(nextBundle.id);
+                  const eligibleDrinks = getBundleDrinks(nextBundle.drinkCategory);
+                  setBundleDrinkIds(
+                    Array.from({ length: 3 }, () => eligibleDrinks[0].id),
+                  );
+                }}
+              >
+                {bundleChoices.map((bundle) => (
+                  <option key={bundle.id} value={bundle.id}>
+                    {bundle.name}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
 
-          <div className="bundle-grid">
-            {bundleSlots.map((slot, index) => {
-              const product = index < 3 ? getSelectedProductForSlot(index) : getProductById("fries-salt");
-              const selection = bundleSelections[index];
+          <p className="bundle-description">{activeBundle.includes.join(" + ")}</p>
 
-              return (
-                <div key={slot.label} className="bundle-slot">
-                  <label>{slot.label}</label>
-                  {index < 3 ? (
-                    <>
-                      <select
-                        value={selection.productId}
-                        onChange={(event) => {
-                          const selected = getProductById(event.target.value);
-                          setBundleSelections((current) => {
-                            const next = [...current];
-                            next[index] = {
-                              productId: selected.id,
-                              flavor: selected.flavors[0],
-                              size: selected.sizes[0].label,
-                            };
-                            return next;
-                          });
-                        }}
-                      >
-                        {products
-                          .filter((item) => item.category !== "French Fries" && item.category !== "Bundles")
-                          .map((item) => (
-                            <option key={item.id} value={item.id}>{item.name}</option>
-                          ))}
-                      </select>
-                      <select
-                        value={selection.flavor}
-                        onChange={(event) => handleBundleSelection(index, selection.productId, event.target.value, selection.size)}
-                      >
-                        {product.flavors.map((flavor) => (
-                          <option key={flavor} value={flavor}>{flavor}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={selection.size}
-                        onChange={(event) => handleBundleSelection(index, selection.productId, selection.flavor, event.target.value)}
-                      >
-                        {product.sizes.map((size) => (
-                          <option key={size.label} value={size.label}>{size.label}</option>
-                        ))}
-                      </select>
-                    </>
-                  ) : (
-                    <>
-                      <select
-                        value={selection.productId}
-                        onChange={(event) => {
-                          const fries = getProductById(event.target.value);
-                          setBundleFriesFlavor(fries.flavors[0]);
-                          handleBundleSelection(index, fries.id, fries.flavors[0], fries.sizes[1]?.label ?? "Large");
-                        }}
-                      >
-                        <option value="fries-salt">French Fries</option>
-                      </select>
-                      <select
-                        value={bundleFriesFlavor}
-                        onChange={(event) => {
-                          setBundleFriesFlavor(event.target.value);
-                          handleBundleSelection(index, selection.productId, event.target.value, selection.size || "Large");
-                        }}
-                      >
-                        {friesFlavorOptions.map((item) => (
-                          <option key={item} value={item}>{item}</option>
-                        ))}
-                      </select>
-                    </>
-                  )}
-                </div>
-              );
-            })}
+          <div className="bundle-grid">
+            {bundleDrinkIds.map((productId, index) => (
+              <div key={`drink-${index + 1}`} className="bundle-slot">
+                <label htmlFor={`bundle-drink-${index + 1}`}>Drink {index + 1} · 12 oz</label>
+                <select
+                  id={`bundle-drink-${index + 1}`}
+                  value={productId}
+                  onChange={(event) =>
+                    setBundleDrinkIds((current) =>
+                      current.map((id, slot) =>
+                        slot === index ? event.target.value : id,
+                      ),
+                    )
+                  }
+                >
+                  {activeBundleDrinks.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+
+            <div className="bundle-slot">
+              <label htmlFor="bundle-fries">Large fries</label>
+              <select
+                id="bundle-fries"
+                value={bundleFriesId}
+                onChange={(event) => setBundleFriesId(event.target.value)}
+              >
+                {products
+                  .filter(
+                    (product) =>
+                      product.category === "Snacks" &&
+                      product.sizes.some((size) => size.label === "Large"),
+                  )
+                  .map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
           </div>
 
           <div className="bundle-footer">
-            <div className="promo-pill">Bundle price: ₱155</div>
+            <div className="promo-pill">Bundle price: {formatMoney(activeBundle.price)}</div>
             <button className="primary-btn" onClick={addBundleToCart}>Add bundle</button>
           </div>
         </div>
+        {freeFriesPromotion ? (
+          <div className="promo-note">
+            <strong>{freeFriesPromotion.name}</strong>
+            <span>
+              {freeFriesPromotion.condition} and get {freeFriesPromotion.reward.toLowerCase()}.
+              Eligibility and redemption terms are still being confirmed.
+            </span>
+          </div>
+        ) : null}
       </section>
 
       <section className="operations container-shell">
@@ -779,11 +834,8 @@ export default function Page() {
                 cart.map((item) => (
                   <div key={item.id} className="receipt-row">
                     <div>
-                      <strong>{getProductById(item.productId).name}</strong>
-                      <small>
-                        {item.flavor} • {item.size}
-                        {item.addBoba ? " • Boba" : ""}
-                      </small>
+                      <strong>{getCartItemTitle(item)}</strong>
+                      <small>{getCartItemDescription(item)}</small>
                     </div>
                     <span>{formatMoney(item.basePrice * item.quantity)}</span>
                   </div>
