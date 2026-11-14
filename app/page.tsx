@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import catalogSource from "./menu-data.json";
+import featuredImageSource from "./featured-images.json";
 import productImages from "./product-images.json";
 
 type Product = {
@@ -65,6 +66,12 @@ type CatalogBundle = {
   price: number;
 };
 
+type FeaturedImage = {
+  src: string;
+  title: string;
+  description: string;
+};
+
 type CatalogPromotion = {
   name: string;
   condition: string;
@@ -89,6 +96,7 @@ type MenuCatalog = {
 
 const menuData: MenuCatalog = catalogSource;
 const productImageMap: Record<string, string> = productImages;
+const featuredImages: FeaturedImage[] = featuredImageSource;
 const categories = ["All", ...menuData.categories.map(({ category }) => category)];
 const paidBundles = menuData.bundlesAndPromos.filter(
   (bundle): bundle is CatalogBundle =>
@@ -793,7 +801,36 @@ export default function Page() {
         ) : null}
       </section>
 
-      <section className="operations container-shell">
+        <section className="featured-gallery container-shell" aria-labelledby="gallery-title">
+          <div className="gallery-heading">
+            <div>
+              <p className="section-kicker">A LITTLE SOMETHING FOR EVERYONE</p>
+              <h2 id="gallery-title">Good things are better shared.</h2>
+            </div>
+            <p>Find your next café favorite, then bring the barkada along.</p>
+          </div>
+          <div className="gallery-grid">
+            {featuredImages.map((image) => (
+              <figure className="gallery-card" key={image.src}>
+                <div className="gallery-photo">
+                  <Image
+                    src={image.src}
+                    alt={image.description}
+                    fill
+                    sizes="(max-width: 620px) 90vw, (max-width: 860px) 50vw, 33vw"
+                    className="product-photo"
+                  />
+                </div>
+                <figcaption>
+                  <strong>{image.title}</strong>
+                  <span>{image.description}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        <section className="operations container-shell">
         <div className="ops-card">
           <div className="panel-header">
             <h3>Staff queue</h3>

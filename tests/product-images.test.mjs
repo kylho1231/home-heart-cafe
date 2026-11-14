@@ -11,6 +11,9 @@ const menu = JSON.parse(
 const images = JSON.parse(
   await readFile(path.join(root, "app/product-images.json"), "utf8"),
 );
+const featuredImages = JSON.parse(
+  await readFile(path.join(root, "app/featured-images.json"), "utf8"),
+);
 const productIds = new Set(
   menu.categories.flatMap((category) =>
     category.items.map(({ name }) =>
@@ -20,11 +23,28 @@ const productIds = new Set(
 );
 
 test("product photos map to catalog items and existing public assets", async () => {
-  assert.equal(Object.keys(images).length, 20);
+  assert.equal(Object.keys(images).length, 23);
+  assert.deepEqual(
+    Object.keys(images).filter((productId) =>
+      ["mango-fruit-soda", "blue-lemonade-fruit-soda", "cheese-french-fries", "onion-french-fries"].includes(productId),
+    ).sort(),
+    ["blue-lemonade-fruit-soda", "cheese-french-fries", "mango-fruit-soda", "onion-french-fries"],
+  );
 
   for (const [productId, imagePath] of Object.entries(images)) {
     assert.ok(productIds.has(productId), `${productId} is not in the menu catalog`);
     assert.match(imagePath, /^\/products\/[a-z0-9-]+\.webp$/);
     await access(path.join(root, "public", imagePath.slice(1)));
+  }
+});
+
+test("three featured group photos map to existing public images", async () => {
+  assert.equal(featuredImages.length, 3);
+
+  for (const image of featuredImages) {
+    assert.ok(image.title, "featured image has a title");
+    assert.ok(image.description, "featured image has accessible copy");
+    assert.match(image.src, /^\/products\/[a-z0-9-]+\.webp$/);
+    await access(path.join(root, "public", image.src.slice(1)));
   }
 });

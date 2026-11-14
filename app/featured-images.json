@@ -1,0 +1,17 @@
+[
+  {
+    "src": "/products/milk-tea-and-fries.webp",
+    "title": "Milk tea & fries",
+    "description": "A mix of creamy milk teas and golden fries, made for sharing."
+  },
+  {
+    "src": "/products/fruit-soda-and-fries.webp",
+    "title": "Fruit soda break",
+    "description": "Bright fruit sodas and a basket of seasoned fries."
+  },
+  {
+    "src": "/products/cafe-favorites-to-share.webp",
+    "title": "Café favorites",
+    "description": "Milk tea, a creamy matcha, blue lemonade, and fries for the table."
+  }
+]
