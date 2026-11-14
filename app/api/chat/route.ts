@@ -1,0 +1,173 @@
+import { NextRequest, NextResponse } from "next/server";
+
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { message, history } = await request.json();
+
+    if (!message || typeof message !== "string") {
+      return NextResponse.json(
+        { success: false, error: "Message is required." },
+        { status: 400 },
+      );
+    }
+
+    const query = message.toLowerCase().trim();
+
+    // Context knowledge for Home Heart Cafe
+    let reply = "";
+    let suggestedActions: { label: string; action: string }[] = [];
+
+    // 1. Promos & Discounts
+    if (
+      query.includes("promo") ||
+      query.includes("discount") ||
+      query.includes("offer") ||
+      query.includes("deal") ||
+      query.includes("bundle")
+    ) {
+      reply =
+        "🎉 **Current Promos at Home ❤️ Cafe:**\n\n" +
+        "1. **Barkada Bundle (Fruit Soda) — ₱135**\n" +
+        "   • Get 3x 12oz Fruit Sodas + 1 Large French Fries (Save ₱12! Perfect for sharing with classmates).\n\n" +
+        "2. **Barkada Bundle (Milk Tea) — ₱155**\n" +
+        "   • Get 3x 12oz Milk Teas + 1 Large French Fries (Save ₱22!).\n\n" +
+        "3. **Free Medium Fries Promo**\n" +
+        "   • Buy drinks worth at least ₱200 in a single order and get **1 Free Medium Fries** (Choice of Salt, Cheese, or Onion)!\n\n" +
+        "4. **Student & Teacher Loyalty Perk**\n" +
+        "   • Verified students with valid 12-digit LRN get priority preparation during recess/lunch breaks!";
+      suggestedActions = [
+        { label: "View Barkada Bundles", action: "scrollToBundles" },
+        { label: "What are bestsellers?", action: "askBestsellers" },
+      ];
+    }
+    // 2. Events & Activities
+    else if (
+      query.includes("event") ||
+      query.includes("activity") ||
+      query.includes("happening") ||
+      query.includes("schedule") ||
+      query.includes("acoustic")
+    ) {
+      reply =
+        "📅 **Upcoming Events at Home ❤️ Cafe:**\n\n" +
+        "• 🎸 **Campus Acoustic Friday (Every Friday, 3:00 PM – 5:30 PM)**\n" +
+        "  Enjoy student acoustic performances and chill study vibes while sipping your favorite drinks!\n\n" +
+        "• 📚 **Study & Chill Lounge Hours (Daily, 4:00 PM – 6:00 PM)**\n" +
+        "  Quiet hours with high-speed Wi-Fi, power outlets, and 10% off on second drink refills for students reviewing for exams!\n\n" +
+        "• ☕ **Teacher's Coffee Appreciation (Wednesdays)**\n" +
+        "  Faculty members enjoy a complimentary extra espresso shot or boba pearls on any 16oz/22oz beverage.\n\n" +
+        "• 🎮 **Board Games & Cards Corner (Daily)**\n" +
+        "  Free access to Scrabble, Uno, and Jenga while waiting for your order!";
+      suggestedActions = [
+        { label: "Check Promos", action: "askPromos" },
+        { label: "Recommend a drink", action: "askRecommend" },
+      ];
+    }
+    // 3. Best Sellers & Recommendations
+    else if (
+      query.includes("best") ||
+      query.includes("seller") ||
+      query.includes("recommend") ||
+      query.includes("popular") ||
+      query.includes("favorite") ||
+      query.includes("must try") ||
+      query.includes("top")
+    ) {
+      reply =
+        "⭐ **Home ❤️ Cafe Top Bestsellers:**\n\n" +
+        "1. 🍓 **Strawberry Cream Cheese (₱49 / ₱59 / ₱79)**\n" +
+        "   • Luscious strawberry drink swirled with rich, velvety cream cheese walling. The #1 student favorite!\n\n" +
+        "2. 🧋 **Okinawa Cream Cheese (₱49 / ₱59 / ₱79)**\n" +
+        "   • Deep roasted brown sugar flavor balanced with savoury cream cheese.\n\n" +
+        "3. 🍫 **Chuckie Float (₱50 / ₱60)**\n" +
+        "   • Nostalgic chocolate goodness topped with creamy vanilla ice cream.\n\n" +
+        "4. ☕ **Spanish Latte (₱69 / ₱79)**\n" +
+        "   • Espresso with condensed milk sweetness — our #1 teacher and study-session pick!\n\n" +
+        "5. 🍟 **Cheese French Fries (₱40 / ₱60)**\n" +
+        "   • Crispy, freshly fried potatoes generously coated with savory cheese dust.";
+      suggestedActions = [
+        { label: "Try Strawberry Cream Cheese", action: "selectProduct:strawberry-cream-cheese" },
+        { label: "Try Chuckie Float", action: "selectProduct:chuckie-float" },
+      ];
+    }
+    // 4. Verification / Anti-scam explanation
+    else if (
+      query.includes("id") ||
+      query.includes("lrn") ||
+      query.includes("scam") ||
+      query.includes("picture") ||
+      query.includes("selfie") ||
+      query.includes("verify")
+    ) {
+      reply =
+        "🛡️ **Why do we require Student ID, Selfie, and LRN?**\n\n" +
+        "We love serving our campus community! Because each drink and batch of fries is prepared fresh upon order, the verification helps us:\n" +
+        "1. **Prevent Fake / Prank Orders**: Ensures the cafe staff and kitchen ingredients aren't wasted by bogus requests.\n" +
+        "2. **Protect Student Downpayments**: Confirms that only the legitimate student with matching LRN can claim the order.\n" +
+        "3. **Zero Queue Waiting**: Once verified, your order begins preparing immediately so you can just grab and go during quick break times!\n\n" +
+        "🔒 *Your uploaded images and 12-digit LRN are treated with strict confidentiality and used solely for counter order verification.*";
+      suggestedActions = [
+        { label: "Start Order Now", action: "openCheckout" },
+        { label: "See Menu", action: "scrollToMenu" },
+      ];
+    }
+    // 5. Payment & GCash
+    else if (
+      query.includes("gcash") ||
+      query.includes("pay") ||
+      query.includes("downpayment") ||
+      query.includes("cash") ||
+      query.includes("price")
+    ) {
+      reply =
+        "💳 **Payment & GCash Instructions:**\n\n" +
+        "• **GCash Down Payment (Recommended)**:\n" +
+        "  - Pay 50% or 100% via GCash to **0917-889-CAFE (HOME HEART CAFE)**.\n" +
+        "  - Enter your 13-digit Reference Number & upload the screenshot during checkout.\n" +
+        "  - This guarantees your order is queued right away!\n\n" +
+        "• **Pay at Counter (Cash)**:\n" +
+        "  - Pay in cash when you pick up at the counter. Requires valid Student ID and 12-digit LRN.";
+      suggestedActions = [
+        { label: "Order & Pay via GCash", action: "openCheckout" },
+        { label: "Ask about Promos", action: "askPromos" },
+      ];
+    }
+    // General default friendly greeting / help
+    else {
+      reply =
+        "👋 **Kumusta! Welcome to Home ❤️ Cafe!**\n\n" +
+        "I'm **Hearty**, your digital barista concierge. I can help you with:\n" +
+        "• 🎁 **Promos & Discounts** (Barkada Bundles, Free Fries)\n" +
+        "• 📅 **Campus Cafe Events** (Acoustic Friday, Study Lounge)\n" +
+        "• ☕ **Drink Recommendations** based on what flavors you crave\n" +
+        "• 📋 **Student ID & Anti-Scam Order Guide**\n\n" +
+        "How can I brighten your day today?";
+      suggestedActions = [
+        { label: "Show Promos", action: "askPromos" },
+        { label: "Top Bestsellers", action: "askBestsellers" },
+        { label: "Upcoming Events", action: "askEvents" },
+      ];
+    }
+
+    return NextResponse.json({
+      success: true,
+      reply,
+      suggestedActions,
+    });
+  } catch (error) {
+    console.error("POST /api/chat error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to process chat query",
+        reply: "Oops, something went wrong. Feel free to ask me again!",
+      },
+      { status: 500 },
+    );
+  }
+}

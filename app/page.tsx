@@ -1,10 +1,41 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import {
+  Coffee,
+  ShoppingBag,
+  BellRing,
+  ShieldCheck,
+  Search,
+  Sparkles,
+  Plus,
+  Minus,
+  Trash2,
+  Gift,
+  Calendar,
+  MessageCircle,
+  CheckCircle2,
+  Flame,
+  ArrowRight,
+  Clock,
+  Layers,
+  X,
+} from "lucide-react";
+
 import catalogSource from "./menu-data.json";
 import featuredImageSource from "./featured-images.json";
 import productImages from "./product-images.json";
+
+import { OrderItem } from "@/lib/types";
+import { playChime } from "@/lib/sound";
+import { InteractiveCup3D } from "@/components/InteractiveCup3D";
+import { Product3DCard } from "@/components/Product3DCard";
+import { CheckoutVerificationModal } from "@/components/CheckoutVerificationModal";
+import { OrderTrackerModal } from "@/components/OrderTrackerModal";
+import { AiBaristaModal } from "@/components/AiBaristaModal";
+import { AdminPortalModal } from "@/components/AdminPortalModal";
 
 type Product = {
   id: string;
@@ -17,38 +48,7 @@ type Product = {
   accent: string;
   image?: string;
   badge?: string;
-  ownerReview?: string;
 };
-
-type CartItem = {
-  id: string;
-  productId: string;
-  flavor: string;
-  size: string;
-  quantity: number;
-  addBoba: boolean;
-  basePrice: number;
-  bundleName?: string;
-  bundleSelections?: string[];
-};
-
-function isCartItem(value: unknown): value is CartItem {
-  if (typeof value !== "object" || value === null) return false;
-  const item = value as Record<string, unknown>;
-  return (
-    typeof item.id === "string" &&
-    typeof item.productId === "string" &&
-    typeof item.flavor === "string" &&
-    typeof item.size === "string" &&
-    typeof item.quantity === "number" &&
-    typeof item.addBoba === "boolean" &&
-    typeof item.basePrice === "number" &&
-    (item.bundleName === undefined || typeof item.bundleName === "string") &&
-    (item.bundleSelections === undefined ||
-      (Array.isArray(item.bundleSelections) &&
-        item.bundleSelections.every((selection) => typeof selection === "string")))
-  );
-}
 
 type CatalogCategory = {
   category: string;
@@ -64,12 +64,6 @@ type CatalogBundle = {
   name: string;
   includes: string[];
   price: number;
-};
-
-type FeaturedImage = {
-  src: string;
-  title: string;
-  description: string;
 };
 
 type CatalogPromotion = {
@@ -96,20 +90,19 @@ type MenuCatalog = {
 
 const menuData: MenuCatalog = catalogSource;
 const productImageMap: Record<string, string> = productImages;
-const featuredImages: FeaturedImage[] = featuredImageSource;
+const featuredImages = featuredImageSource;
 const categories = ["All", ...menuData.categories.map(({ category }) => category)];
+
 const paidBundles = menuData.bundlesAndPromos.filter(
   (bundle): bundle is CatalogBundle =>
     typeof bundle.price === "number" && Array.isArray(bundle.includes),
 );
+
 const freeFriesPromotion = menuData.bundlesAndPromos.find(
   (promotion): promotion is CatalogPromotion =>
     typeof promotion.condition === "string" &&
     typeof promotion.reward === "string",
 );
-const friesFlavorOptions = menuData.categories
-  .find(({ category }) => category === "Snacks")
-  ?.items.map(({ name }) => name) ?? [];
 
 const productPalettes: Record<string, { colors: [string, string]; accent: string }> = {
   "Cream Cheese Series": { colors: ["#f4afc8", "#f9e1e9"], accent: "#b42356" },
@@ -171,8 +164,16 @@ function getProductPalette(category: string, name: string) {
 const products: Product[] = menuData.categories.flatMap((category) =>
   category.items.map((item) => {
     const palette = getProductPalette(category.category, item.name);
+    const slug = slugify(item.name);
+    const isBestseller =
+      slug.includes("strawberry-cream-cheese") ||
+      slug.includes("okinawa-cream-cheese") ||
+      slug.includes("chuckie-float") ||
+      slug.includes("spanish-latte") ||
+      slug.includes("cheese-french-fries");
+
     return {
-      id: slugify(item.name),
+      id: slug,
       name: item.name,
       category: category.category,
       description: item.description ?? "",
@@ -183,7 +184,8 @@ const products: Product[] = menuData.categories.flatMap((category) =>
       })),
       colors: palette.colors,
       accent: palette.accent,
-      image: productImageMap[slugify(item.name)],
+      image: productImageMap[slug],
+      badge: isBestseller ? "Bestseller" : undefined,
     };
   }),
 );
@@ -202,731 +204,999 @@ function getBundleDrinks(category: string) {
   );
 }
 
-const ownerReviewItems = [
-  "The small label near the bottom of the fruit soda section says 'Iced Coffee' and should be reviewed before publication.",
-  "Extra Boba Pearls compatibility has not been configured for specific drinks.",
-  "Free fries promotion terms such as eligible drinks, stacking, and redemption limits need owner confirmation.",
-];
-
-const queueItems = [
-  { id: "HC-4821", name: "Walk-in customer", status: "Preparing", items: 2 },
-  { id: "HC-4819", name: "Dine-in order", status: "Accepted", items: 3 },
-  { id: "HC-4817", name: "Pickup order", status: "Ready", items: 1 },
-];
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function getProductById(productId: string) {
-  return products.find((product) => product.id === productId) ?? products[0];
-}
-
-function getCartItemTitle(item: CartItem) {
-  return item.bundleName ?? getProductById(item.productId).name;
-}
-
-function getCartItemDescription(item: CartItem) {
-  if (item.bundleSelections) return item.bundleSelections.join(" · ");
-  return `${item.size}${item.addBoba ? ` · Boba +${formatMoney(menuData.addOns[0].price)}` : ""}`;
-}
-
-function CupArt({
-  product,
-  flavor,
-  size,
-  priority = false,
-}: {
-  product: Product;
-  flavor: string;
-  size: string;
-  priority?: boolean;
-}) {
-  const match = product.sizes.find((entry) => entry.label === size) ?? product.sizes[0];
-  const fill = product.colors[0];
-
-  if (product.image) {
-    return (
-      <div className="cup-stage cup-stage--photo">
-        <Image
-          src={product.image}
-          alt=""
-          fill
-          loading={priority ? "eager" : "lazy"}
-          sizes={priority
-            ? "(max-width: 620px) 100vw, 50vw"
-            : "(max-width: 620px) 50vw, (max-width: 860px) 50vw, 33vw"}
-          className="product-photo"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="cup-stage" style={{ background: `linear-gradient(135deg, ${product.colors[0]}, ${product.colors[1]})` }}>
-      <div className="cup-shadow" />
-      <div className="cup-body" style={{ background: `linear-gradient(180deg, ${fill}, ${product.colors[1]})` }}>
-        <div className="cup-ripple" style={{ background: product.accent }} />
-        <div className="cup-label">
-          <span>Home Café</span>
-          <small>{flavor}</small>
-        </div>
-      </div>
-      <div className="cup-top" style={{ background: `linear-gradient(180deg, ${product.colors[1]}, ${fill})` }} />
-      <div className="cup-serve" style={{ background: `linear-gradient(180deg, ${product.accent}, ${product.colors[0]})` }} />
-      <div className="cup-price">{formatMoney(match.price)}</div>
-      <div className="cup-size">{size}</div>
-    </div>
-  );
-}
-
-function FriesArt({ flavor }: { flavor: string }) {
-  const flavorColor = flavor.toLowerCase().includes("cheese")
-    ? "#f0bb4d"
-    : flavor.toLowerCase().includes("onion")
-      ? "#cda85c"
-      : "#f0d586";
-
-  return (
-    <div className="fries-stage">
-      <div className="fries-cup" style={{ background: `linear-gradient(180deg, #f4e8d7, #f4d2a5)` }}>
-        <div className="fries-label" style={{ background: flavorColor }}>{flavor}</div>
-        <div className="fries-stack">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <span key={index} style={{ background: `linear-gradient(180deg, ${index % 2 === 0 ? "#f5d089" : "#f7e4a5"}, #e4ab45)` }} />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function Page() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [cart, setCart] = useState<CartItem[]>([]);
+
+  // Cart State (Persisted in localStorage)
+  const [cart, setCart] = useState<OrderItem[]>([]);
   const [cartHydrated, setCartHydrated] = useState(false);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+
+  // Active Customization State (Linked to 3D Stage)
   const [selectedProductId, setSelectedProductId] = useState(products[0].id);
   const [selectedFlavor, setSelectedFlavor] = useState(products[0].flavors[0]);
   const [selectedSize, setSelectedSize] = useState(products[0].sizes[0].label);
+  const [selectedSugar, setSelectedSugar] = useState<"0%" | "25%" | "50%" | "75%" | "100%">("75%");
+  const [selectedIce, setSelectedIce] = useState<"No Ice" | "Less Ice" | "Regular Ice" | "Extra Ice">("Regular Ice");
   const [selectedBoba, setSelectedBoba] = useState(false);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedCreamCheese, setSelectedCreamCheese] = useState(false);
+  const [orderNotes, setOrderNotes] = useState("");
+
+  // Barkada Bundle Builder State
   const [bundleId, setBundleId] = useState(bundleChoices[0].id);
   const [bundleDrinkIds, setBundleDrinkIds] = useState(() =>
-    Array.from({ length: 3 }, () => getBundleDrinks(bundleChoices[0].drinkCategory)[0].id),
+    Array.from({ length: 3 }, () => getBundleDrinks(bundleChoices[0].drinkCategory)[0]?.id ?? products[0].id),
   );
   const [bundleFriesId, setBundleFriesId] = useState(
     products.find((product) => product.category === "Snacks")?.id ?? "",
   );
-  const [customerName, setCustomerName] = useState("Guest");
-  const [paymentMethod, setPaymentMethod] = useState("Pay at counter");
 
+  // Companion Fries Flavor State in Hero
+  const [heroFriesFlavor, setHeroFriesFlavor] = useState("Cheese");
+
+  // Modals State
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [trackerModalOpen, setTrackerModalOpen] = useState(false);
+  const [activeOrderCode, setActiveOrderCode] = useState<string>("");
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [adminModalOpen, setAdminModalOpen] = useState(false);
+
+  // Restore Cart & Last Order Code from localStorage
   useEffect(() => {
-    const saved = window.localStorage.getItem("home-heart-cart-v2");
-    let active = true;
-    queueMicrotask(() => {
-      if (!active) return;
-      if (saved) {
-        try {
-          const parsed: unknown = JSON.parse(saved);
-          if (!Array.isArray(parsed) || !parsed.every(isCartItem)) {
-            throw new Error("Stored cart has an invalid shape.");
-          }
-          setCart(parsed);
-        } catch (error) {
-          console.error("Could not restore the saved cart.", error);
-        }
+    try {
+      const savedCart = window.localStorage.getItem("home-heart-cart-v3");
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart);
+        if (Array.isArray(parsed)) setCart(parsed);
       }
-      setCartHydrated(true);
-    });
-    return () => {
-      active = false;
-    };
+      const savedCode = window.localStorage.getItem("home-heart-active-order");
+      if (savedCode) setActiveOrderCode(savedCode);
+    } catch (e) {
+      console.error("Cart hydration error:", e);
+    }
+    setCartHydrated(true);
   }, []);
 
+  // Sync Cart to localStorage
   useEffect(() => {
     if (!cartHydrated) return;
-    window.localStorage.setItem("home-heart-cart-v2", JSON.stringify(cart));
+    try {
+      window.localStorage.setItem("home-heart-cart-v3", JSON.stringify(cart));
+    } catch (e) {
+      console.error("Cart save error:", e);
+    }
   }, [cart, cartHydrated]);
 
-  const filteredProducts = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-    return products.filter((product) => {
-      const matchesCategory =
-        activeCategory === "All" || product.category === activeCategory;
-      const matchesSearch =
-        !query ||
-        product.name.toLowerCase().includes(query) ||
-        product.category.toLowerCase().includes(query);
-      return matchesCategory && matchesSearch;
-    });
-  }, [activeCategory, searchTerm]);
-
   const selectedProduct = useMemo(
-    () => getProductById(selectedProductId),
+    () => products.find((p) => p.id === selectedProductId) ?? products[0],
     [selectedProductId],
   );
 
+  const bobaAddonPrice = menuData.addOns.find((a) => a.name === "Extra Boba Pearls")?.price ?? 10;
+  const creamCheeseAddonPrice = 15;
+
+  const currentUnitPrice = useMemo(() => {
+    const sizeObj = selectedProduct.sizes.find((s) => s.label === selectedSize) ?? selectedProduct.sizes[0];
+    let price = sizeObj?.price ?? 0;
+    if (selectedBoba) price += bobaAddonPrice;
+    if (selectedCreamCheese) price += creamCheeseAddonPrice;
+    return price;
+  }, [selectedProduct, selectedSize, selectedBoba, selectedCreamCheese, bobaAddonPrice]);
+
+  const filteredProducts = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    return products.filter((p) => {
+      const matchCat = activeCategory === "All" || p.category === activeCategory;
+      const matchQuery =
+        !query ||
+        p.name.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query);
+      return matchCat && matchQuery;
+    });
+  }, [activeCategory, searchTerm]);
+
   const cartSubtotal = useMemo(
-    () => cart.reduce((sum, item) => sum + item.basePrice * item.quantity, 0),
+    () => cart.reduce((sum, it) => sum + it.subtotal, 0),
     [cart],
   );
 
-  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const cartTotal = cartSubtotal;
-  const activeBundle =
-    bundleChoices.find((bundle) => bundle.id === bundleId) ?? bundleChoices[0];
-  const activeBundleDrinks = getBundleDrinks(activeBundle.drinkCategory);
-  const activeCategoryNote =
-    menuData.categories.find(({ category }) => category === activeCategory)?.notes;
-  const bobaAddon = menuData.addOns.find((addon) => addon.name === "Extra Boba Pearls");
+  const cartItemCount = useMemo(
+    () => cart.reduce((sum, it) => sum + it.quantity, 0),
+    [cart],
+  );
 
-  const selectedPrice = useMemo(() => {
-    const sizeEntry = selectedProduct.sizes.find((size) => size.label === selectedSize);
-    return (sizeEntry?.price ?? 0) + (selectedBoba ? (bobaAddon?.price ?? 0) : 0);
-  }, [selectedProduct, selectedSize, selectedBoba, bobaAddon]);
+  const activeBundle = useMemo(
+    () => bundleChoices.find((b) => b.id === bundleId) ?? bundleChoices[0],
+    [bundleId],
+  );
+  const activeBundleDrinks = useMemo(
+    () => getBundleDrinks(activeBundle.drinkCategory),
+    [activeBundle],
+  );
 
-  function addLineItem(product: Product, flavor: string, size: string, addBoba: boolean, quantity = 1) {
-    const sizeEntry = product.sizes.find((entry) => entry.label === size) ?? product.sizes[0];
-    const linePrice = (sizeEntry?.price ?? 0) + (addBoba ? (bobaAddon?.price ?? 0) : 0);
-    const key = `${product.id}-${flavor}-${size}-${addBoba ? "boba" : "plain"}`;
+  // Add customized item from customizer
+  const handleAddToCart = () => {
+    const itemKey = `${selectedProduct.id}-${selectedSize}-${selectedSugar}-${selectedIce}-${selectedBoba ? "boba" : "noboba"}-${selectedCreamCheese ? "cc" : "nocc"}`;
 
-    setCart((current) => {
-      const existing = current.find((item) => item.id === key);
+    const newItem: OrderItem = {
+      id: itemKey,
+      productId: selectedProduct.id,
+      productName: selectedProduct.name,
+      category: selectedProduct.category,
+      flavor: selectedFlavor,
+      size: selectedSize,
+      sugarLevel: selectedSugar,
+      iceLevel: selectedIce,
+      addBoba: selectedBoba,
+      addCreamCheese: selectedCreamCheese,
+      quantity: 1,
+      unitPrice: currentUnitPrice,
+      subtotal: currentUnitPrice,
+      notes: orderNotes.trim() || undefined,
+    };
+
+    setCart((prev) => {
+      const existing = prev.find((it) => it.id === itemKey);
       if (existing) {
-        return current.map((item) =>
-          item.id === key ? { ...item, quantity: item.quantity + quantity } : item,
+        return prev.map((it) =>
+          it.id === itemKey
+            ? {
+                ...it,
+                quantity: it.quantity + 1,
+                subtotal: (it.quantity + 1) * it.unitPrice,
+              }
+            : it,
         );
       }
-
-      return [
-        ...current,
-        {
-          id: key,
-          productId: product.id,
-          flavor,
-          size,
-          quantity,
-          addBoba,
-          basePrice: linePrice,
-        },
-      ];
+      return [...prev, newItem];
     });
-  }
 
-  function addProductToCart() {
-    addLineItem(selectedProduct, selectedFlavor, selectedSize, selectedBoba, 1);
-  }
+    playChime("add");
+    setCartDrawerOpen(true);
+  };
 
-  function updateCartQuantity(id: string, delta: number) {
-    setCart((current) =>
-      current
-        .map((item) =>
-          item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item,
-        )
-        .filter((item) => item.quantity > 0),
-    );
-  }
+  // Quick add from 3D card
+  const handleQuickAdd = (product: Product, sizeLabel: string) => {
+    const sizeObj = product.sizes.find((s) => s.label === sizeLabel) ?? product.sizes[0];
+    const unitPrice = sizeObj.price;
+    const itemKey = `${product.id}-${sizeLabel}-75-Regular-noboba-nocc`;
 
-  function selectCategory(category: string) {
-    setActiveCategory(category);
-    setSearchTerm("");
-    const firstProduct =
-      category === "All"
-        ? products[0]
-        : products.find((product) => product.category === category);
+    const newItem: OrderItem = {
+      id: itemKey,
+      productId: product.id,
+      productName: product.name,
+      category: product.category,
+      flavor: product.name,
+      size: sizeLabel,
+      sugarLevel: "75%",
+      iceLevel: "Regular Ice",
+      addBoba: false,
+      quantity: 1,
+      unitPrice,
+      subtotal: unitPrice,
+    };
 
-    if (!firstProduct) return;
+    setCart((prev) => {
+      const existing = prev.find((it) => it.id === itemKey);
+      if (existing) {
+        return prev.map((it) =>
+          it.id === itemKey
+            ? {
+                ...it,
+                quantity: it.quantity + 1,
+                subtotal: (it.quantity + 1) * it.unitPrice,
+              }
+            : it,
+        );
+      }
+      return [...prev, newItem];
+    });
 
-    setSelectedProductId(firstProduct.id);
-    setSelectedFlavor(firstProduct.flavors[0]);
-    setSelectedSize(firstProduct.sizes[0].label);
-    setSelectedBoba(false);
-  }
+    playChime("add");
+  };
 
-  function addBundleToCart() {
+  // Add Barkada Bundle
+  const handleAddBundle = () => {
     const selectedDrinks = bundleDrinkIds.map((id) =>
-      activeBundleDrinks.find((product) => product.id === id),
+      activeBundleDrinks.find((p) => p.id === id),
     );
-    const friesProduct = products.find((product) => product.id === bundleFriesId);
-    const friesIsLarge = friesProduct?.sizes.some(
-      (size) => size.label === "Large",
-    );
-    const validDrinks = selectedDrinks.filter(
-      (product): product is Product => product !== undefined,
-    );
+    const friesProduct = products.find((p) => p.id === bundleFriesId);
 
-    if (
-      validDrinks.length !== 3 ||
-      !friesProduct ||
-      friesProduct.category !== "Snacks" ||
-      !friesIsLarge
-    ) {
-      window.alert("Select three eligible 12 oz drinks and one large fries flavor.");
+    const validDrinks = selectedDrinks.filter((p): p is Product => p !== undefined);
+    if (validDrinks.length !== 3 || !friesProduct) {
+      window.alert("Please select 3 drinks and 1 large fries.");
       return;
     }
 
     const selections = [
-      ...validDrinks.map((product) => product.name),
+      ...validDrinks.map((d) => d.name),
       `${friesProduct.name} (Large)`,
     ];
-    const lineId = `${activeBundle.id}:${bundleDrinkIds.join("|")}:${bundleFriesId}`;
-    setCart((current) => {
-      const existing = current.find((item) => item.id === lineId);
+
+    const bundleKey = `bundle-${activeBundle.id}-${bundleDrinkIds.join("-")}-${bundleFriesId}`;
+
+    const newBundleItem: OrderItem = {
+      id: bundleKey,
+      productId: activeBundle.id,
+      productName: activeBundle.name,
+      category: "Bundles",
+      flavor: "Barkada Mix",
+      size: "Bundle",
+      sugarLevel: "75%",
+      iceLevel: "Regular Ice",
+      addBoba: false,
+      quantity: 1,
+      unitPrice: activeBundle.price,
+      subtotal: activeBundle.price,
+      bundleName: activeBundle.name,
+      bundleSelections: selections,
+    };
+
+    setCart((prev) => {
+      const existing = prev.find((it) => it.id === bundleKey);
       if (existing) {
-        return current.map((item) =>
-          item.id === lineId ? { ...item, quantity: item.quantity + 1 } : item,
+        return prev.map((it) =>
+          it.id === bundleKey
+            ? {
+                ...it,
+                quantity: it.quantity + 1,
+                subtotal: (it.quantity + 1) * it.unitPrice,
+              }
+            : it,
         );
       }
-      return [
-        ...current,
-        {
-          id: lineId,
-          productId: "",
-          flavor: "",
-          size: "Bundle",
-          quantity: 1,
-          addBoba: false,
-          basePrice: activeBundle.price,
-          bundleName: activeBundle.name,
-          bundleSelections: selections,
-        },
-      ];
+      return [...prev, newBundleItem];
     });
-    setCheckoutOpen(true);
-  }
+
+    playChime("add");
+    setCartDrawerOpen(true);
+  };
+
+  const updateQuantity = (id: string, delta: number) => {
+    setCart((prev) =>
+      prev
+        .map((it) => {
+          if (it.id === id) {
+            const nextQty = it.quantity + delta;
+            return nextQty > 0
+              ? { ...it, quantity: nextQty, subtotal: nextQty * it.unitPrice }
+              : null;
+          }
+          return it;
+        })
+        .filter((it): it is OrderItem => it !== null),
+    );
+    playChime("add");
+  };
+
+  const handleOrderSuccess = (orderCode: string) => {
+    setActiveOrderCode(orderCode);
+    try {
+      window.localStorage.setItem("home-heart-active-order", orderCode);
+    } catch {}
+    setCart([]);
+    setCheckoutModalOpen(false);
+    setCartDrawerOpen(false);
+    setTrackerModalOpen(true);
+  };
+
+  const handleAiAction = (action: string) => {
+    if (action === "scrollToBundles") {
+      document.getElementById("bundles")?.scrollIntoView({ behavior: "smooth" });
+    } else if (action === "scrollToMenu") {
+      document.getElementById("menu")?.scrollIntoView({ behavior: "smooth" });
+    } else if (action === "openCheckout") {
+      if (cart.length > 0) setCheckoutModalOpen(true);
+      else setCartDrawerOpen(true);
+    } else if (action.startsWith("selectProduct:")) {
+      const slug = action.split(":")[1];
+      const prod = products.find((p) => p.id === slug);
+      if (prod) {
+        setSelectedProductId(prod.id);
+        setSelectedFlavor(prod.flavors[0]);
+        setSelectedSize(prod.sizes[0].label);
+        document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
 
   return (
-    <main className="page-shell">
-      <div className="topbar-wrap">
-        <header className="topbar container-shell">
-          <div>
-            <p className="eyebrow">Home ❤️ Café</p>
-            <h1>Home ❤️ Cafe</h1>
-          </div>
-          <div className="topbar-meta">
-            <span>Eat, Drink & Good Vibes</span>
-            <button className="secondary-btn" onClick={() => setCheckoutOpen(true)}>
-              Cart ({cartItemCount})
-            </button>
-          </div>
-        </header>
-      </div>
+    <main className="min-h-screen bg-[#fff8ef] text-[#382323] selection:bg-[#f7dce5] selection:text-[#b42356] font-sans">
+      {/* Top Navigation Bar */}
+      <nav className="sticky top-0 z-40 bg-[#fff8ef]/90 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 transition-shadow">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          {/* Logo & Brand Identity */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#b42356] to-[#d03a6e] text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+              <Coffee className="w-5 h-5 text-amber-200" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-xl tracking-tight text-[#382323]">
+                  Home
+                </span>
+                <span className="text-red-500 text-lg">❤️</span>
+                <span className="font-black text-xl tracking-tight text-[#b42356]">
+                  Cafe
+                </span>
+              </div>
+              <p className="text-[10px] font-semibold tracking-wider text-stone-500 uppercase">
+                Sips of happiness in every cup
+              </p>
+            </div>
+          </Link>
 
-      <section className="hero container-shell">
-        <div className="hero-info">
-          <p className="mini-tag">Sips of happiness in every cup.</p>
-          <h2>Fresh drinks, fries, and creamy café favorites.</h2>
-          <p>
-            Browse the menu, build a barkada bundle, and complete a simple walk-in order flow for the Home Café menu.
-          </p>
-          <div className="hero-actions">
-            <a className="primary-btn" href="#menu" onClick={() => selectCategory("All")}>Order Now</a>
-            <button className="ghost-btn" onClick={() => setCheckoutOpen(true)}>View Cart</button>
-          </div>
-        </div>
-
-        <div className="hero-showcase">
-          <CupArt
-            product={selectedProduct}
-            flavor={selectedFlavor}
-            size={selectedSize}
-            priority
-          />
-          <div className="hero-fries">
-            <FriesArt flavor={friesFlavorOptions[0]} />
-          </div>
-        </div>
-      </section>
-
-      <section className="category-bar container-shell" aria-label="Menu categories">
-        <div className="tab-row" role="group" aria-label="Filter menu by category">
-          {categories.map((category) => (
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Live Order Tracker Trigger */}
             <button
-              key={category}
-              className={activeCategory === category ? "tab active" : "tab"}
-              aria-pressed={activeCategory === category}
-              onClick={() => selectCategory(category)}
+              type="button"
+              onClick={() => setTrackerModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-xs font-bold text-stone-700 transition-colors shadow-2xs"
             >
-              {category}
+              <BellRing className="w-3.5 h-3.5 text-amber-600" />
+              <span className="hidden sm:inline">Track Order</span>
+              {activeOrderCode && (
+                <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono">
+                  {activeOrderCode}
+                </span>
+              )}
             </button>
-          ))}
+
+            {/* Store Admin Trigger */}
+            <button
+              type="button"
+              onClick={() => setAdminModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-xs font-bold text-stone-700 transition-colors shadow-2xs"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#b42356]" />
+              <span className="hidden sm:inline">Store Admin</span>
+            </button>
+
+            {/* Cart Trigger */}
+            <button
+              type="button"
+              onClick={() => setCartDrawerOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Cart</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-white text-[#b42356] text-[10px] font-black">
+                {cartItemCount}
+              </span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Showcase Section with 3D Interactive Drink Experience */}
+      <section className="relative overflow-hidden pt-6 pb-12 px-4 sm:px-8 border-b border-stone-200/60 bg-gradient-to-b from-[#fff8ef] via-[#fff4ec] to-[#fff8ef]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Left Hero Copy */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#f7dce5] text-[#b42356] text-xs font-black uppercase tracking-wider shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Campus Cafe · Order Ahead, Skip The Wait!</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#382323] tracking-tight leading-[1.05]">
+              Fresh drinks, hot fries, and pure happiness.
+            </h1>
+
+            <p className="text-base text-stone-600 leading-relaxed max-w-xl">
+              Order your favorite Milk Tea, Cream Cheese Series, or Fruit Sodas with your verified student ID. Zero waiting in line during short breaks!
+            </p>
+
+            {/* Anti-Scam Verification Trust Pill */}
+            <div className="p-4 rounded-2xl bg-white/80 border border-stone-200/80 shadow-xs flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="text-xs">
+                <strong className="text-stone-900 block font-bold">
+                  Anti-Scam Verified Guest Ordering
+                </strong>
+                <span className="text-stone-500">
+                  No account needed. Upload your School ID & 12-digit LRN to protect your drinks and secure your queue.
+                </span>
+              </div>
+            </div>
+
+            {/* Quick CTAs */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <a
+                href="#menu"
+                className="px-6 py-3 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+              >
+                <span>Browse Menu</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
+              <button
+                type="button"
+                onClick={() => setAiModalOpen(true)}
+                className="px-5 py-3 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 text-sm font-bold shadow-xs transition-all flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 text-[#b42356]" />
+                <span>Ask AI Barista</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Hero Interactive 3D Showcase */}
+          <div className="lg:col-span-6 flex flex-col items-center justify-center relative">
+            <div id="customizer" className="relative w-full max-w-md rounded-3xl bg-white/70 border border-white p-6 shadow-xl backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-stone-400 block tracking-wider">
+                    Interactive 3D Preview
+                  </span>
+                  <h3 className="font-extrabold text-lg text-stone-900">
+                    {selectedProduct.name}
+                  </h3>
+                </div>
+                <span className="text-xl font-black text-[#b42356]">
+                  ₱{currentUnitPrice}
+                </span>
+              </div>
+
+              {/* 3D Interactive Cup Component */}
+              <div className="h-80 flex items-center justify-center">
+                <InteractiveCup3D
+                  productName={selectedProduct.name}
+                  category={selectedProduct.category}
+                  flavor={selectedFlavor}
+                  size={selectedSize}
+                  colors={selectedProduct.colors}
+                  accent={selectedProduct.accent}
+                  image={selectedProduct.image}
+                  sugarLevel={selectedSugar}
+                  iceLevel={selectedIce}
+                  hasBoba={selectedBoba}
+                  hasCreamCheese={selectedCreamCheese}
+                  interactive={true}
+                />
+              </div>
+
+              {/* Live Interactive Flavor, Sugar & Size Chips */}
+              <div className="space-y-3 pt-4 border-t border-stone-100">
+                {/* Size Chips */}
+                <div>
+                  <label className="text-[11px] font-bold text-stone-600 block mb-1">
+                    Select Size
+                  </label>
+                  <div className="flex gap-2">
+                    {selectedProduct.sizes.map((s) => (
+                      <button
+                        key={s.label}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSize(s.label);
+                          playChime("add");
+                        }}
+                        className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all ${
+                          selectedSize === s.label
+                            ? "bg-[#b42356] text-white shadow-xs"
+                            : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                        }`}
+                      >
+                        {s.label} · ₱{s.price}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sugar & Ice Level Pickers */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <label className="text-[11px] font-bold text-stone-600 block mb-1">
+                      Sugar: {selectedSugar}
+                    </label>
+                    <select
+                      value={selectedSugar}
+                      onChange={(e) => setSelectedSugar(e.target.value as any)}
+                      className="w-full px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-medium outline-none"
+                    >
+                      <option value="100%">100% Full Sweet</option>
+                      <option value="75%">75% Less Sweet</option>
+                      <option value="50%">50% Half Sweet</option>
+                      <option value="25%">25% Gentle Sweet</option>
+                      <option value="0%">0% Unsweetened</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-stone-600 block mb-1">
+                      Ice: {selectedIce}
+                    </label>
+                    <select
+                      value={selectedIce}
+                      onChange={(e) => setSelectedIce(e.target.value as any)}
+                      className="w-full px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-medium outline-none"
+                    >
+                      <option value="Regular Ice">Regular Ice</option>
+                      <option value="Less Ice">Less Ice</option>
+                      <option value="Extra Ice">Extra Ice</option>
+                      <option value="No Ice">No Ice</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Add-on Toggles */}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedBoba(!selectedBoba);
+                      playChime("add");
+                    }}
+                    className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all ${
+                      selectedBoba
+                        ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
+                        : "border-stone-200 bg-white text-stone-600"
+                    }`}
+                  >
+                    + Boba Pearls (₱10)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCreamCheese(!selectedCreamCheese);
+                      playChime("add");
+                    }}
+                    className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all ${
+                      selectedCreamCheese
+                        ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
+                        : "border-stone-200 bg-white text-stone-600"
+                    }`}
+                  >
+                    + Cream Cheese (₱15)
+                  </button>
+                </div>
+
+                {/* Optional Barista Note */}
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Add note for barista (e.g. less ice, extra napkin)..."
+                    value={orderNotes}
+                    onChange={(e) => setOrderNotes(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-stone-50/70 text-xs text-stone-800 placeholder-stone-400 outline-none focus:border-[#b42356]"
+                  />
+                </div>
+
+                {/* Add To Cart CTA */}
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="w-full py-2.5 rounded-2xl bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 mt-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add to Order · ₱{currentUnitPrice}</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="menu-intro container-shell" id="menu">
-        <div>
-          <p className="section-kicker">THE HOME CAFÉ MENU</p>
-          <h2>Find your new favorite.</h2>
-          {activeCategoryNote ? (
-            <p className="menu-category-note">{activeCategoryNote}</p>
-          ) : null}
-        </div>
-        <div className="menu-tools">
-          <label className="menu-search">
-            <span className="sr-only">Search menu</span>
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <circle cx="10.8" cy="10.8" r="6.8" />
-              <path d="m16 16 4.5 4.5" />
-            </svg>
+      {/* Free Fries Spend Promo Banner */}
+      {freeFriesPromotion && (
+        <section className="px-4 sm:px-8 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-stone-900 shadow-inner">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap text-xs sm:text-sm font-bold">
+            <div className="flex items-center gap-2.5">
+              <Gift className="w-5 h-5 text-white" />
+              <span>
+                <strong>{freeFriesPromotion.name}:</strong> {freeFriesPromotion.condition} and get <strong>{freeFriesPromotion.reward}</strong>!
+              </span>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-white/90 text-amber-900 text-xs font-black shadow-xs">
+              Auto-Calculated in Cart
+            </span>
+          </div>
+        </section>
+      )}
+
+      {/* Category Navigation Bar */}
+      <section
+        id="menu"
+        className="sticky top-[65px] z-30 bg-[#fff8ef]/95 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 shadow-2xs"
+      >
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          {/* Scrollable Category Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => {
+                  setActiveCategory(cat);
+                  playChime("add");
+                }}
+                className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                  activeCategory === cat
+                    ? "bg-[#b42356] text-white shadow-xs"
+                    : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative w-full md:w-72 shrink-0">
+            <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="search"
+              placeholder="Search drinks & snacks..."
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search drinks & fries"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-full border border-stone-200 bg-white text-xs font-medium focus:border-[#b42356] outline-none shadow-2xs"
             />
-          </label>
-          <p>Product photos and illustrations · Prices in Philippine pesos</p>
+          </div>
         </div>
       </section>
 
-      <section className="menu-grid container-shell">
-        <div className="product-list">
-          {filteredProducts.length === 0 ? (
-            <div className="menu-empty" role="status">
-              <strong>No menu items found</strong>
-              <span>Try a different search or category.</span>
-            </div>
-          ) : null}
+      {/* Menu Grid with 3D Tilt Cards */}
+      <section className="px-4 sm:px-8 py-10 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-black text-[#382323]">
+              {activeCategory === "All" ? "Complete Cafe Menu" : activeCategory}
+            </h2>
+            <p className="text-xs text-stone-500 mt-1">
+              Select any card to preview in 3D or click Order to add directly.
+            </p>
+          </div>
+          <span className="text-xs font-bold text-stone-400">
+            {filteredProducts.length} items
+          </span>
+        </div>
+
+        {/* 3D Products Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
-            <button
+            <Product3DCard
               key={product.id}
-              type="button"
-              className={selectedProductId === product.id ? "product-card selected" : "product-card"}
-              aria-pressed={selectedProductId === product.id}
-              onClick={() => {
+              id={product.id}
+              name={product.name}
+              category={product.category}
+              description={product.description}
+              sizes={product.sizes}
+              colors={product.colors}
+              accent={product.accent}
+              image={product.image}
+              badge={product.badge}
+              isSelected={selectedProductId === product.id}
+              onSelect={() => {
                 setSelectedProductId(product.id);
                 setSelectedFlavor(product.flavors[0]);
                 setSelectedSize(product.sizes[0].label);
-                setSelectedBoba(false);
+                document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
               }}
-            >
-              <div className="card-visual" style={{ background: `linear-gradient(135deg, ${product.colors[0]}, ${product.colors[1]})` }}>
-                <CupArt product={product} flavor={product.flavors[0]} size={product.sizes[0].label} />
-              </div>
-              <div className="card-copy">
-                <div className="card-title-row">
-                  <h3>{product.name}</h3>
-                  {product.badge ? <span className="badge">{product.badge}</span> : null}
-                </div>
-                {product.description ? <p>{product.description}</p> : null}
-                <div className="card-price-row">
-                  <strong>{formatMoney(product.sizes[0].price)}</strong>
-                  <span>{product.sizes[0].label}</span>
-                </div>
-              </div>
-            </button>
+              onQuickAdd={(sizeLabel) => handleQuickAdd(product, sizeLabel)}
+            />
           ))}
         </div>
-
-        <aside className="cart-panel">
-          <div className="panel-block">
-            <div className="panel-header">
-              <h3>Customize</h3>
-              <span>{selectedProduct.category}</span>
-            </div>
-
-            <div className="selected-product-summary">
-              <strong>{selectedProduct.name}</strong>
-              {selectedProduct.description ? <p>{selectedProduct.description}</p> : null}
-            </div>
-
-            <div className="selection-block">
-              <label>Size</label>
-              <div className="chip-grid compact">
-                {selectedProduct.sizes.map((option) => (
-                  <button
-                    key={option.label}
-                    type="button"
-                    className={selectedSize === option.label ? "chip active" : "chip"}
-                    onClick={() => setSelectedSize(option.label)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="selection-block check-row">
-              <label htmlFor="boba-addon">
-                {bobaAddon?.name ?? "Extra Boba Pearls"} (+{formatMoney(bobaAddon?.price ?? 0)})
-                <small>Availability by drink needs owner confirmation.</small>
-              </label>
-              <input
-                id="boba-addon"
-                type="checkbox"
-                checked={false}
-                disabled
-                title="Boba compatibility has not been configured."
-                onChange={(event) => setSelectedBoba(event.target.checked)}
-              />
-            </div>
-
-            <div className="price-summary">
-              <div>
-                <span>Unit price</span>
-                <strong>{formatMoney(selectedPrice)}</strong>
-              </div>
-              <button className="primary-btn full" onClick={addProductToCart}>Add to cart</button>
-            </div>
-          </div>
-
-          <div className="panel-block">
-            <div className="panel-header">
-              <h3>Cart</h3>
-              <span>{cartItemCount} {cartItemCount === 1 ? "item" : "items"}</span>
-            </div>
-            {cart.length === 0 ? (
-              <p className="empty-state">Your cart is empty.</p>
-            ) : (
-              <div className="cart-list">
-                {cart.map((item) => (
-                  <div key={item.id} className="cart-item">
-                    <div>
-                      <strong>{getCartItemTitle(item)}</strong>
-                      <small>{getCartItemDescription(item)}</small>
-                    </div>
-                    <div className="cart-controls">
-                      <button type="button" aria-label={`Remove one ${getCartItemTitle(item)}`} onClick={() => updateCartQuantity(item.id, -1)}>-</button>
-                      <span>{item.quantity}</span>
-                      <button type="button" aria-label={`Add one ${getCartItemTitle(item)}`} onClick={() => updateCartQuantity(item.id, 1)}>+</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className="totals-box">
-              <div><span>Subtotal</span><strong>{formatMoney(cartSubtotal)}</strong></div>
-              <div><span>Promotion</span><strong className="promo-state">Pending approval</strong></div>
-              <div className="grand-total"><span>Total</span><strong>{formatMoney(cartTotal)}</strong></div>
-            </div>
-            <button className="primary-btn full" onClick={() => setCheckoutOpen(true)}>Checkout</button>
-          </div>
-        </aside>
       </section>
 
-      <section className="bundle-area container-shell">
-        <div className="bundle-card">
-          <div className="panel-header">
-            <h3>Barkada bundle builder</h3>
-            <label className="bundle-kind">
-              <span>Bundle type</span>
-              <select
-                value={bundleId}
-                onChange={(event) => {
-                  const nextBundle =
-                    bundleChoices.find((bundle) => bundle.id === event.target.value) ??
-                    bundleChoices[0];
-                  setBundleId(nextBundle.id);
-                  const eligibleDrinks = getBundleDrinks(nextBundle.drinkCategory);
-                  setBundleDrinkIds(
-                    Array.from({ length: 3 }, () => eligibleDrinks[0].id),
-                  );
-                }}
-              >
-                {bundleChoices.map((bundle) => (
-                  <option key={bundle.id} value={bundle.id}>
-                    {bundle.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+      {/* Barkada Bundles Interactive Builder */}
+      <section id="bundles" className="px-4 sm:px-8 py-12 bg-white border-t border-b border-stone-200">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-black uppercase">
+                <Flame className="w-3.5 h-3.5" />
+                <span>Barkada Saver Bundles</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#382323] mt-1">
+                Share More, Spend Less
+              </h2>
+              <p className="text-xs text-stone-500">
+                Pick 3 drinks of your choice + 1 Large French Fries!
+              </p>
+            </div>
+
+            {/* Bundle Type Selector */}
+            <div className="flex gap-2">
+              {bundleChoices.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => {
+                    setBundleId(b.id);
+                    const drinks = getBundleDrinks(b.drinkCategory);
+                    setBundleDrinkIds(Array.from({ length: 3 }, () => drinks[0]?.id ?? products[0].id));
+                    playChime("add");
+                  }}
+                  className={`px-4 py-2 rounded-2xl text-xs font-bold border transition-all ${
+                    bundleId === b.id
+                      ? "border-[#b42356] bg-[#b42356] text-white shadow-md"
+                      : "border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100"
+                  }`}
+                >
+                  {b.name} · ₱{b.price}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <p className="bundle-description">{activeBundle.includes.join(" + ")}</p>
+          {/* 4-Slot Tray Builder */}
+          <div className="p-6 rounded-3xl bg-[#fff8ef] border border-stone-200/80 shadow-md">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* 3 Drink Slots */}
+              {bundleDrinkIds.map((drinkId, idx) => (
+                <div key={idx} className="p-4 rounded-2xl bg-white border border-stone-200 shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-stone-400 block mb-1">
+                    Drink Slot #{idx + 1} (12 oz)
+                  </span>
+                  <select
+                    value={drinkId}
+                    onChange={(e) => {
+                      const next = [...bundleDrinkIds];
+                      next[idx] = e.target.value;
+                      setBundleDrinkIds(next);
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-800 bg-stone-50 outline-none"
+                  >
+                    {activeBundleDrinks.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
 
-          <div className="bundle-grid">
-            {bundleDrinkIds.map((productId, index) => (
-              <div key={`drink-${index + 1}`} className="bundle-slot">
-                <label htmlFor={`bundle-drink-${index + 1}`}>Drink {index + 1} · 12 oz</label>
+              {/* 1 Large Fries Slot */}
+              <div className="p-4 rounded-2xl bg-white border border-stone-200 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-amber-600 block mb-1">
+                  Snack Companion (Large Fries)
+                </span>
                 <select
-                  id={`bundle-drink-${index + 1}`}
-                  value={productId}
-                  onChange={(event) =>
-                    setBundleDrinkIds((current) =>
-                      current.map((id, slot) =>
-                        slot === index ? event.target.value : id,
-                      ),
-                    )
-                  }
+                  value={bundleFriesId}
+                  onChange={(e) => setBundleFriesId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-800 bg-stone-50 outline-none"
                 >
-                  {activeBundleDrinks.map((product) => (
-                    <option key={product.id} value={product.id}>
-                      {product.name}
-                    </option>
-                  ))}
+                  {products
+                    .filter((p) => p.category === "Snacks")
+                    .map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.name}
+                      </option>
+                    ))}
                 </select>
               </div>
-            ))}
-
-            <div className="bundle-slot">
-              <label htmlFor="bundle-fries">Large fries</label>
-              <select
-                id="bundle-fries"
-                value={bundleFriesId}
-                onChange={(event) => setBundleFriesId(event.target.value)}
-              >
-                {products
-                  .filter(
-                    (product) =>
-                      product.category === "Snacks" &&
-                      product.sizes.some((size) => size.label === "Large"),
-                  )
-                  .map((product) => (
-                    <option key={product.id} value={product.id}>
-                      {product.name}
-                    </option>
-                  ))}
-              </select>
             </div>
-          </div>
 
-          <div className="bundle-footer">
-            <div className="promo-pill">Bundle price: {formatMoney(activeBundle.price)}</div>
-            <button className="primary-btn" onClick={addBundleToCart}>Add bundle</button>
-          </div>
-        </div>
-        {freeFriesPromotion ? (
-          <div className="promo-note">
-            <strong>{freeFriesPromotion.name}</strong>
-            <span>
-              {freeFriesPromotion.condition} and get {freeFriesPromotion.reward.toLowerCase()}.
-              Eligibility and redemption terms are still being confirmed.
-            </span>
-          </div>
-        ) : null}
-      </section>
-
-        <section className="featured-gallery container-shell" aria-labelledby="gallery-title">
-          <div className="gallery-heading">
-            <div>
-              <p className="section-kicker">A LITTLE SOMETHING FOR EVERYONE</p>
-              <h2 id="gallery-title">Good things are better shared.</h2>
-            </div>
-            <p>Find your next café favorite, then bring the barkada along.</p>
-          </div>
-          <div className="gallery-grid">
-            {featuredImages.map((image) => (
-              <figure className="gallery-card" key={image.src}>
-                <div className="gallery-photo">
-                  <Image
-                    src={image.src}
-                    alt={image.description}
-                    fill
-                    sizes="(max-width: 620px) 90vw, (max-width: 860px) 50vw, 33vw"
-                    className="product-photo"
-                  />
-                </div>
-                <figcaption>
-                  <strong>{image.title}</strong>
-                  <span>{image.description}</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-
-        <section className="operations container-shell">
-        <div className="ops-card">
-          <div className="panel-header">
-            <h3>Staff queue</h3>
-            <span>Today</span>
-          </div>
-          <div className="queue-list">
-            {queueItems.map((order) => (
-              <div key={order.id} className="queue-item">
-                <div>
-                  <strong>{order.id}</strong>
-                  <small>{order.name}</small>
-                </div>
-                <span>{order.status}</span>
-                <em>{order.items} items</em>
+            <div className="mt-6 pt-4 border-t border-stone-200 flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <span className="text-xs text-stone-500 block">Bundle Price</span>
+                <strong className="text-2xl font-black text-[#b42356]">
+                  ₱{activeBundle.price}
+                </strong>
               </div>
-            ))}
+              <button
+                type="button"
+                onClick={handleAddBundle}
+                className="px-6 py-2.5 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Bundle to Cart</span>
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div className="ops-card">
-          <div className="panel-header">
-            <h3>Owner review</h3>
-            <span>Draft notes</span>
-          </div>
-          <ul className="review-list">
-            {ownerReviewItems.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
         </div>
       </section>
 
-      <div className="mobile-cart-bar" role="region" aria-label="Current cart summary">
+      {/* Featured Atmosphere & Cafe Events Section */}
+      <section className="px-4 sm:px-8 py-12 max-w-7xl mx-auto space-y-8">
         <div>
-          <strong>{formatMoney(cartTotal)}</strong>
-          <span>{cartItemCount} {cartItemCount === 1 ? "item" : "items"} in your cart</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f7dce5] text-[#b42356] text-xs font-black uppercase">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Campus Cafe Life & Events</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-[#382323] mt-1">
+            Good things are better shared.
+          </h2>
+          <p className="text-xs text-stone-500">
+            Join the campus events and activities happening at Home ❤️ Cafe.
+          </p>
         </div>
-        <button className="primary-btn" onClick={() => setCheckoutOpen(true)}>
-          View cart
-        </button>
-      </div>
 
-      {checkoutOpen ? (
-        <div className="checkout-sheet" onClick={() => setCheckoutOpen(false)}>
-          <div
-            className="checkout-card"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="checkout-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="panel-header">
-              <h3 id="checkout-title">Checkout</h3>
-              <button className="close-btn" aria-label="Close checkout" onClick={() => setCheckoutOpen(false)}>×</button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-rose-100 text-[#b42356] flex items-center justify-center font-bold">
+              🎸
+            </div>
+            <h3 className="font-extrabold text-stone-800 text-base">Campus Acoustic Friday</h3>
+            <p className="text-xs text-stone-500 leading-relaxed">
+              Every Friday at 3:00 PM – 5:30 PM. Live student performances, open mic sessions, and warm coffee drinks.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+              📚
+            </div>
+            <h3 className="font-extrabold text-stone-800 text-base">Study & Chill Lounge Hours</h3>
+            <p className="text-xs text-stone-500 leading-relaxed">
+              Daily 4:00 PM – 6:00 PM. High-speed Wi-Fi, power outlets, quiet study environment, and 10% refill discount.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+              ☕
+            </div>
+            <h3 className="font-extrabold text-stone-800 text-base">Teacher Appreciation Wednesday</h3>
+            <p className="text-xs text-stone-500 leading-relaxed">
+              Faculty members receive a free extra shot of espresso or boba pearls on any 16oz or 22oz beverage!
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Cart Slide-Over Drawer */}
+      {cartDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-stone-900/50 backdrop-blur-xs">
+          <div className="relative w-full max-w-md h-full bg-[#fffefc] shadow-2xl flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
+            {/* Drawer Header */}
+            <div className="px-6 py-4 bg-[#382323] text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="w-5 h-5 text-amber-300" />
+                <h3 className="font-bold text-base">Your Cart ({cartItemCount})</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCartDrawerOpen(false)}
+                className="p-1 rounded-full hover:bg-white/20 text-white/80 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <label className="field-row">
-              <span>Customer</span>
-              <input value={customerName} onChange={(event) => setCustomerName(event.target.value)} />
-            </label>
-
-            <label className="field-row">
-              <span>Payment</span>
-              <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)}>
-                <option>Pay at counter</option>
-                <option>GCash (draft)</option>
-                <option>Card (draft)</option>
-              </select>
-            </label>
-
-            <div className="receipt-block">
+            {/* Cart Items List */}
+            <div className="flex-1 p-6 overflow-y-auto divide-y divide-stone-100 space-y-3">
               {cart.length === 0 ? (
-                <p>No items yet. Add a drink or fries to begin.</p>
+                <div className="p-12 text-center text-stone-400 space-y-2">
+                  <ShoppingBag className="w-12 h-12 mx-auto text-stone-300" />
+                  <p className="font-semibold text-sm">Your cart is empty.</p>
+                  <p className="text-xs text-stone-400">Add a drink or fries from the menu to get started!</p>
+                </div>
               ) : (
                 cart.map((item) => (
-                  <div key={item.id} className="receipt-row">
-                    <div>
-                      <strong>{getCartItemTitle(item)}</strong>
-                      <small>{getCartItemDescription(item)}</small>
+                  <div key={item.id} className="pt-3 first:pt-0 flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <strong className="text-stone-800 text-sm block">
+                        {item.bundleName || item.productName}
+                      </strong>
+                      <span className="text-stone-500 text-xs block mt-0.5">
+                        {item.flavor} · {item.size}
+                      </span>
+                      <span className="text-stone-400 text-[11px] block">
+                        Sugar: {item.sugarLevel} · Ice: {item.iceLevel}
+                        {item.addBoba ? " · Boba" : ""}
+                        {item.addCreamCheese ? " · Cream Cheese" : ""}
+                      </span>
+                      {item.notes && (
+                        <span className="text-amber-800 text-[11px] italic block">
+                          &ldquo;{item.notes}&rdquo;
+                        </span>
+                      )}
                     </div>
-                    <span>{formatMoney(item.basePrice * item.quantity)}</span>
+
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <span className="font-bold text-sm text-stone-900">
+                        ₱{item.subtotal}
+                      </span>
+                      <div className="flex items-center gap-1 border border-stone-200 rounded-full px-2 py-0.5 bg-stone-50">
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(item.id, -1)}
+                          className="p-0.5 text-stone-600 hover:text-red-600"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-xs font-bold w-4 text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(item.id, 1)}
+                          className="p-0.5 text-stone-600 hover:text-emerald-600"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))
               )}
             </div>
-            <div className="totals-box summary-box">
-              <div><span>Subtotal</span><strong>{formatMoney(cartSubtotal)}</strong></div>
-              <div><span>Promotion</span><strong className="promo-state">Pending approval</strong></div>
-              <div className="grand-total"><span>Total</span><strong>{formatMoney(cartTotal)}</strong></div>
-            </div>
-            <button className="primary-btn full" onClick={() => setCheckoutOpen(false)}>
-              Submit order
-            </button>
+
+            {/* Cart Footer */}
+            {cart.length > 0 && (
+              <div className="p-6 bg-stone-50 border-t border-stone-200 space-y-3">
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between text-stone-600">
+                    <span>Subtotal:</span>
+                    <strong className="text-stone-900 text-sm">₱{cartSubtotal}</strong>
+                  </div>
+                  {cartSubtotal >= 200 ? (
+                    <div className="p-2 rounded-xl bg-amber-100 text-amber-900 text-[11px] font-bold flex items-center gap-1.5">
+                      <Gift className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Unlocked: Free Medium Fries Promo!</span>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-stone-500">
+                      Add ₱{200 - cartSubtotal} more for Free Medium Fries!
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCartDrawerOpen(false);
+                    setCheckoutModalOpen(true);
+                  }}
+                  className="w-full py-3.5 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Verified Student Checkout · ₱{cartSubtotal}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      ) : null}
+      )}
+
+      {/* Floating AI Barista Widget Button in Bottom Right */}
+      <div className="fixed bottom-5 right-5 z-40">
+        <button
+          type="button"
+          onClick={() => {
+            setAiModalOpen(true);
+            playChime("notification");
+          }}
+          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95 border-2 border-white/60"
+        >
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-white animate-pulse" />
+          <Coffee className="w-5 h-5 text-amber-200" />
+          <span className="text-xs font-black tracking-wide">
+            Ask Hearty ☕
+          </span>
+        </button>
+      </div>
+
+      {/* All Modal Integrations */}
+      <CheckoutVerificationModal
+        isOpen={checkoutModalOpen}
+        onClose={() => setCheckoutModalOpen(false)}
+        cart={cart}
+        cartSubtotal={cartSubtotal}
+        onOrderSuccess={handleOrderSuccess}
+      />
+
+      <OrderTrackerModal
+        isOpen={trackerModalOpen}
+        onClose={() => setTrackerModalOpen(false)}
+        initialOrderCode={activeOrderCode}
+      />
+
+      <AiBaristaModal
+        isOpen={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        onTriggerAction={handleAiAction}
+      />
+
+      <AdminPortalModal
+        isOpen={adminModalOpen}
+        onClose={() => setAdminModalOpen(false)}
+      />
     </main>
   );
 }
