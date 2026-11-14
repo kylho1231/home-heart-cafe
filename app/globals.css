@@ -304,6 +304,17 @@ select:focus-visible {
   isolation: isolate;
 }
 
+.cup-stage--photo {
+  display: block;
+  min-height: 0;
+  background: #f7f1e8;
+}
+
+.product-photo {
+  object-fit: cover;
+  object-position: center 54%;
+}
+
 .cup-shadow {
   position: absolute;
   z-index: -1;

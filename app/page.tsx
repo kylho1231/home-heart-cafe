@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import catalogSource from "./menu-data.json";
+import productImages from "./product-images.json";
 
 type Product = {
   id: string;
@@ -12,6 +14,7 @@ type Product = {
   sizes: { label: string; price: number }[];
   colors: [string, string];
   accent: string;
+  image?: string;
   badge?: string;
   ownerReview?: string;
 };
@@ -85,6 +88,7 @@ type MenuCatalog = {
 };
 
 const menuData: MenuCatalog = catalogSource;
+const productImageMap: Record<string, string> = productImages;
 const categories = ["All", ...menuData.categories.map(({ category }) => category)];
 const paidBundles = menuData.bundlesAndPromos.filter(
   (bundle): bundle is CatalogBundle =>
@@ -171,6 +175,7 @@ const products: Product[] = menuData.categories.flatMap((category) =>
       })),
       colors: palette.colors,
       accent: palette.accent,
+      image: productImageMap[slugify(item.name)],
     };
   }),
 );
@@ -222,9 +227,36 @@ function getCartItemDescription(item: CartItem) {
   return `${item.size}${item.addBoba ? ` · Boba +${formatMoney(menuData.addOns[0].price)}` : ""}`;
 }
 
-function CupArt({ product, flavor, size }: { product: Product; flavor: string; size: string; }) {
+function CupArt({
+  product,
+  flavor,
+  size,
+  priority = false,
+}: {
+  product: Product;
+  flavor: string;
+  size: string;
+  priority?: boolean;
+}) {
   const match = product.sizes.find((entry) => entry.label === size) ?? product.sizes[0];
   const fill = product.colors[0];
+
+  if (product.image) {
+    return (
+      <div className="cup-stage cup-stage--photo">
+        <Image
+          src={product.image}
+          alt=""
+          fill
+          loading={priority ? "eager" : "lazy"}
+          sizes={priority
+            ? "(max-width: 620px) 100vw, 50vw"
+            : "(max-width: 620px) 50vw, (max-width: 860px) 50vw, 33vw"}
+          className="product-photo"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="cup-stage" style={{ background: `linear-gradient(135deg, ${product.colors[0]}, ${product.colors[1]})` }}>
@@ -491,7 +523,12 @@ export default function Page() {
         </div>
 
         <div className="hero-showcase">
-          <CupArt product={selectedProduct} flavor={selectedFlavor} size={selectedSize} />
+          <CupArt
+            product={selectedProduct}
+            flavor={selectedFlavor}
+            size={selectedSize}
+            priority
+          />
           <div className="hero-fries">
             <FriesArt flavor={friesFlavorOptions[0]} />
           </div>
@@ -535,7 +572,7 @@ export default function Page() {
               placeholder="Search drinks & fries"
             />
           </label>
-          <p>Illustrative previews · Prices in Philippine pesos</p>
+          <p>Product photos and illustrations · Prices in Philippine pesos</p>
         </div>
       </section>
 
