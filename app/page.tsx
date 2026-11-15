@@ -37,6 +37,7 @@ import {
   Play,
   Pause,
   Shuffle,
+  Menu,
 } from "lucide-react";
 
 import catalogSource from "./menu-data.json";
@@ -51,6 +52,7 @@ import { CurvedSpotlightRail } from "@/components/CafeMenuExperience";
 import { CheckoutVerificationModal } from "@/components/CheckoutVerificationModal";
 import { OrderTrackerModal } from "@/components/OrderTrackerModal";
 import { AiBaristaModal } from "@/components/AiBaristaModal";
+import { CustomizationSheet } from "@/components/CustomizationSheet";
 
 type Product = {
   id: string;
@@ -337,6 +339,8 @@ export default function Page() {
   const [heroFriesFlavor, setHeroFriesFlavor] = useState("Cheese");
 
   // Modals State
+  const [customizingProduct, setCustomizingProduct] = useState<Product | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [trackerModalOpen, setTrackerModalOpen] = useState(false);
   const [activeOrderCode, setActiveOrderCode] = useState<string>("");
@@ -508,6 +512,31 @@ export default function Page() {
     () => bundleChoices.find((b) => b.id === bundleId) ?? bundleChoices[0],
     [bundleId],
   );
+  const heroProduct = useMemo(
+    () => products.find((p) => p.id === "strawberry-cream-cheese") || products[0],
+    [products],
+  );
+
+  const handleSheetAddToCart = (item: OrderItem) => {
+    setCart((prev) => {
+      const existing = prev.find((it) => it.id === item.id);
+      if (existing) {
+        return prev.map((it) =>
+          it.id === item.id
+            ? {
+                ...it,
+                quantity: it.quantity + item.quantity,
+                subtotal: (it.quantity + item.quantity) * it.unitPrice,
+              }
+            : it,
+        );
+      }
+      return [...prev, item];
+    });
+    showCustomerToast(`Added ${item.productName} to your cart!`);
+    setCartDrawerOpen(true);
+  };
+
   const activeBundleDrinks = useMemo(
     () => getBundleDrinks(activeBundle.drinkCategory),
     [activeBundle],
@@ -795,436 +824,129 @@ export default function Page() {
         </div>
       </nav>
 
-      {/* Hero Showcase Section with Centered Architecture & 3D Interactive Experience */}
-      <section className="relative overflow-hidden pt-10 pb-16 px-4 sm:px-8 border-b border-blue-100/80 bg-gradient-to-b from-white via-blue-50/30 to-white">
+      {/* Slim Free Medium Fries Promo Banner */}
+      <div className="bg-amber-500/10 border-b border-amber-200/80 px-4 py-2.5 text-center text-xs font-semibold text-amber-950 flex items-center justify-center gap-2">
+        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[11px] font-black shrink-0">
+          🍟
+        </span>
+        <span>
+          <strong>Campus Promo:</strong> Spend ₱200 on drinks, get free Medium Fries!
+        </span>
+        {eligibleDrinkSpend > 0 && (
+          <span className="text-[11px] bg-white px-2.5 py-0.5 rounded-full text-amber-900 border border-amber-300 font-bold ml-1">
+            {eligibleDrinkSpend >= 200 ? "Unlocked 🎉" : `₱${200 - eligibleDrinkSpend} more to unlock`}
+          </span>
+        )}
+      </div>
+
+      {/* Hero Showcase Section */}
+      <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 px-4 sm:px-8 border-b border-blue-100/70 bg-gradient-to-b from-white via-blue-50/20 to-white">
         {/* Ambient background decoration */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-blue-100/40 via-sky-50/20 to-transparent blur-3xl -z-10 pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-blue-100/30 via-sky-50/15 to-transparent blur-3xl -z-10 pointer-events-none" />
 
-        <div className="max-w-5xl mx-auto text-center space-y-6">
-          {/* Centered Campus Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50/90 border border-blue-200/80 text-blue-700 text-xs font-bold uppercase tracking-wider shadow-2xs backdrop-blur-xs">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-spin" style={{ animationDuration: "6s" }} />
-            <span>Campus Cafe · Order Ahead for Break</span>
-          </div>
-
-          {/* Centered Headline */}
-          <h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-[1.08] max-w-4xl mx-auto">
-            Sips of Happiness,{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 bg-clip-text text-transparent">
-              Zero Waiting Time.
-            </span>
-          </h1>
-
-          {/* Centered Subtitle */}
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
-            Order ahead before recess or break. Pick your drink, verify with your school ID, and pick up freshly prepared at the counter with zero line.
-          </p>
-
-          {/* Centered Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <a
-              href="#menu"
-              className="px-7 py-3.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
-            >
-              <span>Explore 3D Menu</span>
-              <ArrowRight className="w-4 h-4" />
-            </a>
-            <button
-              type="button"
-              onClick={() => setAiModalOpen(true)}
-              className="px-6 py-3.5 rounded-full bg-white hover:bg-blue-50/60 border border-slate-200 hover:border-blue-300 text-slate-800 text-sm font-bold shadow-xs transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
-            >
-              <Coffee className="w-4 h-4 text-blue-600" />
-              <span>Ask Home (AI Barista)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTrackerModalOpen(true)}
-              className="px-5 py-3.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <BellRing className="w-4 h-4 text-amber-600" />
-              <span>Track Order</span>
-            </button>
-          </div>
-
-          {/* Trust and Policy Micro-Bar */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-3 text-xs text-slate-500 font-semibold">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-blue-600" />
-              <span>School ID Verification (Anti-Scam)</span>
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          {/* Left Column: Headline, Subtext, Primary Actions */}
+          <div className="lg:col-span-7 text-center lg:text-left space-y-5">
+            {/* Campus Pill */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-bold uppercase tracking-wider shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-spin" style={{ animationDuration: "6s" }} />
+              <span>Campus Cafe · Order Ahead</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>Free Fries at ₱200+ Drink Spend</span>
+
+            {/* Headline */}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
+              Your next happy sip starts here.
+            </h1>
+
+            {/* One-line Subtext */}
+            <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed">
+              Order ahead before recess or break. Pick your drink, verify with your school ID, and pick up fresh at the counter.
+            </p>
+
+            {/* ONE primary button and secondary Track Order link */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-1">
+              <a
+                href="#menu"
+                className="px-7 py-3.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+              >
+                <span>Order now</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
+              <button
+                type="button"
+                onClick={() => setTrackerModalOpen(true)}
+                className="text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-600 underline underline-offset-4 decoration-slate-300 hover:decoration-blue-600 transition-colors cursor-pointer py-2 px-1"
+              >
+                Track order →
+              </button>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-emerald-600" />
-              <span>Instant Counter Ready</span>
+
+            {/* Friendly Info Strip Under Hero */}
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-center lg:justify-start gap-y-2 gap-x-5 text-xs text-slate-500 font-semibold">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-blue-600" />
+                <span>Student & Faculty ID Verification</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-emerald-600" />
+                <span>Quick Counter Pickup</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Centered Glassmorphism 3D Showcase & Customizer Stage */}
-        <div id="customizer" className="mt-12 max-w-4xl mx-auto rounded-3xl bg-white/95 border border-blue-100/90 shadow-2xl p-6 sm:p-8 backdrop-blur-md">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-            {/* Left Column: 3D Product Image Display */}
-            <div className="md:col-span-6 flex flex-col items-center">
-              <div className="w-full flex items-center justify-between mb-3 px-1">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">
-                    {selectedProduct.category}
-                  </span>
-                  <h3 className="font-extrabold text-xl text-slate-900 leading-tight">
-                    {selectedProduct.name}
-                  </h3>
-                </div>
-                <span className="text-2xl font-black text-blue-600">
-                  ₱{currentUnitPrice}
+          {/* Right Column: Clean Featured Hero Product Card */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div
+              onClick={() => heroProduct && setCustomizingProduct(heroProduct)}
+              className="group relative w-full max-w-sm rounded-3xl bg-white border border-blue-100/90 shadow-xl hover:shadow-2xl transition-all duration-300 p-6 flex flex-col items-center cursor-pointer overflow-hidden"
+            >
+              <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5">
+                <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                  ⭐ Campus Favorite
                 </span>
               </div>
 
-              {/* Product Stage */}
-              <div
-                className="relative h-72 sm:h-80 w-full rounded-2xl overflow-hidden flex items-center justify-center p-4 border border-blue-100/80 shadow-inner group transition-all"
-                style={{
-                  background: `radial-gradient(circle at center, #eff6ff 0%, #dbeafe60 60%, #ffffff 100%)`,
-                }}
-              >
-                <div
-                  className="absolute inset-0 animate-glow-pulse pointer-events-none"
-                  style={{
-                    background: `radial-gradient(circle at center, ${selectedProduct.colors[0]}25 0%, transparent 65%)`,
-                  }}
-                />
-
-                {selectedProduct.image ? (
-                  <div className="relative w-full h-full max-h-64 transition-transform duration-300 group-hover:scale-105 animate-float">
-                    <Image
-                      src={selectedProduct.image}
-                      alt={selectedProduct.name}
-                      fill
-                      unoptimized={selectedProduct.image.startsWith("http")}
-                      className="object-contain drop-shadow-2xl"
-                      priority
-                      sizes="(max-width: 768px) 100vw, 380px"
-                    />
-                  </div>
+              <div className="relative w-56 h-56 sm:w-64 sm:h-64 my-2 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-100/50 via-rose-50/30 to-amber-50/20 blur-xl group-hover:scale-110 transition-transform duration-500" />
+                {heroProduct?.image ? (
+                  <Image
+                    src={heroProduct.image}
+                    alt={heroProduct.name}
+                    width={260}
+                    height={260}
+                    priority
+                    sizes="(max-width: 640px) 220px, 260px"
+                    className="object-contain relative z-10 group-hover:scale-105 group-active:scale-98 transition-transform duration-300 drop-shadow-md"
+                  />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-stone-400">
-                    <Coffee className="w-16 h-16 text-blue-600/60 mb-2" />
-                    <span className="text-xs font-bold">{selectedProduct.name}</span>
-                  </div>
+                  <Coffee className="w-20 h-20 text-blue-400" />
                 )}
+              </div>
 
-                {/* Floating Badges */}
-                <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/95 text-slate-700 shadow-xs border border-white">
-                    {selectedProduct.category}
+              <div className="w-full text-center mt-2 space-y-1">
+                <h3 className="font-extrabold text-lg sm:text-xl text-slate-900 group-hover:text-blue-600 transition-colors">
+                  {heroProduct?.name || "Strawberry Cream Cheese"}
+                </h3>
+                <p className="text-xs text-slate-500 line-clamp-1">
+                  {heroProduct?.description || "Fruity strawberry bliss combined with savory cream cheese"}
+                </p>
+                <div className="pt-3 flex items-center justify-between border-t border-slate-100 mt-3 w-full">
+                  <span className="text-xs text-slate-500 font-medium">
+                    Starts at <strong className="text-sm font-black text-slate-900">₱{heroProduct?.sizes[0]?.price || 49}</strong>
                   </span>
-                  {selectedProduct.badge && (
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-blue-600 bg-blue-100/90 shadow-xs border border-blue-200">
-                      {selectedProduct.badge}
-                    </span>
-                  )}
-                </div>
-
-                <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-white/95 text-blue-600 text-xs font-black shadow-xs border border-white z-10">
-                  {selectedSize} · ₱{currentUnitPrice}
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-xl bg-blue-600 group-hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Customize</span>
+                  </button>
                 </div>
               </div>
-
-              {/* Quick Carousel Swiper right under image */}
-              <div className="w-full pt-3">
-                <div className="flex items-center justify-between mb-1.5 px-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    Quick Pick (Swipe left to right)
-                  </span>
-                  <span className="text-[10px] text-blue-600 font-bold">
-                    {productList.length} drinks
-                  </span>
-                </div>
-                <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                  {productList.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedProductId(item.id);
-                        setSelectedFlavor(item.flavors[0]);
-                        setSelectedSize(item.sizes[0].label);
-                        playChime("add");
-                      }}
-                      className={`shrink-0 w-16 h-16 rounded-xl border p-1 transition-all flex flex-col items-center justify-center cursor-pointer ${
-                        selectedProductId === item.id
-                          ? "border-blue-600 ring-2 ring-blue-500/30 bg-blue-50/90 shadow-xs scale-105"
-                          : "border-slate-200 bg-white hover:border-blue-300"
-                      }`}
-                      title={item.name}
-                    >
-                      {item.image && (
-                        <div className="relative w-9 h-9">
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            unoptimized={item.image.startsWith("http")}
-                            className="object-contain"
-                            sizes="36px"
-                          />
-                        </div>
-                      )}
-                      <span className="text-[8px] font-bold text-slate-700 truncate w-full text-center mt-0.5">
-                        {item.name.split(" ")[0]}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Customization Controls & Add To Order */}
-            <div className="md:col-span-6 space-y-4">
-              <div>
-                <h4 className="text-sm font-black text-slate-900 mb-1">Customize Your Drink</h4>
-                <p className="text-xs text-slate-500">Pick your size, sweetness, and favorite add-ons.</p>
-              </div>
-
-              {/* Size Chips */}
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                  Select Size
-                </label>
-                <div className="flex gap-2">
-                  {selectedProduct.sizes.map((s) => (
-                    <button
-                      key={s.label}
-                      type="button"
-                      onClick={() => {
-                        setSelectedSize(s.label);
-                        playChime("add");
-                      }}
-                      className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        selectedSize === s.label
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                      }`}
-                    >
-                      {s.label} · ₱{s.price}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Sugar & Ice Level Pickers (Drinks only) */}
-              {selectedProduct.category !== "Snacks" && (
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                      Sugar Level: {selectedSugar}
-                    </label>
-                    <select
-                      value={selectedSugar}
-                      onChange={(e) => setSelectedSugar(e.target.value as any)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium outline-none cursor-pointer focus:border-blue-600"
-                    >
-                      <option value="75%">75% (Barista Default)</option>
-                      <option value="100%">100% Full Sweet</option>
-                      <option value="50%">50% Half Sweet</option>
-                      <option value="25%">25% Gentle Sweet</option>
-                      <option value="0%">0% Unsweetened</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                      Ice Level: {selectedIce}
-                    </label>
-                    <select
-                      value={selectedIce}
-                      onChange={(e) => setSelectedIce(e.target.value as any)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium outline-none cursor-pointer focus:border-blue-600"
-                    >
-                      <option value="Regular Ice">Regular Ice</option>
-                      <option value="Less Ice">Less Ice</option>
-                      <option value="Extra Ice">Extra Ice</option>
-                      <option value="No Ice">No Ice</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {/* Add-on Toggles (Drinks only) */}
-              {selectedProduct.category !== "Snacks" && (
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                    Add-ons & Toppings
-                  </label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedBoba(!selectedBoba);
-                        playChime("add");
-                      }}
-                      className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                        selectedBoba
-                          ? "border-blue-600 bg-blue-50 text-blue-700"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      + Boba Pearls (₱10)
-                    </button>
-
-                    {selectedProduct.category !== "Cream Cheese Series" && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedCreamCheese(!selectedCreamCheese);
-                          playChime("add");
-                        }}
-                        className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                          selectedCreamCheese
-                            ? "border-blue-600 bg-blue-50 text-blue-700"
-                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        + Cream Cheese (₱15)
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Special Note */}
-              <div>
-                <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                  Barista Note (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. less ice, extra straw..."
-                  value={orderNotes}
-                  onChange={(e) => setOrderNotes(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50/70 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-blue-600 focus:bg-white"
-                />
-              </div>
-
-              {/* Add To Cart CTA */}
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add to Order · ₱{currentUnitPrice}</span>
-              </button>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Free Medium Fries Spend Promo Spotlight Card */}
-      {freeFriesPromotion && (
-        <section className="px-4 sm:px-8 py-8 bg-gradient-to-b from-blue-50/50 via-white to-white">
-          <div className="max-w-7xl mx-auto">
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-[2px] shadow-xl">
-              <div className="rounded-[22px] bg-white p-6 sm:p-8 flex flex-col lg:flex-row items-center gap-8">
-                {/* Photo showcase with Home Cafe logo */}
-                <div className="relative w-full lg:w-1/2 aspect-video sm:aspect-[16/10] rounded-2xl overflow-hidden shadow-lg border border-amber-200/60 bg-amber-50 group">
-                  <Image
-                    src="/products/free-medium-fries-promo.webp"
-                    alt="Spend at least ₱200 and get FREE Medium Fries at Home Cafe"
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                  <div className="absolute top-3 left-3 bg-amber-500 text-stone-900 text-xs font-black px-3.5 py-1.5 rounded-full shadow-md flex items-center gap-1.5 uppercase tracking-wider">
-                    <Gift className="w-4 h-4 text-white" />
-                    <span>Promo Offer</span>
-                  </div>
-                  <div className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg">
-                    Real Photo · Home Cafe Logo
-                  </div>
-                </div>
-
-                {/* Offer Details & Cart Tracker */}
-                <div className="w-full lg:w-1/2 space-y-4">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Campus Reward Perk</span>
-                  </div>
-
-                  <div>
-                    <h3 className="text-2xl sm:text-3xl font-black text-[#0f172a] leading-tight">
-                      Spend at least <span className="text-amber-600">₱200</span> & get <span className="text-[#2563eb]">FREE Medium Fries</span>!
-                    </h3>
-                    <p className="text-xs sm:text-sm text-stone-600 mt-2 leading-relaxed">
-                      Treat yourself and your classmates! Buy drinks worth at least ₱200 at Home Cafe, and we'll automatically reward your cart with a hot, crispy serving of Medium French Fries with our authentic Home Cafe cup logo!
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-stone-700">
-                    <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>Auto-calculated in cart</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>Valid on all handcrafted drinks</span>
-                    </div>
-                  </div>
-
-                  {/* Live Spend Progress Bar */}
-                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-stone-700 flex items-center gap-1.5">
-                        <Coffee className="w-4 h-4 text-[#2563eb]" />
-                        <span>Drink Spend Progress</span>
-                      </span>
-                      <span className="font-mono font-bold text-stone-900">
-                        ₱{eligibleDrinkSpend} / ₱200
-                      </span>
-                    </div>
-                    <div className="w-full h-3 rounded-full bg-stone-200 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
-                        style={{ width: `${Math.min(100, (eligibleDrinkSpend / 200) * 100)}%` }}
-                      />
-                    </div>
-                    {eligibleDrinkSpend >= 200 ? (
-                      <p className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>🎉 FREE Medium Fries unlocked for your order!</span>
-                      </p>
-                    ) : (
-                      <p className="text-xs text-stone-500">
-                        Add <strong className="text-amber-700 font-semibold">₱{Math.max(0, 200 - eligibleDrinkSpend)}</strong> more in drinks to claim your free fries!
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3 pt-1">
-                    <a
-                      href="#menu"
-                      className="px-5 py-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Coffee className="w-3.5 h-3.5" />
-                      <span>Explore Drinks to Qualify</span>
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => setCartDrawerOpen(true)}
-                      className="px-4 py-2.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 text-xs font-bold transition-all shadow-xs cursor-pointer"
-                    >
-                      View Cart ({cartItemCount})
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Featured Drinks & Bestsellers Row — Curved SVG Spotlight Rail */}
       <section id="featured" className="px-4 sm:px-8 py-10 max-w-7xl mx-auto border-b border-stone-200/60">
@@ -1256,13 +978,10 @@ export default function Page() {
             isBestseller: true,
           }))}
           onSelect={(item) => {
-            setSelectedProductId(item.id);
             const foundProduct = products.find((p) => p.id === item.id);
             if (foundProduct) {
-              setSelectedFlavor(foundProduct.flavors[0]);
-              setSelectedSize(foundProduct.sizes[0].label);
+              setCustomizingProduct(foundProduct);
             }
-            document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
           }}
         />
       </section>
@@ -1424,12 +1143,11 @@ export default function Page() {
                   isAvailable={!unavailableSlugs.includes(product.id)}
                   isSelected={selectedProductId === product.id}
                   onSelect={() => {
-                    setSelectedProductId(product.id);
-                    setSelectedFlavor(product.flavors[0]);
-                    setSelectedSize(product.sizes[0].label);
-                    document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
+                    setCustomizingProduct(product);
                   }}
-                  onQuickAdd={(sizeLabel) => handleQuickAdd(product, sizeLabel)}
+                  onQuickAdd={() => {
+                    setCustomizingProduct(product);
+                  }}
                 />
               </div>
             ))}
@@ -2058,6 +1776,13 @@ export default function Page() {
         isOpen={aiModalOpen}
         onClose={() => setAiModalOpen(false)}
         onTriggerAction={handleAiAction}
+      />
+      {/* Unified Customization Sheet */}
+      <CustomizationSheet
+        isOpen={!!customizingProduct}
+        product={customizingProduct}
+        onClose={() => setCustomizingProduct(null)}
+        onAddToCart={handleSheetAddToCart}
       />
     </main>
   );
