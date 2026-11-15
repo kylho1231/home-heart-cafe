@@ -142,7 +142,7 @@ export function OrderTrackerModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-xl rounded-3xl bg-[#fffefc] border border-stone-200/80 shadow-2xl overflow-hidden my-6">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#382323] to-[#5a3838] text-white flex items-center justify-between">
+        <div className="px-6 py-4 bg-gradient-to-r from-[#0f172a] to-[#5a3838] text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-white/10">
               <Receipt className="w-5 h-5 text-amber-300" />
@@ -180,7 +180,7 @@ export function OrderTrackerModal({
                   placeholder="Order Code (e.g. HC-0042)"
                   value={searchCode}
                   onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
-                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-xs font-mono tracking-wider focus:border-[#b42356] outline-none"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-xs font-mono tracking-wider focus:border-[#2563eb] outline-none"
                 />
               </div>
 
@@ -190,14 +190,14 @@ export function OrderTrackerModal({
                 placeholder="Full Name or Phone"
                 value={verifyInput}
                 onChange={(e) => setVerifyInput(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-xs focus:border-[#b42356] outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-xs focus:border-[#2563eb] outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <RotateCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>{loading ? "Checking Status..." : "Track Live Order"}</span>
@@ -252,7 +252,7 @@ export function OrderTrackerModal({
                 {/* Connecting Line */}
                 <div className="absolute top-4 inset-x-8 h-1 bg-stone-200 z-0">
                   <div
-                    className="h-full bg-[#b42356] transition-all duration-500"
+                    className="h-full bg-[#2563eb] transition-all duration-500"
                     style={{
                       width:
                         currentStep === 1
@@ -271,7 +271,7 @@ export function OrderTrackerModal({
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
                       currentStep >= 1
-                        ? "bg-[#b42356] text-white shadow-md"
+                        ? "bg-[#2563eb] text-white shadow-md"
                         : "bg-stone-200 text-stone-500"
                     }`}
                   >
@@ -287,7 +287,7 @@ export function OrderTrackerModal({
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
                       currentStep >= 2
-                        ? "bg-[#b42356] text-white shadow-md animate-pulse"
+                        ? "bg-[#2563eb] text-white shadow-md animate-pulse"
                         : "bg-stone-200 text-stone-500"
                     }`}
                   >
@@ -340,13 +340,13 @@ export function OrderTrackerModal({
                     Order Reference
                   </span>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <strong className="text-2xl font-black text-[#b42356] tracking-wider font-mono">
+                    <strong className="text-2xl font-black text-[#2563eb] tracking-wider font-mono">
                       #{order.orderCode}
                     </strong>
                     <button
                       type="button"
                       onClick={handleCopyOrderCode}
-                      className="px-2 py-1 rounded-lg border border-stone-200 hover:border-[#b42356] bg-white text-[11px] font-semibold text-stone-600 hover:text-[#b42356] transition-colors flex items-center gap-1 shadow-2xs cursor-pointer"
+                      className="px-2 py-1 rounded-lg border border-stone-200 hover:border-[#2563eb] bg-white text-[11px] font-semibold text-stone-600 hover:text-[#2563eb] transition-colors flex items-center gap-1 shadow-2xs cursor-pointer"
                       title="Copy order code"
                     >
                       {copied ? (
@@ -426,9 +426,9 @@ export function OrderTrackerModal({
                     <strong>-₱{order.payment.downPaymentAmount}</strong>
                   </div>
                 )}
-                <div className="flex justify-between text-sm font-black pt-1 border-t border-stone-200 text-[#382323]">
+                <div className="flex justify-between text-sm font-black pt-1 border-t border-stone-200 text-[#0f172a]">
                   <span>Balance to Pay at Counter:</span>
-                  <span className="text-[#b42356]">₱{balanceToPay}</span>
+                  <span className="text-[#2563eb]">₱{balanceToPay}</span>
                 </div>
               </div>
             </div>

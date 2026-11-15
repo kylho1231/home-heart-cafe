@@ -58,8 +58,21 @@ export function CheckoutVerificationModal({
   const [idempotencyKey, setIdempotencyKey] = useState<string>("");
 
   React.useEffect(() => {
-    if (isOpen && !idempotencyKey) {
-      setIdempotencyKey(`idem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
+    if (isOpen) {
+      if (!idempotencyKey) {
+        setIdempotencyKey(`idem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
+      }
+      try {
+        const saved = window.localStorage.getItem("home-heart-saved-student");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.fullName && !fullName) setFullName(parsed.fullName);
+          if (parsed.lrn && !lrn) setLrn(parsed.lrn);
+          if (parsed.gradeSection && !gradeSection) setGradeSection(parsed.gradeSection);
+          if (parsed.department && !department) setDepartment(parsed.department);
+          if (parsed.contactNumber && !contactNumber) setContactNumber(parsed.contactNumber);
+        }
+      } catch {}
     }
   }, [isOpen, idempotencyKey]);
 
@@ -209,6 +222,18 @@ export function CheckoutVerificationModal({
       // Persist active verification credential for instant tracking
       if (typeof window !== "undefined") {
         window.localStorage.setItem("home-heart-active-verify", fullName.trim());
+        try {
+          window.localStorage.setItem(
+            "home-heart-saved-student",
+            JSON.stringify({
+              fullName: fullName.trim(),
+              lrn: lrn.trim(),
+              gradeSection: gradeSection.trim(),
+              department: department.trim(),
+              contactNumber: contactNumber.trim(),
+            }),
+          );
+        } catch {}
       }
 
       playChime("ready");
@@ -224,7 +249,7 @@ export function CheckoutVerificationModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-2xl rounded-3xl bg-[#fffefc] border border-[#E9DCD3] shadow-2xl overflow-hidden my-6">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#B51F57] to-[#941743] text-white flex items-center justify-between">
+        <div className="px-6 py-4 bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-white/20 backdrop-blur-xs">
               <ShieldCheck className="w-5 h-5 text-white" />
@@ -254,11 +279,11 @@ export function CheckoutVerificationModal({
             onClick={() => setStep(1)}
             className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors cursor-pointer ${
               step === 1
-                ? "text-[#B51F57] border-b-2 border-[#B51F57] bg-white font-bold"
+                ? "text-[#2563eb] border-b-2 border-[#2563eb] bg-white font-bold"
                 : "text-stone-600 hover:text-stone-900"
             }`}
           >
-            <span className="w-5 h-5 rounded-full bg-[#FCE8EF] text-[#B51F57] flex items-center justify-center font-bold text-[11px]">
+            <span className="w-5 h-5 rounded-full bg-[#dbeafe] text-[#2563eb] flex items-center justify-center font-bold text-[11px]">
               1
             </span>
             <span>Identity & Pickup Details</span>
@@ -270,11 +295,11 @@ export function CheckoutVerificationModal({
             }}
             className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors cursor-pointer ${
               step === 2
-                ? "text-[#B51F57] border-b-2 border-[#B51F57] bg-white font-bold"
+                ? "text-[#2563eb] border-b-2 border-[#2563eb] bg-white font-bold"
                 : "text-stone-600 hover:text-stone-900"
             }`}
           >
-            <span className="w-5 h-5 rounded-full bg-[#FCE8EF] text-[#B51F57] flex items-center justify-center font-bold text-[11px]">
+            <span className="w-5 h-5 rounded-full bg-[#dbeafe] text-[#2563eb] flex items-center justify-center font-bold text-[11px]">
               2
             </span>
             <span>Payment & Review</span>
@@ -307,7 +332,7 @@ export function CheckoutVerificationModal({
                     }}
                     className={`py-2.5 px-4 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       role === "student"
-                        ? "border-[#B51F57] bg-[#FCE8EF] text-[#B51F57] ring-2 ring-[#B51F57]/20 shadow-xs"
+                        ? "border-[#2563eb] bg-[#dbeafe] text-[#2563eb] ring-2 ring-[#2563eb]/20 shadow-xs"
                         : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
                     }`}
                   >
@@ -323,7 +348,7 @@ export function CheckoutVerificationModal({
                     }}
                     className={`py-2.5 px-4 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       role === "teacher_staff"
-                        ? "border-[#B51F57] bg-[#FCE8EF] text-[#B51F57] ring-2 ring-[#B51F57]/20 shadow-xs"
+                        ? "border-[#2563eb] bg-[#dbeafe] text-[#2563eb] ring-2 ring-[#2563eb]/20 shadow-xs"
                         : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
                     }`}
                   >
@@ -335,7 +360,7 @@ export function CheckoutVerificationModal({
 
               {/* Informative Hospitality Note */}
               <div className="p-4 rounded-2xl bg-[#FFF8F0] border border-[#E9DCD3] text-stone-700 text-xs leading-relaxed flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-[#B51F57] shrink-0 mt-0.5" />
+                <ShieldCheck className="w-5 h-5 text-[#2563eb] shrink-0 mt-0.5" />
                 <div>
                   <strong className="font-semibold block text-[#30231F] mb-0.5">
                     Order Security & Quick Pickup
@@ -357,7 +382,7 @@ export function CheckoutVerificationModal({
                     placeholder="e.g. Maria Santos"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20 outline-none"
                   />
                 </div>
 
@@ -374,7 +399,7 @@ export function CheckoutVerificationModal({
                       placeholder="e.g. 109823456712"
                       value={lrn}
                       onChange={(e) => setLrn(e.target.value.replace(/\D/g, ""))}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm font-mono tracking-wider focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm font-mono tracking-wider focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20 outline-none"
                     />
                     <span className="text-[10px] text-stone-500 mt-0.5 block">
                       {lrn.length}/12 digits entered
@@ -392,7 +417,7 @@ export function CheckoutVerificationModal({
                       placeholder="e.g. Senior High Faculty / Math Dept"
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20 outline-none"
                     />
                   </div>
                 )}
@@ -409,7 +434,7 @@ export function CheckoutVerificationModal({
                       placeholder="e.g. Grade 11 - STEM A"
                       value={gradeSection}
                       onChange={(e) => setGradeSection(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20 outline-none"
                     />
                   </div>
                 )}
@@ -425,7 +450,7 @@ export function CheckoutVerificationModal({
                     placeholder="e.g. 0917-123-4567"
                     value={contactNumber}
                     onChange={(e) => setContactNumber(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20 outline-none"
                   />
                 </div>
               </div>
@@ -458,8 +483,8 @@ export function CheckoutVerificationModal({
                       </div>
                     </div>
                   ) : (
-                    <label className="cursor-pointer flex flex-col items-center justify-center h-32 rounded-xl border border-stone-200 bg-white hover:border-[#B51F57] transition-colors p-3">
-                      <Upload className="w-6 h-6 text-[#B51F57] mb-1.5" />
+                    <label className="cursor-pointer flex flex-col items-center justify-center h-32 rounded-xl border border-stone-200 bg-white hover:border-[#2563eb] transition-colors p-3">
+                      <Upload className="w-6 h-6 text-[#2563eb] mb-1.5" />
                       <span className="text-xs font-semibold text-stone-700">
                         {role === "student" ? "Upload School ID" : "Upload Faculty ID"}
                       </span>
@@ -501,8 +526,8 @@ export function CheckoutVerificationModal({
                       </div>
                     </div>
                   ) : (
-                    <label className="cursor-pointer flex flex-col items-center justify-center h-32 rounded-xl border border-stone-200 bg-white hover:border-[#B51F57] transition-colors p-3">
-                      <Camera className="w-6 h-6 text-[#B51F57] mb-1.5" />
+                    <label className="cursor-pointer flex flex-col items-center justify-center h-32 rounded-xl border border-stone-200 bg-white hover:border-[#2563eb] transition-colors p-3">
+                      <Camera className="w-6 h-6 text-[#2563eb] mb-1.5" />
                       <span className="text-xs font-semibold text-stone-700">
                         Take or Upload Selfie
                       </span>
@@ -540,7 +565,7 @@ export function CheckoutVerificationModal({
                       setPrivacyConsent(e.target.checked);
                       if (e.target.checked) setErrorMessage(null);
                     }}
-                    className="mt-0.5 w-4 h-4 rounded border-stone-300 text-[#B51F57] focus:ring-[#B51F57] cursor-pointer"
+                    className="mt-0.5 w-4 h-4 rounded border-stone-300 text-[#2563eb] focus:ring-[#2563eb] cursor-pointer"
                   />
                   <span className="text-[11px] font-semibold text-stone-800 leading-snug">
                     I have read and consent to the collection and verification of my school credentials pursuant to Republic Act No. 10173 (Data Privacy Act of 2012). <span className="text-red-500">*</span>
@@ -557,7 +582,7 @@ export function CheckoutVerificationModal({
                   <span className="text-xs font-bold text-stone-700 uppercase">
                     Order Items ({cart.length})
                   </span>
-                  <span className="text-xs font-bold text-[#B51F57]">
+                  <span className="text-xs font-bold text-[#2563eb]">
                     Total: ₱{totalAmount}
                   </span>
                 </div>
@@ -641,15 +666,15 @@ export function CheckoutVerificationModal({
                     onClick={() => setPaymentMethod("counter_cash")}
                     className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                       paymentMethod === "counter_cash"
-                        ? "border-[#B51F57] bg-[#FCE8EF] ring-2 ring-[#B51F57]/20"
+                        ? "border-[#2563eb] bg-[#dbeafe] ring-2 ring-[#2563eb]/20"
                         : "border-stone-200 bg-white hover:border-stone-300"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-[#B51F57]">
+                      <span className="font-bold text-xs text-[#2563eb]">
                         Counter Cash
                       </span>
-                      <DollarSign className="w-4 h-4 text-[#B51F57]" />
+                      <DollarSign className="w-4 h-4 text-[#2563eb]" />
                     </div>
                     <p className="text-[11px] text-stone-600 font-medium">
                       Pay <strong>₱{totalAmount}</strong>
@@ -749,7 +774,7 @@ export function CheckoutVerificationModal({
             <button
               type="button"
               onClick={handleProceedToPayment}
-              className="px-6 py-2.5 rounded-full bg-[#B51F57] hover:bg-[#941743] text-white text-xs font-bold shadow-md transition-all flex items-center gap-2 cursor-pointer"
+              className="px-6 py-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md transition-all flex items-center gap-2 cursor-pointer"
             >
               <span>Next: Payment & GCash</span>
               <CheckCircle2 className="w-4 h-4 text-white" />

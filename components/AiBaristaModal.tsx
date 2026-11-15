@@ -17,7 +17,7 @@ import { playChime } from "@/lib/sound";
 
 interface Message {
   id: string;
-  sender: "user" | "hearty";
+  sender: "user" | "home";
   text: string;
   actions?: { label: string; action: string }[];
   timestamp: string;
@@ -69,7 +69,7 @@ function FormattedMessageText({ text }: { text: string }) {
         if (isBullet) {
           return (
             <div key={lineIdx} className="flex items-start gap-1.5 pl-1">
-              <span className="text-[#b42356] font-bold text-xs select-none leading-normal">•</span>
+              <span className="text-[#2563eb] font-bold text-xs select-none leading-normal">•</span>
               <span className="flex-1 text-stone-800">{renderedContent}</span>
             </div>
           );
@@ -93,9 +93,9 @@ export function AiBaristaModal({
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "init",
-      sender: "hearty",
+      sender: "home",
       text:
-        "Kumusta! Welcome to Home ❤️ Cafe!\n\nI'm **Hearty**, your digital barista concierge. Ask me anything about our:\n• **Promos & Barkada Bundles**\n• **Campus Cafe Events & Acoustic Fridays**\n• **Bestselling Drinks & Fries**\n• **Campus Identity & Pickup Verification**\n\nWhat can I brew for you today?",
+        "Kumusta! Welcome to Home ❤️ Cafe!\n\nI'm **Home**, your digital barista concierge. Ask me anything about our:\n• **Promos & Barkada Bundles**\n• **Campus Cafe Events & Acoustic Fridays**\n• **Bestselling Drinks & Fries**\n• **Campus Identity & Pickup Verification**\n\nWhat can I brew for you today?",
       actions: [
         { label: "Active Promos", action: "askPromos" },
         { label: "Top Bestsellers", action: "askBestsellers" },
@@ -149,7 +149,7 @@ export function AiBaristaModal({
 
       const aiMsg: Message = {
         id: `ai-${Date.now()}`,
-        sender: "hearty",
+        sender: "home",
         text: data.reply || "Sorry, I didn't quite catch that. Try asking about promos, events, or our bestsellers!",
         actions: data.suggestedActions,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -162,7 +162,7 @@ export function AiBaristaModal({
         ...prev,
         {
           id: `ai-err-${Date.now()}`,
-          sender: "hearty",
+          sender: "home",
           text: "I'm having a little trouble connecting to the cafe counter. Please try again shortly!",
           timestamp: "Just now",
         },
@@ -191,9 +191,9 @@ export function AiBaristaModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-end sm:justify-center p-3 sm:p-4 bg-stone-900/50 backdrop-blur-xs">
-      <div className="relative w-full sm:max-w-md h-[580px] rounded-3xl bg-[#fffdfa] border border-stone-200/90 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 duration-300">
+      <div className="relative w-full sm:max-w-md h-[580px] rounded-3xl bg-[#ffffff] border border-stone-200/90 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 duration-300">
         {/* Header */}
-        <div className="px-5 py-4 bg-gradient-to-r from-[#b42356] via-[#c7346b] to-[#d03a6e] text-white flex items-center justify-between shadow-sm">
+        <div className="px-5 py-4 bg-gradient-to-r from-[#2563eb] via-[#3b82f6] to-[#60a5fa] text-white flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
             <div className="relative w-9 h-9 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center border border-white/30">
               <Coffee className="w-5 h-5 text-amber-200" />
@@ -201,7 +201,7 @@ export function AiBaristaModal({
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="font-bold text-sm leading-tight">Hearty · AI Barista</h3>
+                <h3 className="font-bold text-sm leading-tight">Home · AI Barista</h3>
                 <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px] font-semibold">
                   Online
                 </span>
@@ -218,19 +218,19 @@ export function AiBaristaModal({
         </div>
 
         {/* Quick Suggestion Chips Bar */}
-        <div className="flex items-center gap-1.5 px-4 py-2 bg-[#fdf5ed] border-b border-stone-200/60 overflow-x-auto text-[11px] font-semibold text-stone-600 no-scrollbar">
+        <div className="flex items-center gap-1.5 px-4 py-2 bg-[#f0f7ff] border-b border-stone-200/60 overflow-x-auto text-[11px] font-semibold text-stone-600 no-scrollbar">
           <button
             type="button"
             onClick={() => handleSendMessage("What promos do you have?")}
-            className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-[#b42356] hover:text-white border border-stone-200 transition-all flex items-center gap-1 shadow-xs"
+            className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-[#2563eb] hover:text-white border border-stone-200 transition-all flex items-center gap-1 shadow-xs"
           >
-            <Gift className="w-3 h-3 text-[#b42356]" />
+            <Gift className="w-3 h-3 text-[#2563eb]" />
             <span>Promos</span>
           </button>
           <button
             type="button"
             onClick={() => handleSendMessage("What are the best sellers?")}
-            className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-[#b42356] hover:text-white border border-stone-200 transition-all flex items-center gap-1 shadow-xs"
+            className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-[#2563eb] hover:text-white border border-stone-200 transition-all flex items-center gap-1 shadow-xs"
           >
             <Sparkles className="w-3 h-3 text-amber-500" />
             <span>Bestsellers</span>
@@ -238,7 +238,7 @@ export function AiBaristaModal({
           <button
             type="button"
             onClick={() => handleSendMessage("What events are happening?")}
-            className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-[#b42356] hover:text-white border border-stone-200 transition-all flex items-center gap-1 shadow-xs"
+            className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-[#2563eb] hover:text-white border border-stone-200 transition-all flex items-center gap-1 shadow-xs"
           >
             <Calendar className="w-3 h-3 text-sky-500" />
             <span>Events</span>
@@ -246,7 +246,7 @@ export function AiBaristaModal({
           <button
             type="button"
             onClick={() => handleSendMessage("Why is school ID verification required?")}
-            className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-[#b42356] hover:text-white border border-stone-200 transition-all flex items-center gap-1 shadow-xs"
+            className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-[#2563eb] hover:text-white border border-stone-200 transition-all flex items-center gap-1 shadow-xs"
           >
             <ShieldCheck className="w-3 h-3 text-emerald-600" />
             <span>ID Verification</span>
@@ -263,7 +263,7 @@ export function AiBaristaModal({
               <div
                 className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs ${
                   msg.sender === "user"
-                    ? "bg-[#b42356] text-white rounded-tr-xs"
+                    ? "bg-[#2563eb] text-white rounded-tr-xs"
                     : "bg-white border border-stone-200/80 text-stone-800 rounded-tl-xs"
                 }`}
               >
@@ -282,7 +282,7 @@ export function AiBaristaModal({
                       key={i}
                       type="button"
                       onClick={() => handleActionClick(act.action, act.label)}
-                      className="px-2.5 py-1 rounded-full bg-[#f7dce5] hover:bg-[#b42356] hover:text-white text-[#b42356] text-[11px] font-bold transition-all shadow-xs"
+                      className="px-2.5 py-1 rounded-full bg-[#dbeafe] hover:bg-[#2563eb] hover:text-white text-[#2563eb] text-[11px] font-bold transition-all shadow-xs"
                     >
                       {act.label}
                     </button>
@@ -298,8 +298,8 @@ export function AiBaristaModal({
 
           {isLoading && (
             <div className="flex items-center gap-2 text-stone-400 text-xs py-2">
-              <Bot className="w-4 h-4 animate-bounce text-[#b42356]" />
-              <span className="animate-pulse">Hearty is typing...</span>
+              <Bot className="w-4 h-4 animate-bounce text-[#2563eb]" />
+              <span className="animate-pulse">Home is typing...</span>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -319,12 +319,12 @@ export function AiBaristaModal({
               placeholder="Ask about promos, events, flavors..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="flex-1 px-3.5 py-2.5 rounded-full border border-stone-200 bg-stone-50/70 text-xs text-stone-800 focus:bg-white focus:border-[#b42356] outline-none"
+              className="flex-1 px-3.5 py-2.5 rounded-full border border-stone-200 bg-stone-50/70 text-xs text-stone-800 focus:bg-white focus:border-[#2563eb] outline-none"
             />
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="p-2.5 rounded-full bg-[#b42356] hover:bg-[#921a44] disabled:opacity-40 text-white shadow-xs transition-colors shrink-0"
+              className="p-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-40 text-white shadow-xs transition-colors shrink-0"
             >
               <Send className="w-4 h-4" />
             </button>

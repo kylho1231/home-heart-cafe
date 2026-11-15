@@ -478,7 +478,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
         {/* PIN Authentication Screen */}
         {!isAuthenticated ? (
           <div className="p-10 flex flex-col items-center justify-center text-center max-w-sm mx-auto my-auto space-y-5">
-            <div className="w-14 h-14 rounded-full bg-[#f7dce5] text-[#b42356] flex items-center justify-center shadow-inner">
+            <div className="w-14 h-14 rounded-full bg-[#dbeafe] text-[#2563eb] flex items-center justify-center shadow-inner">
               <Lock className="w-7 h-7" />
             </div>
             <div>
@@ -499,7 +499,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   setPin(e.target.value);
                   setLoginErrorMessage(null);
                 }}
-                className="w-full text-center text-2xl font-mono tracking-widest px-4 py-3 rounded-2xl border border-stone-300 bg-white text-stone-900 focus:border-[#b42356] focus:ring-2 focus:ring-[#b42356]/20 outline-none disabled:opacity-50"
+                className="w-full text-center text-2xl font-mono tracking-widest px-4 py-3 rounded-2xl border border-stone-300 bg-white text-stone-900 focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20 outline-none disabled:opacity-50"
               />
               {loginErrorMessage && (
                 <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
@@ -509,7 +509,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
               <button
                 type="submit"
                 disabled={!pin.trim() || loginLoading}
-                className="w-full py-3 rounded-2xl bg-[#b42356] hover:bg-[#921a44] disabled:opacity-50 text-white text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-50 text-white text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {loginLoading ? <span>Verifying...</span> : <span>Unlock Operations</span>}
               </button>
@@ -526,7 +526,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   onClick={() => setActiveTab("queue")}
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTab === "queue"
-                      ? "bg-[#b42356] text-white shadow-xs"
+                      ? "bg-[#2563eb] text-white shadow-xs"
                       : "text-stone-300 hover:text-white hover:bg-stone-800"
                   }`}
                 >
@@ -539,7 +539,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   onClick={() => setActiveTab("new_sale")}
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTab === "new_sale"
-                      ? "bg-[#b42356] text-white shadow-xs"
+                      ? "bg-[#2563eb] text-white shadow-xs"
                       : "text-stone-300 hover:text-white hover:bg-stone-800"
                   }`}
                 >
@@ -552,7 +552,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   onClick={() => setActiveTab("products")}
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTab === "products"
-                      ? "bg-[#b42356] text-white shadow-xs"
+                      ? "bg-[#2563eb] text-white shadow-xs"
                       : "text-stone-300 hover:text-white hover:bg-stone-800"
                   }`}
                 >
@@ -565,7 +565,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   onClick={() => setActiveTab("reports")}
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTab === "reports"
-                      ? "bg-[#b42356] text-white shadow-xs"
+                      ? "bg-[#2563eb] text-white shadow-xs"
                       : "text-stone-300 hover:text-white hover:bg-stone-800"
                   }`}
                 >
@@ -580,7 +580,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                     <button
                       type="button"
                       onClick={() => setActiveTab("new_sale")}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#b42356] hover:bg-[#921a44] text-white text-[11px] font-bold shadow-xs cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-[11px] font-bold shadow-xs cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>+ New Walk-in</span>
@@ -600,7 +600,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   <button
                     type="button"
                     onClick={() => setIsAddProductOpen(true)}
-                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[#b42356] hover:bg-[#921a44] text-white text-[11px] font-bold shadow-xs cursor-pointer"
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-[11px] font-bold shadow-xs cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Product</span>
@@ -698,7 +698,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                         onClick={() => setFilter(t.key)}
                         className={`px-3 py-1.5 rounded-full transition-all shrink-0 cursor-pointer ${
                           filter === t.key
-                            ? "bg-[#b42356] text-white shadow-xs"
+                            ? "bg-[#2563eb] text-white shadow-xs"
                             : "bg-white text-stone-600 hover:bg-stone-200/70"
                         }`}
                       >
@@ -715,7 +715,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                       placeholder="Search #, name, or LRN..."
                       value={orderSearch}
                       onChange={(e) => setOrderSearch(e.target.value)}
-                      className="w-full pl-8 pr-7 py-1.5 rounded-full border border-stone-200 bg-white text-xs text-stone-800 placeholder-stone-400 focus:border-[#b42356] outline-none shadow-2xs"
+                      className="w-full pl-8 pr-7 py-1.5 rounded-full border border-stone-200 bg-white text-xs text-stone-800 placeholder-stone-400 focus:border-[#2563eb] outline-none shadow-2xs"
                     />
                     {orderSearch && (
                       <button
@@ -830,7 +830,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                                     : "12-Digit LRN (DepEd)"}
                                 </span>
                                 <div className="flex items-center gap-1.5">
-                                  <strong className="font-mono text-sm text-[#b42356]">
+                                  <strong className="font-mono text-sm text-[#2563eb]">
                                     {order.customer.anonymized
                                       ? "[Purged]"
                                       : order.customer.role === "teacher_staff"
@@ -881,7 +881,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                                   }
                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 transition-colors shadow-2xs cursor-pointer"
                                 >
-                                  <Eye className="w-3.5 h-3.5 text-[#b42356]" />
+                                  <Eye className="w-3.5 h-3.5 text-[#2563eb]" />
                                   <span>
                                     {order.customer.role === "teacher_staff"
                                       ? "View Faculty ID"
@@ -1093,7 +1093,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                     <button
                       type="button"
                       onClick={() => setIsAddProductOpen(true)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Add New Product</span>
@@ -1119,7 +1119,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                       placeholder="Filter by product name..."
                       value={productSearch}
                       onChange={(e) => setProductSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-semibold focus:border-[#b42356] outline-none"
+                      className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-semibold focus:border-[#2563eb] outline-none"
                     />
                   </div>
                   <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
@@ -1130,7 +1130,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                         onClick={() => setStockFilterCategory(cat)}
                         className={`px-3 py-1.5 rounded-full transition-colors shrink-0 cursor-pointer ${
                           stockFilterCategory === cat
-                            ? "bg-[#b42356] text-white font-bold"
+                            ? "bg-[#2563eb] text-white font-bold"
                             : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
                         }`}
                       >
@@ -1268,7 +1268,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                     <span className="text-[10px] uppercase font-bold text-stone-400 block">
                       Total Gross Revenue
                     </span>
-                    <strong className="text-3xl font-black text-[#b42356] block">
+                    <strong className="text-3xl font-black text-[#2563eb] block">
                       ₱{orders.reduce((sum, o) => sum + o.payment.totalAmount, 0)}
                     </strong>
                     <span className="text-xs text-stone-500">

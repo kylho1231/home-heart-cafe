@@ -17,7 +17,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-[#fff8ef] text-[#382323] flex items-center justify-center p-6 selection:bg-[#f7dce5] selection:text-[#b42356]">
+    <div className="min-h-screen bg-[#ffffff] text-[#382323] flex items-center justify-center p-6 selection:bg-[#dbeafe] selection:text-[#2563eb]">
       <div className="max-w-md w-full text-center space-y-6 p-8 rounded-3xl bg-white border border-stone-200 shadow-xl">
         <div className="w-16 h-16 rounded-3xl bg-amber-100 text-amber-800 flex items-center justify-center mx-auto shadow-md">
           <Coffee className="w-8 h-8 text-amber-700" />
@@ -39,7 +39,7 @@ export default function GlobalError({
           <button
             type="button"
             onClick={() => reset()}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#b42356] hover:bg-[#941743] text-white text-xs font-bold shadow-md transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md transition-all cursor-pointer"
           >
             <RotateCw className="w-3.5 h-3.5" />
             <span>Try Again</span>

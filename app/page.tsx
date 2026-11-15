@@ -34,6 +34,8 @@ import {
   ChevronRight,
   LayoutGrid,
   SlidersHorizontal,
+  Play,
+  Pause,
 } from "lucide-react";
 
 import catalogSource from "./menu-data.json";
@@ -116,7 +118,7 @@ const freeFriesPromotion = menuData.bundlesAndPromos.find(
 );
 
 const productPalettes: Record<string, { colors: [string, string]; accent: string }> = {
-  "Cream Cheese Series": { colors: ["#f4afc8", "#f9e1e9"], accent: "#b42356" },
+  "Cream Cheese Series": { colors: ["#f4afc8", "#f9e1e9"], accent: "#2563eb" },
   "Milk Tea Series": { colors: ["#d0aa82", "#f1e2cf"], accent: "#815538" },
   "Milky Bomb Tea": { colors: ["#c1c5f4", "#f0eefa"], accent: "#6265b9" },
   "Fruit Soda": { colors: ["#a9c5ff", "#e4edff"], accent: "#3d5d9c" },
@@ -185,7 +187,7 @@ function getProductPalette(category: string, name: string): { colors: [string, s
   }
   // Strawberry
   if (lowerName.includes("strawberry")) {
-    return { colors: ["#f5adc4", "#fae3e7"], accent: "#b42356" };
+    return { colors: ["#f5adc4", "#fae3e7"], accent: "#2563eb" };
   }
   // Blueberry / Blue Lemonade
   if (lowerName.includes("blueberry") || lowerName.includes("blue lemonade")) {
@@ -313,6 +315,8 @@ export default function Page() {
 
   // Menu View Mode (Carousel vs Grid)
   const [menuViewMode, setMenuViewMode] = useState<"carousel" | "grid">("carousel");
+  const [isAutoplay, setIsAutoplay] = useState(true);
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
   const menuCarouselRef = useRef<HTMLDivElement>(null);
 
   const scrollMenuCarousel = (direction: "left" | "right") => {
@@ -324,6 +328,23 @@ export default function Page() {
       });
     }
   };
+
+  // Carousel Autoplay & Animation Loop
+  useEffect(() => {
+    if (!isAutoplay || isCarouselHovered || menuViewMode !== "carousel") return;
+    const timer = setInterval(() => {
+      if (menuCarouselRef.current) {
+        const container = menuCarouselRef.current;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        if (container.scrollLeft >= maxScroll - 20) {
+          container.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          container.scrollBy({ left: 320, behavior: "smooth" });
+        }
+      }
+    }, 3200);
+    return () => clearInterval(timer);
+  }, [isAutoplay, isCarouselHovered, menuViewMode]);
 
   const showCustomerToast = (message: string) => {
     setCustomerToast(message);
@@ -653,22 +674,22 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen bg-[#fff8ef] text-[#382323] selection:bg-[#f7dce5] selection:text-[#b42356] font-sans">
+    <main className="min-h-screen bg-[#ffffff] text-[#0f172a] selection:bg-[#dbeafe] selection:text-[#2563eb] font-sans">
       {/* Top Navigation Bar */}
-      <nav className="sticky top-0 z-40 bg-[#fff8ef]/90 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 transition-shadow">
+      <nav className="sticky top-0 z-40 bg-[#ffffff]/90 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 transition-shadow">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#b42356] to-[#d03a6e] text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#2563eb] to-[#60a5fa] text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
               <Coffee className="w-5 h-5 text-amber-200" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-xl tracking-tight text-[#382323]">
+                <span className="font-black text-xl tracking-tight text-[#0f172a]">
                   Home
                 </span>
                 <Heart className="w-4 h-4 fill-red-500 text-red-500 inline-block mx-0.5" />
-                <span className="font-black text-xl tracking-tight text-[#b42356]">
+                <span className="font-black text-xl tracking-tight text-[#2563eb]">
                   Cafe
                 </span>
               </div>
@@ -680,16 +701,16 @@ export default function Page() {
 
           {/* Desktop Quick Nav Links */}
           <div className="hidden md:flex items-center gap-6 text-xs font-bold text-stone-600">
-            <a href="#featured" className="hover:text-[#b42356] transition-colors">
+            <a href="#featured" className="hover:text-[#2563eb] transition-colors">
               Featured
             </a>
-            <a href="#menu" className="hover:text-[#b42356] transition-colors">
+            <a href="#menu" className="hover:text-[#2563eb] transition-colors">
               Menu
             </a>
-            <a href="#bundles" className="hover:text-[#b42356] transition-colors">
+            <a href="#bundles" className="hover:text-[#2563eb] transition-colors">
               Barkada Bundles
             </a>
-            <a href="#events" className="hover:text-[#b42356] transition-colors">
+            <a href="#events" className="hover:text-[#2563eb] transition-colors">
               Campus Events
             </a>
           </div>
@@ -703,8 +724,8 @@ export default function Page() {
                 const next = toggleSound();
                 setSoundMutedState(next);
               }}
-              className={`p-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] transition-colors shadow-2xs cursor-pointer ${
-                soundMuted ? "text-stone-400" : "text-[#b42356]"
+              className={`p-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] transition-colors shadow-2xs cursor-pointer ${
+                soundMuted ? "text-stone-400" : "text-[#2563eb]"
               }`}
               aria-label={soundMuted ? "Unmute cafe chimes" : "Mute cafe chimes"}
               title={soundMuted ? "Unmute cafe chimes" : "Mute cafe chimes"}
@@ -716,7 +737,7 @@ export default function Page() {
             <button
               type="button"
               onClick={() => setTrackerModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-xs font-bold text-stone-700 transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] text-xs font-bold text-stone-700 transition-colors shadow-2xs"
             >
               <BellRing className="w-3.5 h-3.5 text-amber-600" />
               <span className="hidden sm:inline">Track Order</span>
@@ -731,11 +752,11 @@ export default function Page() {
             <button
               type="button"
               onClick={() => setCartDrawerOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#b42356] hover:bg-[#941743] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
+              className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
             >
               <ShoppingBag className="w-4 h-4 text-white" />
               <span>Cart</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-white text-[#b42356] text-[10px] font-black">
+              <span className="px-1.5 py-0.5 rounded-full bg-white text-[#2563eb] text-[10px] font-black">
                 {cartItemCount}
               </span>
             </button>
@@ -744,33 +765,33 @@ export default function Page() {
       </nav>
 
       {/* Hero Showcase Section with 3D Interactive Drink Experience */}
-      <section className="relative overflow-hidden pt-6 pb-12 px-4 sm:px-8 border-b border-stone-200/60 bg-gradient-to-b from-[#fff8ef] via-[#fff4ec] to-[#fff8ef]">
+      <section className="relative overflow-hidden pt-6 pb-12 px-4 sm:px-8 border-b border-stone-200/60 bg-gradient-to-b from-[#ffffff] via-[#f8fafc] to-[#ffffff]">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Left Hero Copy */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#fce8ef] text-[#b42356] text-xs font-bold uppercase tracking-wider shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#dbeafe] text-[#2563eb] text-xs font-bold uppercase tracking-wider shadow-2xs">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Campus Cafe · Order Ahead for Break</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#30231f] tracking-tight leading-[1.05]">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#0f172a] tracking-tight leading-[1.05]">
               Your next happy sip starts here.
             </h1>
 
-            <p className="text-base text-[#6f5d57] leading-relaxed max-w-xl">
+            <p className="text-base text-[#475569] leading-relaxed max-w-xl">
               Order drinks and crispy fries ahead of your break. Pick up at the counter freshly prepared.
             </p>
 
             {/* Campus Identity & Verification Trust Pill */}
             <div className="p-4 rounded-2xl bg-white/90 border border-[#e9dcd3] shadow-xs flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-rose-50 text-[#b42356] flex items-center justify-center shrink-0 border border-rose-100">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#2563eb] flex items-center justify-center shrink-0 border border-blue-100">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div className="text-xs">
-                <strong className="text-[#30231f] block font-bold">
+                <strong className="text-[#0f172a] block font-bold">
                   Campus Identity & Pickup Verification
                 </strong>
-                <span className="text-[#6f5d57]">
+                <span className="text-[#475569]">
                   No account needed. Quick guest checkout with school ID verification for students and faculty. Pick up freshly prepared at the counter.
                 </span>
               </div>
@@ -780,7 +801,7 @@ export default function Page() {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <a
                 href="#menu"
-                className="px-6 py-3 rounded-full bg-[#b42356] hover:bg-[#941743] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                className="px-6 py-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
               >
                 <span>Explore the menu</span>
                 <ArrowRight className="w-4 h-4" />
@@ -788,10 +809,10 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => setAiModalOpen(true)}
-                className="px-5 py-3 rounded-full bg-white hover:bg-stone-50 border border-[#e9dcd3] text-[#30231f] text-sm font-bold shadow-xs transition-all flex items-center gap-2"
+                className="px-5 py-3 rounded-full bg-white hover:bg-stone-50 border border-[#e9dcd3] text-[#0f172a] text-sm font-bold shadow-xs transition-all flex items-center gap-2"
               >
-                <Coffee className="w-4 h-4 text-[#b42356]" />
-                <span>Ask Hearty</span>
+                <Coffee className="w-4 h-4 text-[#2563eb]" />
+                <span>Ask Home</span>
               </button>
             </div>
           </div>
@@ -808,20 +829,28 @@ export default function Page() {
                     {selectedProduct.name}
                   </h3>
                 </div>
-                <span className="text-xl font-black text-[#b42356]">
+                <span className="text-xl font-black text-[#2563eb]">
                   ₱{currentUnitPrice}
                 </span>
               </div>
 
-              {/* Generated 3D Product Image Showcase */}
+              {/* Generated 3D Product Image Showcase with Floating Animation */}
               <div
-                className="relative h-80 w-full rounded-2xl overflow-hidden flex items-center justify-center p-4 border border-stone-200/60 shadow-inner group transition-all"
+                className="relative h-80 w-full rounded-2xl overflow-hidden flex items-center justify-center p-4 border border-blue-100 shadow-inner group transition-all"
                 style={{
-                  background: `radial-gradient(circle at center, ${selectedProduct.colors[1]} 0%, ${selectedProduct.colors[0]}30 70%, #fff8ef 100%)`,
+                  background: `radial-gradient(circle at center, #eff6ff 0%, #dbeafe60 60%, #ffffff 100%)`,
                 }}
               >
+                {/* Soft animated radial glow in background */}
+                <div
+                  className="absolute inset-0 animate-glow-pulse pointer-events-none"
+                  style={{
+                    background: `radial-gradient(circle at center, ${selectedProduct.colors[0]}25 0%, transparent 65%)`,
+                  }}
+                />
+
                 {selectedProduct.image ? (
-                  <div className="relative w-full h-full max-h-72 transition-transform duration-300 group-hover:scale-105">
+                  <div className="relative w-full h-full max-h-72 transition-transform duration-300 group-hover:scale-105 animate-float">
                     <Image
                       src={selectedProduct.image}
                       alt={selectedProduct.name}
@@ -834,7 +863,7 @@ export default function Page() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center text-stone-400">
-                    <Coffee className="w-16 h-16 text-[#b42356]/60 mb-2" />
+                    <Coffee className="w-16 h-16 text-[#2563eb]/60 mb-2" />
                     <span className="text-xs font-bold">{selectedProduct.name}</span>
                   </div>
                 )}
@@ -845,13 +874,13 @@ export default function Page() {
                     {selectedProduct.category}
                   </span>
                   {selectedProduct.badge && (
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-[#b42356] bg-rose-100/90 shadow-xs border border-rose-200">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-[#2563eb] bg-rose-100/90 shadow-xs border border-blue-200">
                       {selectedProduct.badge}
                     </span>
                   )}
                 </div>
 
-                <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-white/95 text-[#b42356] text-xs font-black shadow-xs border border-white z-10">
+                <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-white/95 text-[#2563eb] text-xs font-black shadow-xs border border-white z-10">
                   {selectedSize} · ₱{currentUnitPrice}
                 </div>
               </div>
@@ -879,8 +908,8 @@ export default function Page() {
                       }}
                       className={`shrink-0 w-16 h-16 rounded-xl border p-1 transition-all flex flex-col items-center justify-center cursor-pointer ${
                         selectedProductId === item.id
-                          ? "border-[#b42356] ring-2 ring-[#b42356]/30 bg-rose-50/70 shadow-xs scale-105"
-                          : "border-stone-200 bg-white hover:border-[#b42356]/40"
+                          ? "border-[#2563eb] ring-2 ring-[#2563eb]/30 bg-blue-50/70 shadow-xs scale-105"
+                          : "border-stone-200 bg-white hover:border-[#2563eb]/40"
                       }`}
                       title={item.name}
                     >
@@ -922,7 +951,7 @@ export default function Page() {
                         }}
                         className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all ${
                           selectedSize === s.label
-                            ? "bg-[#b42356] text-white shadow-xs"
+                            ? "bg-[#2563eb] text-white shadow-xs"
                             : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                         }`}
                       >
@@ -981,7 +1010,7 @@ export default function Page() {
                       }}
                       className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                         selectedBoba
-                          ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
+                          ? "border-[#2563eb] bg-[#dbeafe] text-[#2563eb]"
                           : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
                       }`}
                     >
@@ -997,7 +1026,7 @@ export default function Page() {
                         }}
                         className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                           selectedCreamCheese
-                            ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
+                            ? "border-[#2563eb] bg-[#dbeafe] text-[#2563eb]"
                             : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
                         }`}
                       >
@@ -1014,7 +1043,7 @@ export default function Page() {
                     placeholder="Add note for barista (e.g. less ice, extra napkin)..."
                     value={orderNotes}
                     onChange={(e) => setOrderNotes(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-stone-50/70 text-xs text-stone-800 placeholder-stone-400 outline-none focus:border-[#b42356]"
+                    className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-stone-50/70 text-xs text-stone-800 placeholder-stone-400 outline-none focus:border-[#2563eb]"
                   />
                 </div>
 
@@ -1022,7 +1051,7 @@ export default function Page() {
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="w-full py-2.5 rounded-2xl bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 mt-2"
+                  className="w-full py-2.5 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 mt-2"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add to Order · ₱{currentUnitPrice}</span>
@@ -1054,14 +1083,14 @@ export default function Page() {
       <section id="featured" className="px-4 sm:px-8 py-8 max-w-7xl mx-auto border-b border-stone-200/60">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fce8ef] text-[#b42356] text-xs font-bold uppercase tracking-wider mb-1">
-              <Star className="w-3.5 h-3.5 fill-[#b42356]" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dbeafe] text-[#2563eb] text-xs font-bold uppercase tracking-wider mb-1">
+              <Star className="w-3.5 h-3.5 fill-[#2563eb]" />
               <span>Campus Favorites</span>
             </div>
-            <h2 className="text-2xl font-black text-[#30231f]">
+            <h2 className="text-2xl font-black text-[#0f172a]">
               Featured Drinks & Bestsellers
             </h2>
-            <p className="text-xs text-[#6f5d57] mt-0.5">
+            <p className="text-xs text-[#475569] mt-0.5">
               The verified most-ordered student and teacher picks from Home ❤️ Cafe.
             </p>
           </div>
@@ -1077,28 +1106,28 @@ export default function Page() {
                 setSelectedSize(product.sizes[0].label);
                 document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="group p-4 rounded-2xl bg-white border border-[#e9dcd3] hover:border-[#b42356] shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+              className="group p-4 rounded-2xl bg-white border border-[#e9dcd3] hover:border-[#2563eb] shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between gap-1 mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#b42356] bg-[#fce8ef] px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563eb] bg-[#dbeafe] px-2 py-0.5 rounded-full">
                     Bestseller
                   </span>
-                  <span className="text-xs font-bold text-[#30231f]">
+                  <span className="text-xs font-bold text-[#0f172a]">
                     ₱{product.sizes[0].price}
                   </span>
                 </div>
-                <h3 className="font-bold text-sm text-[#30231f] group-hover:text-[#b42356] transition-colors leading-snug">
+                <h3 className="font-bold text-sm text-[#0f172a] group-hover:text-[#2563eb] transition-colors leading-snug">
                   {product.name}
                 </h3>
-                <p className="text-[11px] text-[#6f5d57] line-clamp-2 mt-1">
+                <p className="text-[11px] text-[#475569] line-clamp-2 mt-1">
                   {product.description || `${product.category} specialty`}
                 </p>
               </div>
 
               <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
                 <span className="text-[10px] text-stone-400 font-medium">3D Preview</span>
-                <span className="text-xs font-bold text-[#b42356] group-hover:translate-x-0.5 transition-transform">
+                <span className="text-xs font-bold text-[#2563eb] group-hover:translate-x-0.5 transition-transform">
                   Customize →
                 </span>
               </div>
@@ -1110,7 +1139,7 @@ export default function Page() {
       {/* Category Navigation Bar */}
       <section
         id="menu"
-        className="sticky top-[65px] z-30 bg-[#fff8ef]/95 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 shadow-2xs"
+        className="sticky top-[65px] z-30 bg-[#ffffff]/95 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 shadow-2xs"
       >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Scrollable Category Tabs */}
@@ -1125,7 +1154,7 @@ export default function Page() {
                 }}
                 className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${
                   activeCategory === cat
-                    ? "bg-[#b42356] text-white shadow-xs"
+                    ? "bg-[#2563eb] text-white shadow-xs"
                     : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
                 }`}
               >
@@ -1142,7 +1171,7 @@ export default function Page() {
               placeholder="Search drinks & snacks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-full border border-stone-200 bg-white text-xs font-medium focus:border-[#b42356] outline-none shadow-2xs"
+              className="w-full pl-9 pr-4 py-2 rounded-full border border-stone-200 bg-white text-xs font-medium focus:border-[#2563eb] outline-none shadow-2xs"
             />
           </div>
         </div>
@@ -1152,11 +1181,11 @@ export default function Page() {
       <section className="px-4 sm:px-8 py-10 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-[#b42356] text-xs font-bold mb-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#2563eb] text-xs font-bold mb-1.5">
               <Sparkles className="w-3.5 h-3.5" />
               <span>3D Product Collection</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-[#382323]">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a]">
               {activeCategory === "All" ? "Complete Cafe Menu" : activeCategory}
             </h2>
             <p className="text-xs text-stone-500 mt-1">
@@ -1172,7 +1201,7 @@ export default function Page() {
                 onClick={() => setMenuViewMode("carousel")}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all cursor-pointer ${
                   menuViewMode === "carousel"
-                    ? "bg-[#b42356] text-white shadow-xs"
+                    ? "bg-[#2563eb] text-white shadow-xs"
                     : "text-stone-600 hover:text-stone-900"
                 }`}
               >
@@ -1184,7 +1213,7 @@ export default function Page() {
                 onClick={() => setMenuViewMode("grid")}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all cursor-pointer ${
                   menuViewMode === "grid"
-                    ? "bg-[#b42356] text-white shadow-xs"
+                    ? "bg-[#2563eb] text-white shadow-xs"
                     : "text-stone-600 hover:text-stone-900"
                 }`}
               >
@@ -1193,27 +1222,53 @@ export default function Page() {
               </button>
             </div>
 
-            {/* Carousel Arrow Buttons */}
+            {/* Carousel Controls & Animation Toggle */}
             {menuViewMode === "carousel" && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => scrollMenuCarousel("left")}
-                  className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
-                  aria-label="Scroll left"
-                  title="Scroll left"
+                  onClick={() => setIsAutoplay(!isAutoplay)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-all cursor-pointer ${
+                    isAutoplay
+                      ? "border-blue-200 bg-blue-50 text-blue-700 shadow-2xs"
+                      : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+                  }`}
+                  title={isAutoplay ? "Pause auto-scroll animation" : "Start auto-scroll animation"}
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  {isAutoplay ? (
+                    <>
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping inline-block" />
+                      <Pause className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Auto-scroll</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-3.5 h-3.5 text-stone-500 fill-stone-500" />
+                      <span className="hidden sm:inline">Play</span>
+                    </>
+                  )}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => scrollMenuCarousel("right")}
-                  className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
-                  aria-label="Scroll right"
-                  title="Scroll right"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => scrollMenuCarousel("left")}
+                    className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
+                    aria-label="Scroll left"
+                    title="Scroll left"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => scrollMenuCarousel("right")}
+                    className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
+                    aria-label="Scroll right"
+                    title="Scroll right"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1221,12 +1276,16 @@ export default function Page() {
 
         {/* Carousel View (Scroll Left to Right) */}
         {menuViewMode === "carousel" ? (
-          <div className="relative group/carousel">
+          <div
+            className="relative group/carousel"
+            onMouseEnter={() => setIsCarouselHovered(true)}
+            onMouseLeave={() => setIsCarouselHovered(false)}
+          >
             {/* Left Floating Arrow on Desktop */}
             <button
               type="button"
               onClick={() => scrollMenuCarousel("left")}
-              className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#b42356] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+              className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
               aria-label="Previous items"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -1270,7 +1329,7 @@ export default function Page() {
             <button
               type="button"
               onClick={() => scrollMenuCarousel("right")}
-              className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#b42356] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+              className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
               aria-label="Next items"
             >
               <ChevronRight className="w-5 h-5" />
@@ -1279,7 +1338,7 @@ export default function Page() {
             {/* Carousel Navigation Hint */}
             <div className="flex items-center justify-between text-xs text-stone-500 pt-2 px-1">
               <span className="flex items-center gap-1.5 font-medium">
-                <ArrowRight className="w-3.5 h-3.5 text-[#b42356]" />
+                <ArrowRight className="w-3.5 h-3.5 text-[#2563eb]" />
                 Swipe or click arrows to scroll left and right
               </span>
               <span className="font-semibold text-stone-400">
@@ -1326,7 +1385,7 @@ export default function Page() {
                 <Flame className="w-3.5 h-3.5" />
                 <span>Barkada Saver Bundles</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#382323] mt-1">
+              <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] mt-1">
                 Share More, Spend Less
               </h2>
               <p className="text-xs text-stone-500">
@@ -1348,7 +1407,7 @@ export default function Page() {
                   }}
                   className={`px-4 py-2 rounded-2xl text-xs font-bold border transition-all ${
                     bundleId === b.id
-                      ? "border-[#b42356] bg-[#b42356] text-white shadow-md"
+                      ? "border-[#2563eb] bg-[#2563eb] text-white shadow-md"
                       : "border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100"
                   }`}
                 >
@@ -1359,7 +1418,7 @@ export default function Page() {
           </div>
 
           {/* 4-Slot Tray Builder */}
-          <div className="p-6 rounded-3xl bg-[#fff8ef] border border-stone-200/80 shadow-md">
+          <div className="p-6 rounded-3xl bg-[#ffffff] border border-stone-200/80 shadow-md">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* 3 Drink Slots */}
               {bundleDrinkIds.map((drinkId, idx) => (
@@ -1409,14 +1468,14 @@ export default function Page() {
             <div className="mt-6 pt-4 border-t border-stone-200 flex items-center justify-between flex-wrap gap-4">
               <div>
                 <span className="text-xs text-stone-500 block">Bundle Price</span>
-                <strong className="text-2xl font-black text-[#b42356]">
+                <strong className="text-2xl font-black text-[#2563eb]">
                   ₱{activeBundle.price}
                 </strong>
               </div>
               <button
                 type="button"
                 onClick={handleAddBundle}
-                className="px-6 py-2.5 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+                className="px-6 py-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Bundle to Cart</span>
@@ -1429,14 +1488,14 @@ export default function Page() {
       {/* Featured Atmosphere & Cafe Events Section */}
       <section id="events" className="px-4 sm:px-8 py-12 max-w-7xl mx-auto space-y-8">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fce8ef] text-[#b42356] text-xs font-bold uppercase">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dbeafe] text-[#2563eb] text-xs font-bold uppercase">
             <Calendar className="w-3.5 h-3.5" />
             <span>Campus Cafe Life & Events</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#30231f] mt-1">
+          <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] mt-1">
             Good things are better shared.
           </h2>
-          <p className="text-xs text-[#6f5d57]">
+          <p className="text-xs text-[#475569]">
             Join the campus events and activities happening at Home ❤️ Cafe.
           </p>
         </div>
@@ -1450,7 +1509,7 @@ export default function Page() {
               <div
                 className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold ${
                   ev.badgeColor === "rose"
-                    ? "bg-rose-100 text-[#b42356]"
+                    ? "bg-rose-100 text-[#2563eb]"
                     : ev.badgeColor === "sky"
                       ? "bg-sky-100 text-sky-700"
                       : "bg-amber-100 text-amber-700"
@@ -1465,7 +1524,7 @@ export default function Page() {
                 )}
               </div>
               <h3 className="font-extrabold text-stone-800 text-base">{ev.title}</h3>
-              <div className="text-[11px] font-bold text-[#b42356] bg-[#fce8ef] px-2.5 py-1 rounded-lg inline-block">
+              <div className="text-[11px] font-bold text-[#2563eb] bg-[#dbeafe] px-2.5 py-1 rounded-lg inline-block">
                 {ev.schedule}
               </div>
               <p className="text-xs text-stone-500 leading-relaxed">{ev.description}</p>
@@ -1475,20 +1534,20 @@ export default function Page() {
       </section>
 
       {/* Useful & Hospitable Cafe Footer */}
-      <footer className="border-t border-stone-200/80 bg-white py-12 px-4 sm:px-8 text-[#30231f]">
+      <footer className="border-t border-stone-200/80 bg-white py-12 px-4 sm:px-8 text-[#0f172a]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start justify-between gap-8">
           <div className="space-y-3 max-w-sm">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#b42356] to-[#d03a6e] text-white flex items-center justify-center shadow-xs">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#2563eb] to-[#60a5fa] text-white flex items-center justify-center shadow-xs">
                 <Coffee className="w-4 h-4 text-amber-200" />
               </div>
               <div className="flex items-center gap-1 font-black text-lg">
                 <span>Home</span>
                 <Heart className="w-4 h-4 fill-red-500 text-red-500" />
-                <span className="text-[#b42356]">Cafe</span>
+                <span className="text-[#2563eb]">Cafe</span>
               </div>
             </div>
-            <p className="text-xs text-[#6f5d57] leading-relaxed">
+            <p className="text-xs text-[#475569] leading-relaxed">
               Campus cafe serving handcrafted milk tea, fruit sodas, rich coffee, and crispy golden fries. Order ahead for quick pickup during campus breaks.
             </p>
             <div className="text-[11px] text-stone-400">
@@ -1498,27 +1557,27 @@ export default function Page() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-xs">
             <div>
-              <span className="font-bold text-[#30231f] block mb-2.5 uppercase tracking-wider text-[11px]">
+              <span className="font-bold text-[#0f172a] block mb-2.5 uppercase tracking-wider text-[11px]">
                 Quick Menu
               </span>
-              <ul className="space-y-2 text-[#6f5d57]">
+              <ul className="space-y-2 text-[#475569]">
                 <li>
-                  <a href="#featured" className="hover:text-[#b42356] transition-colors">
+                  <a href="#featured" className="hover:text-[#2563eb] transition-colors">
                     Featured Bestsellers
                   </a>
                 </li>
                 <li>
-                  <a href="#menu" className="hover:text-[#b42356] transition-colors">
+                  <a href="#menu" className="hover:text-[#2563eb] transition-colors">
                     Full Drink Menu
                   </a>
                 </li>
                 <li>
-                  <a href="#bundles" className="hover:text-[#b42356] transition-colors">
+                  <a href="#bundles" className="hover:text-[#2563eb] transition-colors">
                     Barkada Bundles
                   </a>
                 </li>
                 <li>
-                  <a href="#events" className="hover:text-[#b42356] transition-colors">
+                  <a href="#events" className="hover:text-[#2563eb] transition-colors">
                     Campus Events
                   </a>
                 </li>
@@ -1526,15 +1585,15 @@ export default function Page() {
             </div>
 
             <div>
-              <span className="font-bold text-[#30231f] block mb-2.5 uppercase tracking-wider text-[11px]">
+              <span className="font-bold text-[#0f172a] block mb-2.5 uppercase tracking-wider text-[11px]">
                 Customer Care
               </span>
-              <ul className="space-y-2 text-[#6f5d57]">
+              <ul className="space-y-2 text-[#475569]">
                 <li>
                   <button
                     type="button"
                     onClick={() => setTrackerModalOpen(true)}
-                    className="hover:text-[#b42356] transition-colors text-left"
+                    className="hover:text-[#2563eb] transition-colors text-left"
                   >
                     Track Active Order
                   </button>
@@ -1543,9 +1602,9 @@ export default function Page() {
                   <button
                     type="button"
                     onClick={() => setAiModalOpen(true)}
-                    className="hover:text-[#b42356] transition-colors text-left"
+                    className="hover:text-[#2563eb] transition-colors text-left"
                   >
-                    Ask Hearty (AI Barista)
+                    Ask Home (AI Barista)
                   </button>
                 </li>
                 <li>
@@ -1562,7 +1621,7 @@ export default function Page() {
         <div className="fixed inset-0 z-50 flex justify-end bg-stone-900/50 backdrop-blur-xs">
           <div className="relative w-full max-w-md h-full bg-[#fffefc] shadow-2xl flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
             {/* Drawer Header */}
-            <div className="px-6 py-4 bg-[#382323] text-white flex items-center justify-between">
+            <div className="px-6 py-4 bg-[#0f172a] text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-amber-300" />
                 <h3 className="font-bold text-base">Your Cart ({cartItemCount})</h3>
@@ -1589,7 +1648,7 @@ export default function Page() {
                       setCartDrawerOpen(false);
                       document.getElementById("featured")?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="mt-4 px-4 py-2 rounded-full bg-[#b42356] hover:bg-[#941743] text-white text-xs font-bold transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                    className="mt-4 px-4 py-2 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>Explore Bestsellers</span>
@@ -1688,7 +1747,7 @@ export default function Page() {
                     setCartDrawerOpen(false);
                     setCheckoutModalOpen(true);
                   }}
-                  className="w-full py-3.5 rounded-full bg-[#b42356] hover:bg-[#941743] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                 >
                   <ShieldCheck className="w-4 h-4 text-white" />
                   <span>Verified Campus Checkout · ₱{cartSubtotal}</span>
@@ -1707,19 +1766,19 @@ export default function Page() {
             setAiModalOpen(true);
             playChime("notification");
           }}
-          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95 border-2 border-white/60 cursor-pointer"
+          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95 border-2 border-white/60 cursor-pointer"
         >
           <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-white animate-pulse" />
           <Coffee className="w-5 h-5 text-amber-200" />
           <span className="text-xs font-black tracking-wide">
-            Ask Hearty
+            Ask Home
           </span>
         </button>
       </div>
 
       {/* Mobile Sticky Bottom Cart Bar */}
       {cart.length > 0 && !cartDrawerOpen && (
-        <div className="fixed bottom-0 inset-x-0 z-30 sm:hidden bg-[#382323] text-white px-4 py-3 shadow-2xl flex items-center justify-between border-t border-white/10 animate-in slide-in-from-bottom duration-200">
+        <div className="fixed bottom-0 inset-x-0 z-30 sm:hidden bg-[#0f172a] text-white px-4 py-3 shadow-2xl flex items-center justify-between border-t border-white/10 animate-in slide-in-from-bottom duration-200">
           <div>
             <span className="text-[10px] text-white/70 block uppercase font-bold tracking-wider">
               Your Order ({cartItemCount} {cartItemCount === 1 ? "item" : "items"})
@@ -1731,7 +1790,7 @@ export default function Page() {
           <button
             type="button"
             onClick={() => setCartDrawerOpen(true)}
-            className="px-4 py-2 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer active:scale-95"
+            className="px-4 py-2 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <ShoppingBag className="w-3.5 h-3.5 text-white" />
             <span>View Cart</span>

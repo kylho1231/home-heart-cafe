@@ -2,19 +2,19 @@
 
 :root {
   color-scheme: light;
-  --cream: #fff8ef;
-  --paper: #fffdf9;
-  --cocoa: #382323;
-  --cocoa-soft: #624d47;
-  --muted: #76645d;
-  --raspberry: #b42356;
-  --raspberry-dark: #921a44;
-  --blush: #f7dce5;
-  --blush-soft: #fff0f4;
+  --cream: #ffffff;
+  --paper: #f8fafc;
+  --cocoa: #0f172a;
+  --cocoa-soft: #334155;
+  --muted: #64748b;
+  --raspberry: #2563eb;
+  --raspberry-dark: #1d4ed8;
+  --blush: #dbeafe;
+  --blush-soft: #eff6ff;
   --gold: #f3c95c;
   --line: #eadfd6;
   --sage: #47664e;
-  --shadow-soft: 0 12px 32px rgb(70 39 34 / 7%);
+  --shadow-soft: 0 12px 32px rgb(37 99 235 / 7%);
   --radius-card: 20px;
   --radius-control: 12px;
 }
@@ -1910,4 +1910,48 @@ select:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+
+@keyframes floatAnimation {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.8deg);
+  }
+}
+
+@keyframes glowPulseAnimation {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-float {
+  animation: floatAnimation 3.8s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glowPulseAnimation 3s ease-in-out infinite;
+}
+
+.animate-card-entrance {
+  animation: cardEntrance 0.35s ease-out forwards;
 }

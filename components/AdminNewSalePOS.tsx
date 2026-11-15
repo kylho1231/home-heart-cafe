@@ -256,7 +256,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
               placeholder="Search products by name or flavor..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-xl border border-stone-200 bg-stone-50 text-xs font-semibold focus:border-[#b42356] outline-none"
+              className="w-full pl-9 pr-3 py-2 rounded-xl border border-stone-200 bg-stone-50 text-xs font-semibold focus:border-[#2563eb] outline-none"
             />
           </div>
 
@@ -269,7 +269,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
                 onClick={() => setCategoryFilter(cat)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-colors cursor-pointer ${
                   categoryFilter === cat
-                    ? "bg-[#b42356] text-white shadow-2xs"
+                    ? "bg-[#2563eb] text-white shadow-2xs"
                     : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                 }`}
               >
@@ -285,7 +285,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
             <div
               key={product.id}
               onClick={() => openCustomizer(product)}
-              className="p-3 rounded-2xl bg-white border border-stone-200 hover:border-[#b42356] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group select-none"
+              className="p-3 rounded-2xl bg-white border border-stone-200 hover:border-[#2563eb] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group select-none"
             >
               <div>
                 <div className="relative w-full h-24 mb-2 rounded-xl bg-stone-50 overflow-hidden flex items-center justify-center">
@@ -305,7 +305,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
                     </span>
                   )}
                 </div>
-                <h4 className="font-extrabold text-xs text-stone-900 group-hover:text-[#b42356] transition-colors leading-tight line-clamp-1">
+                <h4 className="font-extrabold text-xs text-stone-900 group-hover:text-[#2563eb] transition-colors leading-tight line-clamp-1">
                   {product.name}
                 </h4>
                 <span className="text-[10px] text-stone-400 font-medium block">
@@ -314,12 +314,12 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
               </div>
 
               <div className="mt-2 pt-2 border-t border-stone-100 flex items-center justify-between">
-                <strong className="text-xs font-black text-[#b42356]">
+                <strong className="text-xs font-black text-[#2563eb]">
                   ₱{product.startingPrice}
                 </strong>
                 <button
                   type="button"
-                  className="w-6 h-6 rounded-lg bg-stone-100 group-hover:bg-[#f7dce5] text-stone-600 group-hover:text-[#b42356] flex items-center justify-center transition-colors"
+                  className="w-6 h-6 rounded-lg bg-stone-100 group-hover:bg-[#dbeafe] text-stone-600 group-hover:text-[#2563eb] flex items-center justify-center transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -394,7 +394,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
                     {item.size} · Sugar: {item.sugarLevel} · {item.iceLevel}
                   </div>
                   {(item.addBoba || item.addCreamCheese) && (
-                    <div className="text-[10px] text-[#b42356] font-bold">
+                    <div className="text-[10px] text-[#2563eb] font-bold">
                       {item.addBoba && "+ Boba (₱10) "}
                       {item.addCreamCheese && "+ Cream Cheese (₱15)"}
                     </div>
@@ -465,7 +465,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
         <div className="p-4 bg-stone-50 border-t border-stone-200 space-y-3 shrink-0">
           <div className="flex items-center justify-between text-base font-black text-stone-900">
             <span>Total Amount:</span>
-            <span className="text-xl text-[#b42356]">₱{subtotal}</span>
+            <span className="text-xl text-[#2563eb]">₱{subtotal}</span>
           </div>
 
           {/* Payment Method Selector */}
@@ -475,7 +475,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
               onClick={() => setPaymentMethod("counter_cash")}
               className={`py-2 px-3 rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 paymentMethod === "counter_cash"
-                  ? "border-[#b42356] bg-[#b42356] text-white shadow-xs"
+                  ? "border-[#2563eb] bg-[#2563eb] text-white shadow-xs"
                   : "border-stone-200 bg-white text-stone-700 hover:bg-stone-100"
               }`}
             >
@@ -511,7 +511,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
                     placeholder="0"
                     value={cashTendered}
                     onChange={(e) => setCashTendered(e.target.value)}
-                    className="w-full pl-6 pr-2 py-1.5 rounded-lg border border-stone-300 bg-white text-right font-black text-sm outline-none focus:border-[#b42356]"
+                    className="w-full pl-6 pr-2 py-1.5 rounded-lg border border-stone-300 bg-white text-right font-black text-sm outline-none focus:border-[#2563eb]"
                   />
                 </div>
               </div>
@@ -582,7 +582,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
             type="button"
             disabled={submitting || cart.length === 0}
             onClick={handleCompleteSale}
-            className="w-full py-3 rounded-2xl bg-[#b42356] hover:bg-[#921a44] disabled:opacity-50 text-white text-sm font-black shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-50 text-white text-sm font-black shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <CheckCircle2 className="w-5 h-5" />
             <span>
@@ -625,7 +625,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
                     onClick={() => setSelectedSize(s.label)}
                     className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                       selectedSize === s.label
-                        ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
+                        ? "border-[#2563eb] bg-[#dbeafe] text-[#2563eb]"
                         : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
                     }`}
                   >
@@ -676,7 +676,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
                   onClick={() => setAddBoba(!addBoba)}
                   className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                     addBoba
-                      ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
+                      ? "border-[#2563eb] bg-[#dbeafe] text-[#2563eb]"
                       : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
                   }`}
                 >
@@ -688,7 +688,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
                     onClick={() => setAddCreamCheese(!addCreamCheese)}
                     className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                       addCreamCheese
-                        ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
+                        ? "border-[#2563eb] bg-[#dbeafe] text-[#2563eb]"
                         : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
                     }`}
                   >
@@ -727,7 +727,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
             <button
               type="button"
               onClick={handleAddToCart}
-              className="w-full py-3 rounded-2xl bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-black shadow-md transition-all cursor-pointer"
+              className="w-full py-3 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-black shadow-md transition-all cursor-pointer"
             >
               Add to Ticket
             </button>

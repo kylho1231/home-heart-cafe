@@ -246,7 +246,7 @@ export function InteractiveCup3D({
               transform: "translate(-50%, -50%) translateZ(15px)",
             }}
           >
-            <div className="flex items-center justify-center gap-1 text-[11px] font-bold tracking-wider text-[#b42356] uppercase">
+            <div className="flex items-center justify-center gap-1 text-[11px] font-bold tracking-wider text-[#2563eb] uppercase">
               <span>Home</span>
               <Heart className="w-2.5 h-2.5 fill-red-500 text-red-500 inline-block" />
               <span>Café</span>
@@ -289,7 +289,7 @@ export function InteractiveCup3D({
       {/* Interactive Helper Indicator */}
       {interactive && (
         <div className="absolute bottom-0 right-2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 backdrop-blur-md text-[11px] font-medium text-stone-600 border border-stone-200/60 shadow-sm pointer-events-none">
-          <Sparkles className="w-3.5 h-3.5 text-[#b42356]" />
+          <Sparkles className="w-3.5 h-3.5 text-[#2563eb]" />
           <span>Interactive 3D Tilt</span>
         </div>
       )}

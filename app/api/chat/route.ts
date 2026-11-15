@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
     else {
       reply =
         "👋 **Kumusta! Welcome to Home ❤️ Cafe!**\n\n" +
-        "I'm **Hearty**, your digital barista concierge. I can help you with:\n" +
+        "I'm **Home**, your digital barista concierge. I can help you with:\n" +
         "• 🎁 **Promos & Discounts** (Barkada Bundles, Free Fries)\n" +
         "• 📅 **Campus Cafe Events** (Acoustic Friday, Study Lounge)\n" +
         "• ☕ **Drink Recommendations** based on what flavors you crave\n" +

@@ -152,7 +152,7 @@ export function AdminAddProductModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 border-b border-stone-200">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-[#f7dce5] text-[#b42356] flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-[#dbeafe] text-[#2563eb] flex items-center justify-center font-bold">
               <Plus className="w-5 h-5" />
             </div>
             <div>
@@ -183,7 +183,7 @@ export function AdminAddProductModal({
               placeholder="e.g. Spanish Latte Supreme"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-semibold focus:border-[#b42356] outline-none"
+              className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-semibold focus:border-[#2563eb] outline-none"
             />
           </div>
 
@@ -194,7 +194,7 @@ export function AdminAddProductModal({
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-semibold focus:border-[#b42356] outline-none cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-semibold focus:border-[#2563eb] outline-none cursor-pointer"
               >
                 {PRESET_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -215,7 +215,7 @@ export function AdminAddProductModal({
                   placeholder="e.g. Pastries"
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-semibold focus:border-[#b42356] outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-semibold focus:border-[#2563eb] outline-none"
                 />
               </div>
             )}
@@ -231,7 +231,7 @@ export function AdminAddProductModal({
               placeholder="e.g. Premium espresso layered with condensed milk and steamed milk..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-medium focus:border-[#b42356] outline-none"
+              className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-medium focus:border-[#2563eb] outline-none"
             />
           </div>
 
@@ -242,7 +242,7 @@ export function AdminAddProductModal({
               <button
                 type="button"
                 onClick={handleAddSizeVariant}
-                className="text-[11px] font-bold text-[#b42356] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-[11px] font-bold text-[#2563eb] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Variant</span>
@@ -302,7 +302,7 @@ export function AdminAddProductModal({
                   }}
                   className={`p-1 rounded-xl border text-center transition-all cursor-pointer ${
                     selectedImage === img.path && !customImageUrl
-                      ? "border-[#b42356] ring-2 ring-[#b42356]/20 bg-[#fffafd]"
+                      ? "border-[#2563eb] ring-2 ring-[#2563eb]/20 bg-[#fffafd]"
                       : "border-stone-200 bg-white hover:border-stone-300"
                   }`}
                 >
@@ -321,7 +321,7 @@ export function AdminAddProductModal({
               placeholder="Or enter custom image URL (/products/... or https://...)"
               value={customImageUrl}
               onChange={(e) => setCustomImageUrl(e.target.value)}
-              className="w-full px-3 py-1.5 rounded-xl border border-stone-300 bg-stone-50 text-[11px] font-mono outline-none focus:border-[#b42356]"
+              className="w-full px-3 py-1.5 rounded-xl border border-stone-300 bg-stone-50 text-[11px] font-mono outline-none focus:border-[#2563eb]"
             />
           </div>
 
@@ -332,7 +332,7 @@ export function AdminAddProductModal({
                 type="checkbox"
                 checked={allowsBoba}
                 onChange={(e) => setAllowsBoba(e.target.checked)}
-                className="rounded accent-[#b42356] w-4 h-4"
+                className="rounded accent-[#2563eb] w-4 h-4"
               />
               <span>Allows Boba Pearls (+₱10)</span>
             </label>
@@ -342,7 +342,7 @@ export function AdminAddProductModal({
                 type="checkbox"
                 checked={allowsCreamCheese}
                 onChange={(e) => setAllowsCreamCheese(e.target.checked)}
-                className="rounded accent-[#b42356] w-4 h-4"
+                className="rounded accent-[#2563eb] w-4 h-4"
               />
               <span>Allows Cream Cheese (+₱15)</span>
             </label>
@@ -366,7 +366,7 @@ export function AdminAddProductModal({
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 rounded-2xl bg-[#b42356] hover:bg-[#921a44] disabled:opacity-50 text-white font-black shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 py-2.5 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-50 text-white font-black shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{submitting ? "Saving..." : "Create Product"}</span>

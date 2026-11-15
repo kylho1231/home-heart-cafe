@@ -14,7 +14,7 @@ A modern, secure, and production-ready campus cafe web application built with **
 - **Barkada Saver Bundles**: Interactive bundle builder (3 drinks + 1 Large French Fries) with server-enforced pricing (₱135 for Fruit Soda, ₱155 for Milk Tea).
 - **Free Medium Fries Promo**: Server-enforced promotional rule unlocking 1x Free Medium Fries on ala-carte drink spend of ₱200 or more (bundles and fries excluded from threshold).
 - **Campus Anti-Scam Identity Verification**: Guest checkout (no account needed). Students provide Name, Grade & Section, Contact, 12-digit DepEd LRN, and optional photo ID. Faculty/teachers can check out under the Teacher/Staff role without requiring an LRN.
-- **Ask Hearty (AI Barista Concierge)**: Digital barista concierge answering customer questions about promos, campus events, top bestsellers, and ID verification rationale.
+- **Ask Home (AI Barista Concierge)**: Digital barista concierge answering customer questions about promos, campus events, top bestsellers, and ID verification rationale.
 - **Audio Chimes & Sound Toggle**: Lightweight Web Audio API chimes on order events with a global mute toggle in the navigation header.
 - **Mobile Sticky Cart**: Persistent mobile quick-bar showing real-time item count and subtotal for effortless thumb-first checkout.
 

@@ -60,8 +60,8 @@ export function Product3DCard({
         !isAvailable
           ? "opacity-60 bg-stone-100/80 border-stone-300 pointer-events-none"
           : isSelected
-            ? "border-[#b42356] ring-2 ring-[#b42356]/20 bg-[#fffafd] shadow-md"
-            : "border-stone-200/80 hover:border-[#b42356]/40 shadow-sm"
+            ? "border-[#2563eb] ring-2 ring-[#2563eb]/20 bg-[#f8faff] shadow-md"
+            : "border-stone-200/80 hover:border-[#2563eb]/40 shadow-sm"
       }`}
     >
       {/* Top Card Badge / Category */}
@@ -74,7 +74,7 @@ export function Product3DCard({
             {sizeCountLabel}
           </span>
           {badge && isAvailable && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#f7dce5] text-[#b42356] shadow-xs">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#dbeafe] text-[#2563eb] shadow-xs">
               <Sparkles className="w-2.5 h-2.5" />
               {badge}
             </span>
@@ -108,7 +108,7 @@ export function Product3DCard({
         ) : (
           /* Stylized Fallback Icon */
           <div className="flex flex-col items-center justify-center text-stone-400">
-            <Coffee className="w-10 h-10 text-[#b42356]/60 mb-1" />
+            <Coffee className="w-10 h-10 text-[#2563eb]/60 mb-1" />
             <span className="text-[10px] font-bold text-stone-500">{name}</span>
           </div>
         )}
@@ -117,7 +117,7 @@ export function Product3DCard({
       {/* Product Information */}
       <div className="flex-1 flex flex-col justify-between">
         <div>
-          <h3 className="font-bold text-stone-800 text-base leading-snug group-hover:text-[#b42356] transition-colors">
+          <h3 className="font-bold text-stone-800 text-base leading-snug group-hover:text-[#2563eb] transition-colors">
             {name}
           </h3>
           {description && (
@@ -131,7 +131,7 @@ export function Product3DCard({
         <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
           <div>
             <span className="text-[11px] text-stone-400 block">Starts at</span>
-            <div className="text-lg font-black text-[#382323] tracking-tight">
+            <div className="text-lg font-black text-[#0f172a] tracking-tight">
               ₱{startingPrice}
             </div>
           </div>
@@ -144,7 +144,7 @@ export function Product3DCard({
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-xs transition-all cursor-pointer ${
                   addedAnimation
                     ? "bg-emerald-600 text-white scale-95"
-                    : "bg-[#b42356] hover:bg-[#921a44] text-white active:scale-95"
+                    : "bg-[#2563eb] hover:bg-[#1d4ed8] text-white active:scale-95"
                 }`}
                 title="Add to cart"
               >

@@ -18,7 +18,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#b42356",
+  themeColor: "#2563eb",
 };
 
 export const metadata: Metadata = {
@@ -74,7 +74,7 @@ export default function RootLayout({
       lang="en"
       className={`${karla.variable} ${playfair.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans selection:bg-[#f7dce5] selection:text-[#b42356]">
+      <body className="min-h-full flex flex-col font-sans selection:bg-[#dbeafe] selection:text-[#2563eb]">
         {children}
       </body>
     </html>

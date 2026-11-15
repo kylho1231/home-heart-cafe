@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Sips of happiness in every cup. Order drinks and fries ahead of your campus break.",
     start_url: "/",
     display: "standalone",
-    background_color: "#fff8ef",
-    theme_color: "#b42356",
+    background_color: "#ffffff",
+    theme_color: "#2563eb",
     icons: [
       {
         src: "/favicon.ico",
