@@ -34,6 +34,246 @@
       "paymentStatus": "downpayment_pending_verification"
     },
     "staffNotes": "Teacher Appreciation Order",
+    "id": "ord-1794707841289-udu49",
+    "orderCode": "HHC-5959",
+    "createdAt": "2026-11-15T01:57:21.289Z",
+    "updatedAt": "2026-11-15T01:57:21.289Z"
+  },
+  {
+    "status": "ready_for_pickup",
+    "pickupEstimatedMinutes": 15,
+    "customer": {
+      "fullName": "Test Student Juan",
+      "lrn": "123456789012",
+      "gradeSection": "Grade 11 - STEM",
+      "contactNumber": "09171112222",
+      "idPhotoUrl": "data:image/png;base64,mockId",
+      "selfiePhotoUrl": "data:image/png;base64,mockSelfie"
+    },
+    "items": [
+      {
+        "id": "item-test-1",
+        "productId": "okinawa-cream-cheese",
+        "productName": "Okinawa Cream Cheese",
+        "category": "Cream Cheese Series",
+        "flavor": "Okinawa",
+        "size": "16 oz",
+        "sugarLevel": "75%",
+        "iceLevel": "Regular Ice",
+        "addBoba": true,
+        "quantity": 1,
+        "unitPrice": 69,
+        "subtotal": 69
+      }
+    ],
+    "payment": {
+      "method": "gcash_downpayment",
+      "downPaymentAmount": 35,
+      "totalAmount": 69,
+      "gcashReferenceNumber": "9021849102941",
+      "paymentStatus": "downpayment_pending_verification"
+    },
+    "staffNotes": "Automated test order",
+    "id": "ord-1794707841215-j2k17",
+    "orderCode": "HHC-9312",
+    "createdAt": "2026-11-15T01:57:21.215Z",
+    "updatedAt": "2026-11-15T01:57:21.265Z"
+  },
+  {
+    "status": "pending_verification",
+    "pickupEstimatedMinutes": 10,
+    "customer": {
+      "role": "teacher_staff",
+      "fullName": "Prof. Maria Santos",
+      "department": "Science & Mathematics Dept",
+      "contactNumber": "09183334444",
+      "idPhotoUrl": "data:image/png;base64,mockFacultyId",
+      "selfiePhotoUrl": "data:image/png;base64,mockFacultySelfie"
+    },
+    "items": [
+      {
+        "id": "item-teacher-1",
+        "productId": "spanish-latte",
+        "productName": "Spanish Latte",
+        "category": "Coffee Series",
+        "flavor": "Spanish Latte",
+        "size": "16 oz",
+        "sugarLevel": "50%",
+        "iceLevel": "Regular Ice",
+        "addBoba": false,
+        "quantity": 2,
+        "unitPrice": 69,
+        "subtotal": 138
+      }
+    ],
+    "payment": {
+      "method": "gcash_full",
+      "downPaymentAmount": 138,
+      "totalAmount": 138,
+      "gcashReferenceNumber": "9988776655443",
+      "paymentStatus": "downpayment_pending_verification"
+    },
+    "staffNotes": "Teacher Appreciation Order",
+    "id": "ord-1794707812858-j0hrs",
+    "orderCode": "HHC-2056",
+    "createdAt": "2026-11-15T01:56:52.858Z",
+    "updatedAt": "2026-11-15T01:56:52.858Z"
+  },
+  {
+    "status": "ready_for_pickup",
+    "pickupEstimatedMinutes": 15,
+    "customer": {
+      "fullName": "Test Student Juan",
+      "lrn": "123456789012",
+      "gradeSection": "Grade 11 - STEM",
+      "contactNumber": "09171112222",
+      "idPhotoUrl": "data:image/png;base64,mockId",
+      "selfiePhotoUrl": "data:image/png;base64,mockSelfie"
+    },
+    "items": [
+      {
+        "id": "item-test-1",
+        "productId": "okinawa-cream-cheese",
+        "productName": "Okinawa Cream Cheese",
+        "category": "Cream Cheese Series",
+        "flavor": "Okinawa",
+        "size": "16 oz",
+        "sugarLevel": "75%",
+        "iceLevel": "Regular Ice",
+        "addBoba": true,
+        "quantity": 1,
+        "unitPrice": 69,
+        "subtotal": 69
+      }
+    ],
+    "payment": {
+      "method": "gcash_downpayment",
+      "downPaymentAmount": 35,
+      "totalAmount": 69,
+      "gcashReferenceNumber": "9021849102941",
+      "paymentStatus": "downpayment_pending_verification"
+    },
+    "staffNotes": "Automated test order",
+    "id": "ord-1794707812783-pjwuv",
+    "orderCode": "HHC-7044",
+    "createdAt": "2026-11-15T01:56:52.783Z",
+    "updatedAt": "2026-11-15T01:56:52.835Z"
+  },
+  {
+    "status": "pending_verification",
+    "pickupEstimatedMinutes": 10,
+    "customer": {
+      "role": "teacher_staff",
+      "fullName": "Prof. Maria Santos",
+      "department": "Science & Mathematics Dept",
+      "contactNumber": "09183334444",
+      "idPhotoUrl": "data:image/png;base64,mockFacultyId",
+      "selfiePhotoUrl": "data:image/png;base64,mockFacultySelfie"
+    },
+    "items": [
+      {
+        "id": "item-teacher-1",
+        "productId": "spanish-latte",
+        "productName": "Spanish Latte",
+        "category": "Coffee Series",
+        "flavor": "Spanish Latte",
+        "size": "16 oz",
+        "sugarLevel": "50%",
+        "iceLevel": "Regular Ice",
+        "addBoba": false,
+        "quantity": 2,
+        "unitPrice": 69,
+        "subtotal": 138
+      }
+    ],
+    "payment": {
+      "method": "gcash_full",
+      "downPaymentAmount": 138,
+      "totalAmount": 138,
+      "gcashReferenceNumber": "9988776655443",
+      "paymentStatus": "downpayment_pending_verification"
+    },
+    "staffNotes": "Teacher Appreciation Order",
+    "id": "ord-1794707782004-tu5tz",
+    "orderCode": "HHC-6686",
+    "createdAt": "2026-11-15T01:56:22.004Z",
+    "updatedAt": "2026-11-15T01:56:22.004Z"
+  },
+  {
+    "status": "ready_for_pickup",
+    "pickupEstimatedMinutes": 15,
+    "customer": {
+      "fullName": "Test Student Juan",
+      "lrn": "123456789012",
+      "gradeSection": "Grade 11 - STEM",
+      "contactNumber": "09171112222",
+      "idPhotoUrl": "data:image/png;base64,mockId",
+      "selfiePhotoUrl": "data:image/png;base64,mockSelfie"
+    },
+    "items": [
+      {
+        "id": "item-test-1",
+        "productId": "okinawa-cream-cheese",
+        "productName": "Okinawa Cream Cheese",
+        "category": "Cream Cheese Series",
+        "flavor": "Okinawa",
+        "size": "16 oz",
+        "sugarLevel": "75%",
+        "iceLevel": "Regular Ice",
+        "addBoba": true,
+        "quantity": 1,
+        "unitPrice": 69,
+        "subtotal": 69
+      }
+    ],
+    "payment": {
+      "method": "gcash_downpayment",
+      "downPaymentAmount": 35,
+      "totalAmount": 69,
+      "gcashReferenceNumber": "9021849102941",
+      "paymentStatus": "downpayment_pending_verification"
+    },
+    "staffNotes": "Automated test order",
+    "id": "ord-1794707781934-4il2r",
+    "orderCode": "HHC-8978",
+    "createdAt": "2026-11-15T01:56:21.934Z",
+    "updatedAt": "2026-11-15T01:56:21.977Z"
+  },
+  {
+    "status": "pending_verification",
+    "pickupEstimatedMinutes": 10,
+    "customer": {
+      "role": "teacher_staff",
+      "fullName": "Prof. Maria Santos",
+      "department": "Science & Mathematics Dept",
+      "contactNumber": "09183334444",
+      "idPhotoUrl": "data:image/png;base64,mockFacultyId",
+      "selfiePhotoUrl": "data:image/png;base64,mockFacultySelfie"
+    },
+    "items": [
+      {
+        "id": "item-teacher-1",
+        "productId": "spanish-latte",
+        "productName": "Spanish Latte",
+        "category": "Coffee Series",
+        "flavor": "Spanish Latte",
+        "size": "16 oz",
+        "sugarLevel": "50%",
+        "iceLevel": "Regular Ice",
+        "addBoba": false,
+        "quantity": 2,
+        "unitPrice": 69,
+        "subtotal": 138
+      }
+    ],
+    "payment": {
+      "method": "gcash_full",
+      "downPaymentAmount": 138,
+      "totalAmount": 138,
+      "gcashReferenceNumber": "9988776655443",
+      "paymentStatus": "downpayment_pending_verification"
+    },
+    "staffNotes": "Teacher Appreciation Order",
     "id": "ord-1794706843332-fsgk9",
     "orderCode": "HHC-5573",
     "createdAt": "2026-11-15T01:40:43.332Z",

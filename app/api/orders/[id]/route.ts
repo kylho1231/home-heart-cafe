@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrderById, updateOrderStatus } from "@/lib/orders-db";
 import { OrderStatus } from "@/lib/types";
+import { isAdminAuthenticated } from "@/lib/auth";
 
+/**
+ * GET /api/orders/[id]
+ * Retrieves order details for tracking or admin view.
+ * Admins get full details.
+ * Public guests must provide name or phone (?verify=...) to access status and masked details.
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -12,26 +19,106 @@ export async function GET(
 
     if (!order) {
       return NextResponse.json(
-        { success: false, error: "Order not found" },
+        { success: false, error: "Order not found." },
         { status: 404 },
       );
     }
 
-    return NextResponse.json({ success: true, order });
+    const isAdmin = isAdminAuthenticated(request);
+
+    if (isAdmin) {
+      // Full order data returned to authenticated cashier/admin
+      return NextResponse.json({ success: true, order });
+    }
+
+    // Public guest tracking path: Requires customer name or phone verification to prevent enumeration
+    const { searchParams } = new URL(request.url);
+    const verifyQuery = (searchParams.get("verify") || "").trim().toLowerCase();
+
+    // If query was empty, check if request is for the newly created order in current session
+    const customerName = order.customer.fullName.toLowerCase();
+    const contactDigits = order.customer.contactNumber.replace(/\D/g, "");
+    const queryDigits = verifyQuery.replace(/\D/g, "");
+
+    const isMatch =
+      verifyQuery &&
+      (customerName.includes(verifyQuery) ||
+        (queryDigits.length >= 4 && contactDigits.includes(queryDigits)));
+
+    if (!isMatch) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Please provide your Full Name or Phone Number used during checkout to track this order.",
+          requiresVerification: true,
+        },
+        { status: 403 },
+      );
+    }
+
+    // Return sanitized, privacy-safe tracking order (mask IDs, photos, and DepEd LRN)
+    const sanitizedOrder = {
+      id: order.id,
+      orderCode: order.orderCode,
+      createdAt: order.createdAt,
+      status: order.status,
+      pickupEstimatedMinutes: order.pickupEstimatedMinutes,
+      customer: {
+        role: order.customer.role,
+        fullName: order.customer.fullName,
+        gradeSection: order.customer.gradeSection,
+        department: order.customer.department,
+        contactNumber: `***-***-${order.customer.contactNumber.slice(-4)}`,
+        lrn: order.customer.lrn ? `********${order.customer.lrn.slice(-4)}` : undefined,
+        // Omit raw photos from public tracking response
+        idPhotoUrl: undefined,
+        selfiePhotoUrl: undefined,
+      },
+      items: order.items,
+      payment: {
+        method: order.payment.method,
+        downPaymentAmount: order.payment.downPaymentAmount,
+        totalAmount: order.payment.totalAmount,
+        paymentStatus: order.payment.paymentStatus,
+        gcashReferenceNumber: order.payment.gcashReferenceNumber
+          ? `***${order.payment.gcashReferenceNumber.slice(-4)}`
+          : undefined,
+      },
+      staffNotes: order.status === "ready_for_pickup" ? order.staffNotes : undefined,
+    };
+
+    return NextResponse.json({ success: true, order: sanitizedOrder });
   } catch (error) {
     console.error("GET /api/orders/[id] error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch order" },
+      { success: false, error: "Failed to fetch order." },
       { status: 500 },
     );
   }
 }
 
+/**
+ * PATCH /api/orders/[id]
+ * Protected Admin Endpoint: Updates kitchen/cashier order status.
+ * Requires valid admin session.
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // 1. Enforce admin authentication
+    if (!isAdminAuthenticated(request)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized. Admin session required to update orders.",
+        },
+        { status: 401 },
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { status, rejectionReason, staffNotes, pickupEstimatedMinutes } = body;
@@ -61,7 +148,7 @@ export async function PATCH(
 
     if (!updated) {
       return NextResponse.json(
-        { success: false, error: "Order not found" },
+        { success: false, error: "Order not found." },
         { status: 404 },
       );
     }
@@ -74,7 +161,7 @@ export async function PATCH(
   } catch (error) {
     console.error("PATCH /api/orders/[id] error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to update order" },
+      { success: false, error: "Failed to update order." },
       { status: 500 },
     );
   }

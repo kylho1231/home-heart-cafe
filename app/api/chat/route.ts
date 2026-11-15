@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -7,16 +8,44 @@ interface ChatMessage {
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, history } = await request.json();
+    const ip = getClientIp(request);
 
-    if (!message || typeof message !== "string") {
+    // Rate Limit: Max 20 chat messages per IP per 5 minutes to prevent spam/abuse
+    const rateCheck = checkRateLimit(`chat:${ip}`, 20, 5 * 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "You are asking questions a bit too quickly. Please pause for a moment!",
+          reply: "I'm pausing to take a breath! Please wait a couple minutes before asking again.",
+        },
+        { status: 429 },
+      );
+    }
+
+    const body = await request.json();
+    const rawMessage = body?.message;
+
+    if (!rawMessage || typeof rawMessage !== "string" || !rawMessage.trim()) {
       return NextResponse.json(
         { success: false, error: "Message is required." },
         { status: 400 },
       );
     }
 
-    const query = message.toLowerCase().trim();
+    // Cap message length to 300 characters
+    if (rawMessage.trim().length > 300) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Message is too long. Please keep questions under 300 characters.",
+          reply: "Could you ask a shorter question? I want to make sure I give you the best recommendation!",
+        },
+        { status: 400 },
+      );
+    }
+
+    const query = rawMessage.toLowerCase().trim();
 
     // Context knowledge for Home Heart Cafe
     let reply = "";

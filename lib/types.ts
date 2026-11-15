@@ -36,6 +36,7 @@ export interface CustomerVerification {
   contactNumber: string;
   idPhotoUrl: string; // Base64 or uploaded URL
   selfiePhotoUrl: string; // Base64 or uploaded selfie photo
+  privacyConsent?: boolean; // Data Privacy Act (RA 10173) consent flag
 }
 
 export interface PaymentInfo {

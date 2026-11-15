@@ -40,7 +40,6 @@ import { Product3DCard } from "@/components/Product3DCard";
 import { CheckoutVerificationModal } from "@/components/CheckoutVerificationModal";
 import { OrderTrackerModal } from "@/components/OrderTrackerModal";
 import { AiBaristaModal } from "@/components/AiBaristaModal";
-import { AdminPortalModal } from "@/components/AdminPortalModal";
 
 type Product = {
   id: string;
@@ -295,7 +294,6 @@ export default function Page() {
   const [trackerModalOpen, setTrackerModalOpen] = useState(false);
   const [activeOrderCode, setActiveOrderCode] = useState<string>("");
   const [aiModalOpen, setAiModalOpen] = useState(false);
-  const [adminModalOpen, setAdminModalOpen] = useState(false);
 
   // Restore Cart & Last Order Code from localStorage
   useEffect(() => {
@@ -627,17 +625,6 @@ export default function Page() {
                   {activeOrderCode}
                 </span>
               )}
-            </button>
-
-            {/* Discreet Staff & Kitchen Desk Link */}
-            <button
-              type="button"
-              onClick={() => setAdminModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors"
-              title="Staff & Kitchen Desk (PIN Protected)"
-            >
-              <Lock className="w-3.5 h-3.5 text-stone-400" />
-              <span className="hidden lg:inline text-[11px] font-semibold">Staff</span>
             </button>
 
             {/* Cart Trigger */}
@@ -1261,24 +1248,6 @@ export default function Page() {
                 </li>
               </ul>
             </div>
-
-            <div>
-              <span className="font-bold text-[#30231f] block mb-2.5 uppercase tracking-wider text-[11px]">
-                Internal
-              </span>
-              <ul className="space-y-2 text-[#6f5d57]">
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => setAdminModalOpen(true)}
-                    className="flex items-center gap-1.5 text-stone-400 hover:text-stone-700 transition-colors"
-                  >
-                    <Lock className="w-3 h-3" />
-                    <span>Staff Portal</span>
-                  </button>
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
       </footer>
@@ -1448,11 +1417,6 @@ export default function Page() {
         isOpen={aiModalOpen}
         onClose={() => setAiModalOpen(false)}
         onTriggerAction={handleAiAction}
-      />
-
-      <AdminPortalModal
-        isOpen={adminModalOpen}
-        onClose={() => setAdminModalOpen(false)}
       />
     </main>
   );

@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Volume2,
   VolumeX,
+  LogOut,
 } from "lucide-react";
 import { CafeOrder, OrderStatus } from "@/lib/types";
 import { playChime } from "@/lib/sound";
@@ -30,7 +31,8 @@ interface AdminPortalModalProps {
 export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginErrorMessage, setLoginErrorMessage] = useState<string | null>(null);
 
   const [orders, setOrders] = useState<CafeOrder[]>([]);
   const [filter, setFilter] = useState<string>("all");
@@ -49,10 +51,28 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [prevOrderCount, setPrevOrderCount] = useState(0);
 
+  // Check existing session on modal open
+  useEffect(() => {
+    if (isOpen) {
+      fetch("/api/admin/me")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.authenticated) {
+            setIsAuthenticated(true);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
+
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch("/api/orders?stats=true");
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setOrders(data.orders || []);
@@ -81,15 +101,43 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
 
   if (!isOpen) return null;
 
-  const handlePinSubmit = (e: React.FormEvent) => {
+  const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === "1234" || pin === "cafe2026") {
-      setIsAuthenticated(true);
-      setPinError(false);
-      playChime("success");
-    } else {
-      setPinError(true);
+    if (!pin.trim() || loginLoading) return;
+    setLoginLoading(true);
+    setLoginErrorMessage(null);
+
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: pin.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setIsAuthenticated(true);
+        setPin("");
+        playChime("success");
+      } else {
+        setLoginErrorMessage(data.error || "Authentication failed.");
+        playChime("notification");
+      }
+    } catch {
+      setLoginErrorMessage("Network error connecting to login service.");
+    } finally {
+      setLoginLoading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } catch {}
+    setIsAuthenticated(false);
+    setOrders([]);
+    setPin("");
   };
 
   const handleUpdateStatus = async (
@@ -141,16 +189,27 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
           </div>
           <div className="flex items-center gap-2">
             {isAuthenticated && (
-              <button
-                type="button"
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                className={`p-2 rounded-full transition-colors ${
-                  soundEnabled ? "bg-white/20 text-white" : "bg-white/10 text-white/50"
-                }`}
-                title={soundEnabled ? "Mute chimes" : "Enable chimes"}
-              >
-                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  className={`p-2 rounded-full transition-colors ${
+                    soundEnabled ? "bg-white/20 text-white" : "bg-white/10 text-white/50"
+                  }`}
+                  title={soundEnabled ? "Mute chimes" : "Enable chimes"}
+                >
+                  {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-colors"
+                  title="Sign out of store admin"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Log out</span>
+                </button>
+              </>
             )}
             <button
               onClick={onClose}
@@ -170,7 +229,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
             <div>
               <h3 className="font-black text-xl text-stone-800">Admin PIN Access</h3>
               <p className="text-xs text-stone-500 mt-1">
-                Enter cashier/owner PIN to manage orders and verify students. (Default PIN: <strong>1234</strong>)
+                Enter authorized cashier or owner PIN to manage orders and kitchen operations.
               </p>
             </div>
             <form onSubmit={handlePinSubmit} className="w-full space-y-3">
@@ -178,24 +237,30 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                 type="password"
                 maxLength={8}
                 autoFocus
-                placeholder="Enter PIN (1234)"
+                disabled={loginLoading}
+                placeholder="••••••••"
                 value={pin}
                 onChange={(e) => {
                   setPin(e.target.value);
-                  setPinError(false);
+                  setLoginErrorMessage(null);
                 }}
-                className="w-full text-center text-xl font-mono tracking-widest px-4 py-3 rounded-2xl border border-stone-300 bg-white text-stone-900 focus:border-[#b42356] focus:ring-2 focus:ring-[#b42356]/20 outline-none"
+                className="w-full text-center text-2xl font-mono tracking-widest px-4 py-3 rounded-2xl border border-stone-300 bg-white text-stone-900 focus:border-[#b42356] focus:ring-2 focus:ring-[#b42356]/20 outline-none disabled:opacity-50"
               />
-              {pinError && (
-                <p className="text-xs text-red-600 font-semibold">
-                  Incorrect PIN. Please use 1234.
-                </p>
+              {loginErrorMessage && (
+                <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
+                  {loginErrorMessage}
+                </div>
               )}
               <button
                 type="submit"
-                className="w-full py-3 rounded-2xl bg-[#b42356] hover:bg-[#921a44] text-white text-sm font-bold shadow-md transition-all"
+                disabled={!pin.trim() || loginLoading}
+                className="w-full py-3 rounded-2xl bg-[#b42356] hover:bg-[#921a44] disabled:opacity-50 text-white text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2"
               >
-                Unlock Operations
+                {loginLoading ? (
+                  <span>Verifying...</span>
+                ) : (
+                  <span>Unlock Operations</span>
+                )}
               </button>
             </form>
           </div>
