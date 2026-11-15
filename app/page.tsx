@@ -685,6 +685,11 @@ export default function Page() {
     setCartDrawerOpen(true);
   };
 
+  const removeFromCart = (id: string) => {
+    setCart((prev) => prev.filter((it) => it.id !== id));
+    playChime("add");
+  };
+
   const updateQuantity = (id: string, delta: number) => {
     setCart((prev) =>
       prev
@@ -1608,10 +1613,10 @@ export default function Page() {
 
       {/* Cart Slide-Over Drawer */}
       {cartDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-stone-900/50 backdrop-blur-xs">
-          <div className="relative w-full max-w-md h-full bg-[#fffefc] shadow-2xl flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-stretch sm:justify-end bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200">
+          <div className="relative w-full sm:max-w-md h-[88vh] sm:h-full bg-white rounded-t-3xl sm:rounded-none shadow-2xl flex flex-col justify-between overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-right duration-300">
             {/* Drawer Header */}
-            <div className="px-6 py-4 bg-[#0f172a] text-white flex items-center justify-between">
+            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-amber-300" />
                 <h3 className="font-bold text-base">Your Cart ({cartItemCount})</h3>
@@ -1619,116 +1624,164 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => setCartDrawerOpen(false)}
-                className="p-1 rounded-full hover:bg-white/20 text-white/80 hover:text-white"
+                aria-label="Close cart drawer"
+                className="p-1 rounded-full hover:bg-white/20 text-white/80 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Cart Items List */}
-            <div className="flex-1 p-6 overflow-y-auto divide-y divide-stone-100 space-y-3">
+            <div className="flex-1 p-5 overflow-y-auto divide-y divide-slate-100 space-y-3">
               {cart.length === 0 ? (
-                <div className="p-12 text-center text-stone-400 space-y-2">
-                  <ShoppingBag className="w-12 h-12 mx-auto text-stone-300" />
-                  <p className="font-semibold text-sm">Your cart is empty.</p>
-                  <p className="text-xs text-stone-400">Add a drink or fries from the menu to get started!</p>
+                <div className="p-10 text-center text-slate-400 space-y-3">
+                  <div className="w-16 h-16 mx-auto rounded-3xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500">
+                    <ShoppingBag className="w-8 h-8 text-blue-500" />
+                  </div>
+                  <p className="font-bold text-base text-slate-800">Your cart is empty.</p>
+                  <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                    Add a handcrafted drink or fries from the menu to get started!
+                  </p>
                   <button
                     type="button"
                     onClick={() => {
                       setCartDrawerOpen(false);
-                      document.getElementById("featured")?.scrollIntoView({ behavior: "smooth" });
+                      document.getElementById("menu")?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="mt-4 px-4 py-2 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                    className="mt-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md cursor-pointer inline-flex items-center gap-1.5"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Explore Bestsellers</span>
+                    <Coffee className="w-3.5 h-3.5" />
+                    <span>Browse Menu</span>
                   </button>
                 </div>
               ) : (
-                cart.map((item) => (
-                  <div key={item.id} className="pt-3 first:pt-0 flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <strong className="text-stone-800 text-sm block">
-                        {item.bundleName || item.productName}
-                      </strong>
-                      <span className="text-stone-500 text-xs block mt-0.5">
-                        {item.flavor} · {item.size}
-                      </span>
-                      <span className="text-stone-400 text-[11px] block">
-                        Sugar: {item.sugarLevel} · Ice: {item.iceLevel}
-                        {item.addBoba ? " · Boba" : ""}
-                        {item.addCreamCheese ? " · Cream Cheese" : ""}
-                      </span>
-                      {item.notes && (
-                        <span className="text-amber-800 text-[11px] italic block">
-                          &ldquo;{item.notes}&rdquo;
+                <>
+                  {cart.map((item) => (
+                    <div key={item.id} className="pt-3 first:pt-0 flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <strong className="text-slate-900 text-sm font-bold block truncate">
+                          {item.bundleName || item.productName}
+                        </strong>
+                        <span className="text-slate-500 text-xs block mt-0.5">
+                          {item.flavor} · {item.size}
                         </span>
-                      )}
-                    </div>
+                        <span className="text-slate-400 text-[11px] block">
+                          Sugar: {item.sugarLevel} · Ice: {item.iceLevel}
+                          {item.addBoba ? " · Boba" : ""}
+                          {item.addCreamCheese ? " · Cream Cheese" : ""}
+                        </span>
+                        {item.notes && (
+                          <span className="text-amber-800 text-[11px] italic block">
+                            &ldquo;{item.notes}&rdquo;
+                          </span>
+                        )}
+                      </div>
 
-                    <div className="flex flex-col items-end gap-2 shrink-0">
-                      <span className="font-bold text-sm text-stone-900">
-                        ₱{item.subtotal}
-                      </span>
-                      <div className="flex items-center gap-1 border border-stone-200 rounded-full px-2 py-0.5 bg-stone-50">
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.id, -1)}
-                          className="p-0.5 text-stone-600 hover:text-red-600"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-xs font-bold w-4 text-center">
-                          {item.quantity}
+                      <div className="flex flex-col items-end gap-2 shrink-0">
+                        <span className="font-black text-sm text-slate-900">
+                          ₱{item.subtotal}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.id, 1)}
-                          className="p-0.5 text-stone-600 hover:text-emerald-600"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <div className="flex items-center border border-slate-200 rounded-full px-2 py-0.5 bg-slate-50">
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.id, -1)}
+                              aria-label="Decrease quantity"
+                              className="p-0.5 text-slate-600 hover:text-red-600 cursor-pointer"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="text-xs font-bold w-4 text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.id, 1)}
+                              aria-label="Increase quantity"
+                              className="p-0.5 text-slate-600 hover:text-emerald-600 cursor-pointer"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(item.id)}
+                            aria-label={`Remove ${item.bundleName || item.productName} from cart`}
+                            className="p-1 text-slate-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+
+                  {/* Free Fries Promo Line Item */}
+                  {eligibleDrinkSpend >= 200 && (
+                    <div className="pt-3 flex items-start justify-between gap-3 bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200 shadow-2xs">
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-xl">🍟</span>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <strong className="text-slate-900 text-xs sm:text-sm font-bold">Free Medium Fries</strong>
+                            <span className="text-[9px] font-black uppercase tracking-wider bg-amber-500 text-white px-2 py-0.5 rounded-full">Reward</span>
+                          </div>
+                          <span className="text-slate-500 text-[11px] block mt-0.5">Cheese Flavor · Medium Size</span>
+                          <span className="text-amber-800 text-[10px] block font-semibold">Unlocked with ₱200+ drink spend</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="line-through text-xs text-slate-400 block">₱40</span>
+                        <span className="text-xs sm:text-sm font-black text-emerald-600">₱0</span>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
             {/* Cart Footer */}
             {cart.length > 0 && (
-              <div className="p-6 bg-[#fffdfa] border-t border-stone-200 space-y-3">
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between text-stone-600">
-                    <span>Subtotal:</span>
-                    <strong className="text-stone-900 text-sm">₱{cartSubtotal}</strong>
+              <div className="p-5 bg-slate-50/90 border-t border-slate-200 space-y-3.5">
+                {/* Promo Progress Bar */}
+                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 space-y-2 shadow-2xs">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-800">
+                      {eligibleDrinkSpend >= 200
+                        ? "Free Medium Fries added 🎉"
+                        : `Add ₱${200 - eligibleDrinkSpend} more for free Medium Fries!`}
+                    </span>
+                    <span className="font-mono text-[11px] font-bold text-slate-500">
+                      ₱{eligibleDrinkSpend}/₱200
+                    </span>
                   </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                    <div
+                      className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(100, (eligibleDrinkSpend / 200) * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-tight">
+                    * Free fries unlocks at ₱200+ in ala-carte drinks. Bundles and snacks are excluded.
+                  </p>
+                </div>
 
-                  {/* Drink-only ₱200 promotion check */}
-                  {eligibleDrinkSpend >= 200 ? (
-                    <div className="p-2.5 rounded-xl bg-amber-100/90 border border-amber-300 text-amber-900 text-[11px] font-bold flex items-center justify-between shadow-2xs">
-                      <div className="flex items-center gap-1.5">
-                        <Gift className="w-3.5 h-3.5 text-amber-700" />
-                        <span>Unlocked: Free Medium Fries!</span>
-                      </div>
-                      <span className="text-[10px] bg-white px-2 py-0.5 rounded-full text-amber-800 font-mono font-black">
-                        ₱{eligibleDrinkSpend} drinks
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/60 text-stone-700 text-[11px] flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Gift className="w-3.5 h-3.5 text-amber-600" />
-                        <span>Add <strong>₱{200 - eligibleDrinkSpend}</strong> more in drinks for Free Fries</span>
-                      </div>
-                      <span className="text-[10px] text-stone-500 font-mono">
-                        ₱{eligibleDrinkSpend}/₱200
-                      </span>
+                {/* Subtotal, Promo, Total */}
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Subtotal:</span>
+                    <span className="font-bold text-slate-800">₱{cartSubtotal}</span>
+                  </div>
+                  {eligibleDrinkSpend >= 200 && (
+                    <div className="flex justify-between text-emerald-600 font-bold">
+                      <span>Promo Reward:</span>
+                      <span>-₱40 (FREE Fries)</span>
                     </div>
                   )}
-                  <p className="text-[10px] text-stone-400 italic pt-0.5">
-                    * Free Medium Fries promo unlocks at ₱200+ in ala-carte drinks. Bundles and fries do not count toward threshold.
-                  </p>
+                  <div className="flex justify-between text-slate-900 font-extrabold text-sm pt-1.5 border-t border-slate-200">
+                    <span>Total:</span>
+                    <span className="text-base text-blue-600 font-black">₱{cartSubtotal}</span>
+                  </div>
                 </div>
 
                 <button
@@ -1737,7 +1790,7 @@ export default function Page() {
                     setCartDrawerOpen(false);
                     setCheckoutModalOpen(true);
                   }}
-                  className="w-full py-3.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                 >
                   <ShieldCheck className="w-4 h-4 text-white" />
                   <span>Verified Campus Checkout · ₱{cartSubtotal}</span>
