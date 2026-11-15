@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Plus, Coffee, Ban, Sparkles } from "lucide-react";
+import { Plus, Coffee, Ban } from "lucide-react";
 
 interface ProductSize {
   label: string;
@@ -64,8 +64,7 @@ export function Product3DCard({
               {sizeCountLabel}
             </span>
             {badge && isAvailable && (
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-black bg-blue-50 text-blue-700 border border-blue-200">
-                <Sparkles className="w-2.5 h-2.5 text-blue-600" />
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-black bg-blue-50 text-blue-700 border border-blue-200">
                 {badge}
               </span>
             )}

@@ -172,8 +172,8 @@ export async function POST(request: NextRequest) {
     // General default friendly greeting / help
     else {
       reply =
-        "👋 **Kumusta! Welcome to Home ❤️ Cafe!**\n\n" +
-        "I'm **Home**, your digital barista concierge. I can help you with:\n" +
+        "👋 **Kumusta! Welcome sa Home ❤️ Cafe!**\n\n" +
+        "Ako si **Home**, ang barista mo dito sa counter. Matutulungan kita sa:\n" +
         "• 🎁 **Promos & Discounts** (Barkada Bundles, Free Fries)\n" +
         "• 📅 **Campus Cafe Events** (Acoustic Friday, Study Lounge)\n" +
         "• ☕ **Drink Recommendations** based on what flavors you crave\n" +

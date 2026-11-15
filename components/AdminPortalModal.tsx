@@ -26,6 +26,9 @@ import {
   AlertCircle,
   Search,
   Plus,
+  Megaphone,
+  Edit2,
+  Save,
 } from "lucide-react";
 import { CafeOrder, OrderStatus } from "@/lib/types";
 import { playChime } from "@/lib/sound";
@@ -56,9 +59,27 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
   const [loginErrorMessage, setLoginErrorMessage] = useState<string | null>(null);
 
   // Admin Top-Level Tab
-  const [activeTab, setActiveTab] = useState<"queue" | "new_sale" | "products" | "reports">("queue");
+  const [activeTab, setActiveTab] = useState<"queue" | "new_sale" | "products" | "bulletin" | "reports">("queue");
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [productSearch, setProductSearch] = useState("");
+
+  // Bulletin & Promos State (Admin controllable)
+  const [promoBannerInput, setPromoBannerInput] = useState("Spend ₱200 on drinks, get free Medium Fries! 🍟");
+  const [promoSpendInput, setPromoSpendInput] = useState(200);
+  const [bulletinEvents, setBulletinEvents] = useState<Array<{
+    id: string;
+    title: string;
+    schedule: string;
+    description: string;
+    icon: string;
+    badgeColor: string;
+    image: string;
+  }>>([]);
+  const [bulletinSaving, setBulletinSaving] = useState(false);
+
+  // Price Editing State
+  const [editingPriceSlug, setEditingPriceSlug] = useState<string | null>(null);
+  const [editingPriceMap, setEditingPriceMap] = useState<Record<string, number>>({});
 
   // Orders State
   const [orders, setOrders] = useState<CafeOrder[]>([]);
@@ -185,14 +206,81 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
     }
   };
 
+  const fetchBulletin = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/bulletin");
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
+      const data = await res.json();
+      if (data.success) {
+        if (data.promoBanner) setPromoBannerInput(data.promoBanner);
+        if (typeof data.promoSpendThreshold === "number") setPromoSpendInput(data.promoSpendThreshold);
+        if (Array.isArray(data.events)) setBulletinEvents(data.events);
+      }
+    } catch {}
+  }, []);
+
+  const handleSaveBulletin = async () => {
+    try {
+      setBulletinSaving(true);
+      const res = await fetch("/api/admin/bulletin", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          promoBanner: promoBannerInput.trim(),
+          promoSpendThreshold: Number(promoSpendInput),
+          events: bulletinEvents,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        playChime("success");
+        showAdminToast("Announcement & Promo settings updated for customers!", "success");
+      } else {
+        showAdminToast(data.error || "Failed to update bulletin.", "error");
+      }
+    } catch {
+      showAdminToast("Network error updating bulletin.", "error");
+    } finally {
+      setBulletinSaving(false);
+    }
+  };
+
+  const handleSavePriceEdit = async (slug: string) => {
+    try {
+      const res = await fetch("/api/admin/menu/products", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug,
+          prices: editingPriceMap,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        playChime("success");
+        showAdminToast(`Updated prices for ${slug}!`, "success");
+        setEditingPriceSlug(null);
+        fetchStock();
+      } else {
+        showAdminToast(data.error || "Failed to update prices.", "error");
+      }
+    } catch {
+      showAdminToast("Network error updating prices.", "error");
+    }
+  };
+
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       fetchOrders();
       fetchStock();
+      fetchBulletin();
       const interval = setInterval(fetchOrders, 8000);
       return () => clearInterval(interval);
     }
-  }, [isOpen, isAuthenticated, fetchOrders, fetchStock]);
+  }, [isOpen, isAuthenticated, fetchOrders, fetchStock, fetchBulletin]);
 
   useEffect(() => {
     if (isOpen && isAuthenticated && (activeTab === "products" || activeTab === "new_sale")) {
@@ -558,6 +646,22 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                 >
                   <Coffee className="w-3.5 h-3.5" />
                   <span>Product Manager ({menuItems.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("bulletin");
+                    fetchBulletin();
+                  }}
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                    activeTab === "bulletin"
+                      ? "bg-[#2563eb] text-white shadow-xs"
+                      : "text-slate-600 hover:text-[#2563eb] hover:bg-white"
+                  }`}
+                >
+                  <Megaphone className="w-3.5 h-3.5" />
+                  <span>Bulletin & Promos</span>
                 </button>
 
                 <button
@@ -1182,13 +1286,66 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                             </td>
                             <td className="px-4 py-3 text-stone-500 font-medium">{item.category}</td>
                             <td className="px-4 py-3 font-medium text-stone-700">
-                              {item.sizes && item.sizes.length > 0 ? (
-                                <div className="flex flex-wrap gap-1">
+                              {editingPriceSlug === item.id ? (
+                                <div className="space-y-1.5 p-2 rounded-xl bg-blue-50/70 border border-blue-200">
                                   {item.sizes.map((s, idx) => (
-                                    <span key={idx} className="px-1.5 py-0.5 rounded bg-stone-100 text-[10px]">
-                                      {s.label}: ₱{s.price}
-                                    </span>
+                                    <div key={idx} className="flex items-center gap-1.5 text-xs">
+                                      <span className="w-14 font-bold text-slate-700">{s.label}:</span>
+                                      <span className="text-slate-400">₱</span>
+                                      <input
+                                        type="number"
+                                        value={editingPriceMap[s.label] ?? s.price}
+                                        onChange={(e) => {
+                                          setEditingPriceMap((prev) => ({
+                                            ...prev,
+                                            [s.label]: Number(e.target.value),
+                                          }));
+                                        }}
+                                        className="w-16 px-2 py-0.5 rounded border border-blue-300 bg-white text-xs font-bold font-mono outline-none"
+                                      />
+                                    </div>
                                   ))}
+                                  <div className="flex items-center gap-2 pt-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSavePriceEdit(item.id)}
+                                      className="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[10px] font-bold shadow-xs hover:bg-blue-700 cursor-pointer"
+                                    >
+                                      Save Price
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingPriceSlug(null)}
+                                      className="px-2 py-1 rounded-lg bg-slate-200 text-slate-700 text-[10px] font-semibold hover:bg-slate-300 cursor-pointer"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : item.sizes && item.sizes.length > 0 ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.sizes.map((s, idx) => (
+                                      <span key={idx} className="px-1.5 py-0.5 rounded bg-stone-100 text-[10px]">
+                                        {s.label}: ₱{s.price}
+                                      </span>
+                                    ))}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingPriceSlug(item.id);
+                                      const initMap: Record<string, number> = {};
+                                      item.sizes.forEach((s) => {
+                                        initMap[s.label] = s.price;
+                                      });
+                                      setEditingPriceMap(initMap);
+                                    }}
+                                    className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                    title="Edit price"
+                                  >
+                                    <Edit2 className="w-3 h-3" />
+                                  </button>
                                 </div>
                               ) : (
                                 <span>₱{item.startingPrice}</span>
@@ -1224,6 +1381,131 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                       })}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: BULLETIN & PROMOS */}
+            {activeTab === "bulletin" && (
+              <div className="flex-1 p-6 overflow-y-auto space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-black text-lg text-stone-900">
+                      Customer Bulletin & Announcement Control
+                    </h3>
+                    <p className="text-xs text-stone-500 mt-0.5">
+                      Adjust announcements, promo notices, and campus events displayed on the customer homepage.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSaveBulletin}
+                    disabled={bulletinSaving}
+                    className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{bulletinSaving ? "Saving..." : "Save Changes"}</span>
+                  </button>
+                </div>
+
+                {/* Top Promo Banner Control */}
+                <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Megaphone className="w-4 h-4 text-blue-600" />
+                    <h4 className="font-extrabold text-sm text-stone-900">
+                      Top Announcement & Promo Banner
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="text-[11px] font-bold text-stone-600 uppercase tracking-wider block">
+                        Banner Headline Message
+                      </label>
+                      <input
+                        type="text"
+                        value={promoBannerInput}
+                        onChange={(e) => setPromoBannerInput(e.target.value)}
+                        placeholder="e.g. Spend ₱200 on drinks, get free Medium Fries! 🍟"
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-800 outline-none focus:border-blue-600"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-stone-600 uppercase tracking-wider block">
+                        Free Fries Drink Spend (₱)
+                      </label>
+                      <input
+                        type="number"
+                        value={promoSpendInput}
+                        onChange={(e) => setPromoSpendInput(Number(e.target.value))}
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-800 outline-none focus:border-blue-600 font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Campus Events & News Manager */}
+                <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-extrabold text-sm text-stone-900">
+                      Campus Life & News Carousel Items ({bulletinEvents.length})
+                    </h4>
+                  </div>
+                  <div className="space-y-3">
+                    {bulletinEvents.map((ev, idx) => (
+                      <div
+                        key={ev.id || idx}
+                        className="p-4 rounded-xl border border-stone-200 bg-stone-50/50 space-y-2.5"
+                      >
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block mb-1">
+                              Event Title
+                            </label>
+                            <input
+                              type="text"
+                              value={ev.title}
+                              onChange={(e) => {
+                                const next = [...bulletinEvents];
+                                next[idx] = { ...next[idx], title: e.target.value };
+                                setBulletinEvents(next);
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs font-bold text-stone-800 outline-none focus:border-blue-600"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block mb-1">
+                              Schedule / Frequency
+                            </label>
+                            <input
+                              type="text"
+                              value={ev.schedule}
+                              onChange={(e) => {
+                                const next = [...bulletinEvents];
+                                next[idx] = { ...next[idx], schedule: e.target.value };
+                                setBulletinEvents(next);
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs font-semibold text-stone-800 outline-none focus:border-blue-600"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block mb-1">
+                            Short Description
+                          </label>
+                          <input
+                            type="text"
+                            value={ev.description}
+                            onChange={(e) => {
+                              const next = [...bulletinEvents];
+                              next[idx] = { ...next[idx], description: e.target.value };
+                              setBulletinEvents(next);
+                            }}
+                            className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs text-stone-700 outline-none focus:border-blue-600"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

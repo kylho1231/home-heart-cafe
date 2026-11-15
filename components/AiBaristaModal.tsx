@@ -30,15 +30,15 @@ interface AiBaristaModalProps {
 const INITIAL_GREETING: Message = {
   id: "greeting",
   sender: "home",
-  text: "Hi! I'm Hearty, your Home ❤️ Cafe barista. Looking for a recommendation, sweetness advice, or info about our Barkada bundles? Just ask!",
+  text: "Kumusta! Ako si Home, ang barista mo dito sa Home ❤️ Cafe. Naghahanap ka ba ng masarap na maiinom, tamang tamis, o Barkada bundles para sa barkada mo? Tanong ka lang!",
   timestamp: "Just now",
 };
 
 const SUGGESTION_CHIPS = [
-  "What's your best coffee?",
-  "Something not too sweet?",
-  "What's in the Barkada bundle?",
-  "Is the fries promo active?",
+  "Anong bestsellers niyo?",
+  "Hindi gaano matamis?",
+  "Anong kasama sa Barkada bundle?",
+  "Pano makuha ang free fries?",
 ];
 
 function parseFormattedSpans(text: string): React.ReactNode[] {
@@ -178,7 +178,7 @@ export function AiBaristaModal({
         {
           id: `ai-err-${Date.now()}`,
           sender: "home",
-          text: "Oops, Hearty took a coffee break! Tap to retry.",
+          text: "Pasensya na, may inaayos lang si Home sa counter! I-tap para mag-retry.",
           timestamp: "Just now",
           isError: true,
           failedPrompt: text,
@@ -191,13 +191,13 @@ export function AiBaristaModal({
 
   const handleActionClick = (action: string, label: string) => {
     if (action === "askPromos") {
-      handleSendMessage("What are your current promos and barkada bundles?");
+      handleSendMessage("Anong current promos at barkada bundles?");
     } else if (action === "askBestsellers") {
-      handleSendMessage("What are your best-selling drinks and snacks?");
+      handleSendMessage("Anong mga best-selling drinks at snacks?");
     } else if (action === "askEvents") {
-      handleSendMessage("What are the upcoming events and activities at the cafe?");
+      handleSendMessage("Anong mga upcoming events at activities sa cafe?");
     } else if (action === "askVerification") {
-      handleSendMessage("Why is school ID verification required?");
+      handleSendMessage("Bakit kailangan ng school ID verification?");
     } else if (onTriggerAction) {
       onTriggerAction(action);
       onClose();
@@ -217,22 +217,22 @@ export function AiBaristaModal({
         onClick={(e) => e.stopPropagation()}
         className="relative w-full sm:w-[410px] h-[100dvh] sm:h-[600px] sm:rounded-3xl bg-white border border-slate-200/90 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-200"
       >
-        {/* Header: Hearty · AI Barista */}
+        {/* Header: Home · Cafe Barista */}
         <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between shadow-xs shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative w-9 h-9 rounded-full overflow-hidden border border-white/30 shrink-0 bg-white">
-              <Image src="/icon.svg" alt="Hearty" width={36} height={36} className="w-full h-full object-cover" />
+              <Image src="/icon.svg" alt="Home" width={36} height={36} className="w-full h-full object-cover" />
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className="font-extrabold text-sm leading-tight text-white">
-                  Hearty · AI Barista
+                  Home · Cafe Barista
                 </h3>
               </div>
               <p className="text-[11px] text-slate-300 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
-                <span>Online · Usually replies instantly</span>
+                <span>Nandito sa counter · Sandali lang mag-reply</span>
               </p>
             </div>
           </div>
@@ -255,7 +255,7 @@ export function AiBaristaModal({
               onClick={() => handleSendMessage(chip)}
               className="shrink-0 px-3 py-1.5 rounded-full bg-white hover:bg-blue-600 hover:text-white border border-slate-200 text-slate-700 transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95"
             >
-              <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
+              <Coffee className="w-3 h-3 text-amber-600 shrink-0" />
               <span>{chip}</span>
             </button>
           ))}
@@ -324,7 +324,7 @@ export function AiBaristaModal({
           {isLoading && (
             <div className="flex items-center gap-2 py-1 px-2">
               <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-slate-200 bg-white">
-                <Image src="/icon.svg" alt="Hearty" width={28} height={28} className="w-full h-full object-cover" />
+                <Image src="/icon.svg" alt="Home" width={28} height={28} className="w-full h-full object-cover" />
               </div>
               <div className="px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 flex items-center gap-1.5 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:-0.3s]" />
@@ -349,7 +349,7 @@ export function AiBaristaModal({
               <input
                 type="text"
                 maxLength={200}
-                placeholder="Ask Hearty anything about the menu..."
+                placeholder="Tanungin si Home tungkol sa menu, tamis, o promos..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 className="w-full pl-3.5 pr-14 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 outline-none"

@@ -88,7 +88,7 @@ interface CafeMenuExperienceProps {
 }
 
 /**
- * Curved SVG Spotlight Rail for Bestsellers (Desktop Quadratic Arch + Mobile Snap Track)
+ * Handcrafted Campus Favorites Showcase (Clean, Bespoke Cafe Rail)
  */
 export function CurvedSpotlightRail({
   bestsellers,
@@ -97,167 +97,65 @@ export function CurvedSpotlightRail({
   bestsellers: ExperienceProduct[];
   onSelect?: (product: ExperienceProduct) => void;
 }) {
-  const [spotlightIdx, setSpotlightIdx] = useState<number | null>(null);
-
   return (
-    <div className="relative w-full">
-      {/* Desktop Curved SVG Rail */}
-      <div className="relative hidden md:block">
-        {/* Luminous Royal Blue & Ice Blue Arch */}
-        <svg
-          viewBox="0 0 1000 180"
-          className="pointer-events-none absolute inset-x-0 top-6 h-44 w-full overflow-visible"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M 60 140 Q 500 -10 940 140"
-            stroke="url(#railGradientBlue)"
-            strokeWidth="3.5"
-            strokeDasharray="8 8"
-          />
-          <defs>
-            <linearGradient
-              id="railGradientBlue"
-              x1="0"
-              y1="0"
-              x2="1000"
-              y2="0"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop offset="0%" stopColor="#bfdbfe" stopOpacity="0.3" />
-              <stop offset="50%" stopColor="#2563eb" stopOpacity="0.85" />
-              <stop offset="100%" stopColor="#bfdbfe" stopOpacity="0.3" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        {/* Cards dynamically placed along the quadratic curve */}
-        <div className="relative mx-auto flex h-[360px] max-w-5xl items-start justify-between px-4 pt-6">
-          {bestsellers.map((item, idx) => {
-            const mid = (bestsellers.length - 1) / 2;
-            const norm = mid === 0 ? 0 : (idx - mid) / mid; // -1 to +1
-            const arcDropY = Math.pow(norm, 2) * 58; // Parabolic vertical drop
-            const tiltDeg = norm * 7; // Subtle tilt
-
-            const isSpotlit = spotlightIdx === idx;
-            const isDimmed = spotlightIdx !== null && spotlightIdx !== idx;
-
-            return (
-              <div
-                key={item.id}
-                onMouseEnter={() => setSpotlightIdx(idx)}
-                onMouseLeave={() => setSpotlightIdx(null)}
-                onClick={() => onSelect?.(item)}
-                style={{
-                  transform: `translateY(${arcDropY}px) rotate(${
-                    isSpotlit ? 0 : tiltDeg
-                  }deg) scale(${isSpotlit ? 1.08 : isDimmed ? 0.94 : 1})`,
-                }}
-                className={`group relative w-48 cursor-pointer rounded-3xl border bg-white p-4 shadow-md transition-all duration-300 ease-out select-none flex flex-col justify-between ${
-                  isSpotlit
-                    ? "z-30 border-[#2563eb] shadow-xl ring-4 ring-[#2563eb]/20"
-                    : "z-10 border-stone-200/90 hover:border-blue-300"
-                } ${isDimmed ? "opacity-60 blur-[0.3px]" : "opacity-100"}`}
-              >
-                <div>
-                  {/* Header Badge & Price */}
-                  <div className="mb-2 flex items-center justify-between text-xs font-bold">
-                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#2563eb] border border-blue-200/80">
-                      ⭐ Favorite
-                    </span>
-                    <span className="font-extrabold text-stone-900 text-xs">
-                      from ₱{item.price}
-                    </span>
-                  </div>
-
-                  {/* Product Image Stage */}
-                  <div className="relative mx-auto my-2 h-28 w-28 overflow-hidden rounded-2xl bg-gradient-to-b from-blue-50/60 to-white flex items-center justify-center p-1.5">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={112}
-                      height={112}
-                      sizes="112px"
-                      className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-
-                  {/* Name & Snippet */}
-                  <h3 className="line-clamp-1 text-sm font-black text-stone-900 group-hover:text-[#2563eb] transition-colors">
-                    {item.name}
-                  </h3>
-                  <p className="mt-1 line-clamp-1 text-[11px] leading-relaxed text-stone-500">
-                    {item.description.slice(0, 58)}
-                  </p>
-                </div>
-
-                {/* Single Action CTA */}
-                <div className="mt-3 pt-2.5 border-t border-stone-100 flex items-center justify-between">
-                  <span className="text-[10px] text-stone-400 font-bold uppercase">
-                    {item.sizes ? (typeof item.sizes === 'number' ? `${item.sizes} sizes` : `${item.sizes.length} sizes`) : "Standard"}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelect?.(item);
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Mobile Snap Carousel for Bestsellers */}
-      <div className="flex snap-x snap-mandatory gap-3.5 overflow-x-auto pb-4 no-scrollbar md:hidden px-1">
+    <div className="relative w-full rounded-3xl bg-stone-50/80 border border-stone-200/80 p-4 sm:p-6">
+      {/* Grid on Desktop & Tablet, Smooth Scroll on Mobile */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
         {bestsellers.map((item) => (
           <div
             key={item.id}
             onClick={() => onSelect?.(item)}
-            className="w-56 shrink-0 snap-start rounded-3xl border border-stone-200 bg-white p-4 shadow-sm active:scale-[0.98] transition-all cursor-pointer flex flex-col justify-between"
+            className="group relative cursor-pointer rounded-2xl sm:rounded-3xl border border-stone-200 bg-white p-3.5 sm:p-4 shadow-xs hover:border-blue-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 select-none flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between text-xs font-bold">
-                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-black uppercase text-[#2563eb] border border-blue-200">
-                  ⭐ Favorite
+              {/* Header Badge & Price */}
+              <div className="mb-2 flex items-center justify-between text-xs font-bold gap-1">
+                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-blue-700 border border-blue-200/80 truncate">
+                  ⭐ Bestseller
                 </span>
-                <span className="text-xs font-black text-stone-900">
-                  from ₱{item.price}
+                <span className="font-extrabold text-slate-900 text-xs shrink-0">
+                  ₱{item.price}
                 </span>
               </div>
-              <div className="relative mx-auto my-2.5 h-28 w-28 flex items-center justify-center">
+
+              {/* Product Image Stage */}
+              <div className="relative mx-auto my-2 h-28 w-28 sm:h-32 sm:w-32 overflow-hidden rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center p-1.5">
                 <Image
                   src={item.image}
                   alt={item.name}
-                  width={112}
-                  height={112}
-                  sizes="112px"
-                  className="h-full w-full object-contain"
+                  width={128}
+                  height={128}
+                  sizes="(max-width: 640px) 112px, 128px"
+                  className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-xs"
                 />
               </div>
-              <h3 className="font-black text-stone-900 text-sm truncate">{item.name}</h3>
-              <p className="mt-1 line-clamp-1 text-[11px] text-stone-500">
-                {item.description.slice(0, 58)}
+
+              {/* Name & Snippet */}
+              <h3 className="line-clamp-1 text-xs sm:text-sm font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors">
+                {item.name}
+              </h3>
+              <p className="mt-0.5 line-clamp-1 text-[11px] leading-relaxed text-slate-500">
+                {item.description}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect?.(item);
-              }}
-              className="mt-3 w-full rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] py-2 text-xs font-bold text-white transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer active:scale-95"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add</span>
-            </button>
+
+            {/* Single Action CTA */}
+            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[10px] text-slate-400 font-bold uppercase">
+                {item.sizes ? (typeof item.sizes === 'number' ? `${item.sizes} sizes` : `${item.sizes.length} sizes`) : "Standard"}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect?.(item);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add</span>
+              </button>
+            </div>
           </div>
         ))}
       </div>

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { addCustomProduct, deleteCustomProduct, getCanonicalMenu, getCustomProducts } from "@/lib/menu";
+import {
+  addCustomProduct,
+  deleteCustomProduct,
+  getCanonicalMenu,
+  getCustomProducts,
+  updateProductPrices,
+} from "@/lib/menu";
 import { z } from "zod";
 
 const newProductSchema = z.object({
@@ -65,6 +71,38 @@ export async function POST(request: NextRequest) {
     console.error("POST /api/admin/menu/products error:", error);
     return NextResponse.json(
       { success: false, error: "Failed to add new product" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  if (!isAdminAuthenticated(request)) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const { slug, prices } = body;
+
+    if (!slug || typeof slug !== "string" || !prices || typeof prices !== "object") {
+      return NextResponse.json(
+        { success: false, error: "Product slug and prices map are required." },
+        { status: 400 },
+      );
+    }
+
+    const updated = await updateProductPrices(slug, prices);
+    return NextResponse.json({
+      success: true,
+      slug,
+      prices: updated,
+      message: `Prices updated successfully for ${slug}.`,
+    });
+  } catch (error) {
+    console.error("PATCH /api/admin/menu/products error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to update product prices." },
       { status: 500 },
     );
   }

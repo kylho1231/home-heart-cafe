@@ -330,6 +330,10 @@ export default function Page() {
   const [cartHydrated, setCartHydrated] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
+  // Live Bulletin & Promos (Admin synchronized)
+  const [liveEvents, setLiveEvents] = useState<any[]>(eventsData);
+  const [livePromoBanner, setLivePromoBanner] = useState<string | null>(null);
+
   // Active Customization State (Linked to 3D Stage)
   const [selectedProductId, setSelectedProductId] = useState(products[0].id);
   const [selectedFlavor, setSelectedFlavor] = useState(products[0].flavors[0]);
@@ -455,6 +459,21 @@ export default function Page() {
           }
           if (Array.isArray(data.unavailableSlugs)) {
             setUnavailableSlugs(data.unavailableSlugs);
+          }
+        }
+      })
+      .catch(() => {});
+
+    // Fetch live announcements & events from bulletin
+    fetch("/api/bulletin")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success) {
+          if (Array.isArray(data.events) && data.events.length > 0) {
+            setLiveEvents(data.events);
+          }
+          if (data.promoBanner) {
+            setLivePromoBanner(data.promoBanner);
           }
         }
       })
@@ -981,7 +1000,7 @@ export default function Page() {
           🍟
         </span>
         <span>
-          <strong>Promo:</strong> {t.promoBanner}
+          <strong>Promo:</strong> {livePromoBanner || t.promoBanner}
         </span>
         {eligibleDrinkSpend > 0 && (
           <span className="text-[11px] bg-white px-2.5 py-0.5 rounded-full text-amber-900 border border-amber-300 font-bold ml-1">
@@ -1058,7 +1077,7 @@ export default function Page() {
               </div>
 
               <div className="relative w-56 h-56 sm:w-64 sm:h-64 my-2 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-100/50 via-rose-50/30 to-amber-50/20 blur-xl group-hover:scale-110 transition-transform duration-500" />
+                <div className="absolute inset-2 rounded-full bg-stone-100/90 border border-stone-200/60 group-hover:scale-105 transition-transform duration-300" />
                 {heroProduct?.image ? (
                   <Image
                     src={heroProduct.image}
@@ -1524,7 +1543,7 @@ export default function Page() {
       {/* Unified News, Atmosphere & Events Carousel */}
       <section id="events" className="scroll-mt-20 px-4 sm:px-8 py-10 max-w-7xl mx-auto border-t border-slate-200">
         <NewsEventsCarousel
-          items={eventsData}
+          items={liveEvents}
           title={t.newsTitle}
           subtitle={t.newsSubtitle}
           badgeText={t.newsBadge}
@@ -1845,13 +1864,15 @@ export default function Page() {
             setAiModalOpen(true);
             playChime("notification");
           }}
-          aria-label="Ask Hearty AI Barista"
-          className="group relative flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:shadow-2xl transition-all duration-200 active:scale-95 border border-white/40 cursor-pointer"
+          aria-label="Chat with Home · Cafe Barista"
+          className="group relative flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white shadow-xl hover:shadow-2xl transition-all duration-200 active:scale-95 border border-slate-700 cursor-pointer"
         >
-          <span className="absolute -top-1 -right-1 w-3 rounded-full h-3 bg-emerald-400 ring-2 ring-white animate-pulse" />
-          <Coffee className="w-4 h-4 text-amber-200" />
-          <span className="text-xs font-extrabold tracking-wide">
-            Ask Hearty
+          <div className="relative w-6 h-6 rounded-full overflow-hidden bg-white shrink-0 border border-white/20">
+            <Image src="/icon.svg" alt="Home" width={24} height={24} className="w-full h-full object-cover" />
+            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 ring-1 ring-slate-900" />
+          </div>
+          <span className="text-xs font-black tracking-wide">
+            {t.askHearty || "Chat with Home"}
           </span>
         </button>
       </div>

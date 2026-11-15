@@ -45,6 +45,45 @@ function formatSizeLabel(size: string): string {
 let unavailableSet: Set<string> = new Set();
 let availabilityLoaded = false;
 
+// In-memory price overrides store (admin adjustable)
+let priceOverrides: Record<string, Record<string, number>> = {};
+let priceOverridesLoaded = false;
+
+function getPriceOverridesFilePath(): string {
+  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+    return path.join(os.tmpdir(), "home-heart-cafe-price-overrides.json");
+  }
+  return path.join(process.cwd(), "data", "price-overrides.json");
+}
+
+export async function loadPriceOverrides(): Promise<Record<string, Record<string, number>>> {
+  if (priceOverridesLoaded) return priceOverrides;
+  try {
+    const filePath = getPriceOverridesFilePath();
+    const raw = await fs.readFile(filePath, "utf-8");
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") {
+      priceOverrides = parsed;
+      priceOverridesLoaded = true;
+    }
+  } catch {}
+  return priceOverrides;
+}
+
+export async function updateProductPrices(
+  slug: string,
+  newPrices: Record<string, number>,
+): Promise<Record<string, number>> {
+  await loadPriceOverrides();
+  priceOverrides[slug] = { ...(priceOverrides[slug] || {}), ...newPrices };
+  try {
+    const filePath = getPriceOverridesFilePath();
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(priceOverrides, null, 2), "utf-8");
+  } catch {}
+  return priceOverrides[slug];
+}
+
 function getAvailabilityFilePath(): string {
   if (process.env.VERCEL || process.env.NODE_ENV === "production") {
     return path.join(os.tmpdir(), "home-heart-cafe-availability.json");
@@ -210,6 +249,7 @@ export async function deleteCustomProduct(id: string): Promise<boolean> {
  */
 export async function getCanonicalMenu(): Promise<MenuItem[]> {
   await loadAvailability();
+  await loadPriceOverrides();
   const customItems = await getCustomProducts();
 
   const items: MenuItem[] = [];
@@ -226,10 +266,20 @@ export async function getCanonicalMenu(): Promise<MenuItem[]> {
         slug.includes("spanish-latte") ||
         slug.includes("cheese-french-fries");
 
-      const sizes: MenuItemSize[] = Object.entries(item.prices).map(([sizeKey, priceVal]) => ({
-        label: formatSizeLabel(sizeKey),
-        price: typeof priceVal === "number" ? priceVal : 0,
-      }));
+      const itemOverrides = priceOverrides[slug];
+      const sizes: MenuItemSize[] = Object.entries(item.prices).map(([sizeKey, priceVal]) => {
+        const label = formatSizeLabel(sizeKey);
+        const effectivePrice =
+          itemOverrides && typeof itemOverrides[label] === "number"
+            ? itemOverrides[label]
+            : typeof priceVal === "number"
+              ? priceVal
+              : 0;
+        return {
+          label,
+          price: effectivePrice,
+        };
+      });
 
       const rawItem = item as { name: string; description?: string; prices: Record<string, number> };
       items.push({
