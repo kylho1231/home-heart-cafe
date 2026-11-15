@@ -442,10 +442,63 @@ export function CheckoutVerificationModal({
 
               {/* Role Specific Fields */}
               {role === "student" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-3.5">
+                  {/* Quick Grade Level Picker for Young Learners & Students */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Baitang / Grado (Grade Level) *
+                      </label>
+                      <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                        Kinder &amp; Grade 1 Friendly 🎒
+                      </span>
+                    </div>
+
+                    {/* Quick Grade Level Tap Pills */}
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {[
+                        "Kinder",
+                        "Grade 1",
+                        "Grade 2",
+                        "Grade 3",
+                        "Grade 4",
+                        "Grade 5",
+                        "Grade 6",
+                        "Junior High",
+                        "Senior High",
+                        "College",
+                      ].map((lvl) => (
+                        <button
+                          key={lvl}
+                          type="button"
+                          onClick={() => {
+                            setGradeSection(lvl);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            gradeSection.startsWith(lvl)
+                              ? "bg-blue-600 text-white shadow-xs"
+                              : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {lvl}
+                        </button>
+                      ))}
+                    </div>
+
+                    <input
+                      type="text"
+                      required
+                      value={gradeSection}
+                      onChange={(e) => setGradeSection(e.target.value)}
+                      placeholder="e.g. Grade 1 - Mabini, Kinder - Rose, o Grade 11"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none"
+                    />
+                  </div>
+
+                  {/* 12-Digit LRN with friendly note */}
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                      12-Digit LRN *
+                      12-Digit LRN (Learner Reference No.) *
                     </label>
                     <input
                       type="text"
@@ -454,22 +507,12 @@ export function CheckoutVerificationModal({
                       maxLength={12}
                       value={lrn}
                       onChange={(e) => setLrn(e.target.value.replace(/\D/g, ""))}
-                      placeholder="12-digit Learner Reference No."
+                      placeholder="12-digit LRN (nasa School ID o Report Card)"
                       className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                      Grade &amp; Section *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={gradeSection}
-                      onChange={(e) => setGradeSection(e.target.value)}
-                      placeholder="e.g. Grade 11 - STEM A"
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none"
-                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      💡 Tip: Para sa Grade 1 o Kinder, pwedeng magpatulong kay Teacher o kay Mommy/Daddy para sa LRN at ID!
+                    </p>
                   </div>
                 </div>
               ) : (

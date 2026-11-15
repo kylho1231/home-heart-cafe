@@ -3,17 +3,19 @@
     "id": "event-acoustic-friday",
     "title": "Campus Acoustic Friday",
     "schedule": "Every Friday 3:00 PM – 6:00 PM",
-    "description": "Live student performances, open mic sessions, and warm handcrafted coffee drinks.",
+    "description": "Live student acoustic performances, open mic sessions, and warm handcrafted coffee drinks.",
     "icon": "music",
-    "badgeColor": "rose"
+    "badgeColor": "rose",
+    "image": "/products/cafe-favorites-to-share.webp"
   },
   {
     "id": "event-study-lounge",
     "title": "Study & Chill Lounge Hours",
     "schedule": "Monday – Thursday 4:00 PM – 6:00 PM",
-    "description": "High-speed campus Wi-Fi, power charging outlets, quiet ambient study environment, and 10% drink refill discount.",
+    "description": "High-speed campus Wi-Fi, power charging outlets, quiet study vibe, and 10% drink refill discount.",
     "icon": "book",
-    "badgeColor": "sky"
+    "badgeColor": "sky",
+    "image": "/products/milk-tea-and-fries.webp"
   },
   {
     "id": "event-teacher-wednesday",
@@ -21,6 +23,25 @@
     "schedule": "Every Wednesday 8:00 AM – 5:00 PM",
     "description": "Faculty members receive a free extra shot of espresso or boba pearls on any 16oz or 22oz beverage!",
     "icon": "coffee",
-    "badgeColor": "amber"
+    "badgeColor": "amber",
+    "image": "/products/fruit-soda-and-fries.webp"
+  },
+  {
+    "id": "news-free-fries",
+    "title": "Free Medium Fries Promo Alert 🍟",
+    "schedule": "Active Daily · Spend ₱200+ on Drinks",
+    "description": "Spend ₱200 or more on handcrafted drinks in a single order and get a free cup of golden Medium Fries!",
+    "icon": "gift",
+    "badgeColor": "emerald",
+    "image": "/products/cheese-fries.webp"
+  },
+  {
+    "id": "news-barkada-bundle",
+    "title": "Barkada Saver Bundles",
+    "schedule": "From ₱135 · Save up to ₱22",
+    "description": "Get 3x 12oz drinks and 1x Large Fries with official Home Cafe cup logo. Best for classmates!",
+    "icon": "flame",
+    "badgeColor": "indigo",
+    "image": "/products/fruit-soda-and-fries.webp"
   }
 ]

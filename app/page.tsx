@@ -53,6 +53,8 @@ import { CheckoutVerificationModal } from "@/components/CheckoutVerificationModa
 import { OrderTrackerModal } from "@/components/OrderTrackerModal";
 import { AiBaristaModal } from "@/components/AiBaristaModal";
 import { CustomizationSheet } from "@/components/CustomizationSheet";
+import { NewsEventsCarousel } from "@/components/NewsEventsCarousel";
+import { TRANSLATIONS, Language } from "@/lib/i18n";
 
 type Product = {
   id: string;
@@ -348,6 +350,25 @@ export default function Page() {
   const [unavailableSlugs, setUnavailableSlugs] = useState<string[]>([]);
   const [soundMuted, setSoundMutedState] = useState(false);
   const [customerToast, setCustomerToast] = useState<string | null>(null);
+  const [currentLang, setCurrentLang] = useState<Language>("kr");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = window.localStorage.getItem("home-heart-lang") as Language;
+      if (saved && (saved === "kr" || saved === "tl" || saved === "en")) {
+        setCurrentLang(saved);
+      }
+    }
+  }, []);
+
+  const handleLanguageChange = (lang: Language) => {
+    setCurrentLang(lang);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("home-heart-lang", lang);
+    }
+  };
+
+  const t = TRANSLATIONS[currentLang];
 
   // Carousel Autoplay & Animation Controls
   const [isAutoplay, setIsAutoplay] = useState(true);
@@ -797,6 +818,46 @@ export default function Page() {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Language Selector (Kinaray-a / Tagalog / English) */}
+            <div className="flex items-center rounded-full bg-slate-100 p-0.5 border border-slate-200 text-[10px] font-bold">
+              <button
+                type="button"
+                onClick={() => handleLanguageChange("kr")}
+                className={`px-2 py-0.5 rounded-full transition-all cursor-pointer ${
+                  currentLang === "kr"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+                title="Kinaray-a (Western Visayas)"
+              >
+                KR
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange("tl")}
+                className={`px-2 py-0.5 rounded-full transition-all cursor-pointer ${
+                  currentLang === "tl"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+                title="Tagalog / Filipino"
+              >
+                TL
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange("en")}
+                className={`px-2 py-0.5 rounded-full transition-all cursor-pointer ${
+                  currentLang === "en"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+                title="English"
+              >
+                EN
+              </button>
+            </div>
+
             {/* Audio Chime Mute Toggle (Desktop) */}
             <button
               type="button"
@@ -908,7 +969,7 @@ export default function Page() {
           🍟
         </span>
         <span>
-          <strong>Campus Promo:</strong> Spend ₱200 on drinks, get free Medium Fries!
+          <strong>Promo:</strong> {t.promoBanner}
         </span>
         {eligibleDrinkSpend > 0 && (
           <span className="text-[11px] bg-white px-2.5 py-0.5 rounded-full text-amber-900 border border-amber-300 font-bold ml-1">
@@ -933,7 +994,7 @@ export default function Page() {
 
             {/* Headline */}
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
-              Your next happy sip starts here.
+              {t.heroHeadline}
             </h1>
 
             {/* One-line Subtext */}
@@ -947,7 +1008,7 @@ export default function Page() {
                 href="#menu"
                 className="px-7 py-3.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
               >
-                <span>Order now</span>
+                <span>{t.orderNow}</span>
                 <ArrowRight className="w-4 h-4" />
               </a>
               <button
@@ -955,7 +1016,7 @@ export default function Page() {
                 onClick={() => setTrackerModalOpen(true)}
                 className="text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-600 underline underline-offset-4 decoration-slate-300 hover:decoration-blue-600 transition-colors cursor-pointer py-2 px-1"
               >
-                Track order →
+                {t.trackOrderArrow}
               </button>
             </div>
 
@@ -1472,97 +1533,14 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Featured Atmosphere & Cafe Events Section */}
-      <section id="events" className="scroll-mt-20 px-4 sm:px-8 py-12 max-w-7xl mx-auto space-y-8">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dbeafe] text-[#2563eb] text-xs font-bold uppercase">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Campus Cafe Life & Events</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] mt-1">
-            Good things are better shared.
-          </h2>
-          <p className="text-xs text-[#475569]">
-            Join the campus events and activities happening at Home ❤️ Cafe.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {eventsData.map((ev) => (
-            <div
-              key={ev.id}
-              className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-3 hover:shadow-md transition-shadow"
-            >
-              <div
-                className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold ${
-                  ev.badgeColor === "rose"
-                    ? "bg-rose-50 text-rose-600"
-                    : ev.badgeColor === "sky"
-                      ? "bg-sky-50 text-sky-600"
-                      : "bg-amber-50 text-amber-600"
-                }`}
-              >
-                {ev.icon === "music" ? (
-                  <Music className="w-5 h-5" />
-                ) : ev.icon === "book" ? (
-                  <BookOpen className="w-5 h-5" />
-                ) : (
-                  <Coffee className="w-5 h-5" />
-                )}
-              </div>
-              <h3 className="font-extrabold text-slate-800 text-base">{ev.title}</h3>
-              <div className="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg inline-block">
-                {ev.schedule}
-              </div>
-              <p className="text-xs text-slate-500 leading-relaxed">{ev.description}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Real Cafe Photography Showcase */}
-        <div className="pt-6 border-t border-slate-200/80 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h3 className="text-xl font-black text-[#0f172a]">
-                Real Servings, Fresh Campus Moments
-              </h3>
-              <p className="text-xs text-[#475569]">
-                Capturing the real Home ❤️ Cafe experience: fresh boba, sparkling sodas, and golden fries.
-              </p>
-            </div>
-            <span className="text-xs font-semibold text-[#2563eb] bg-[#dbeafe] px-3 py-1 rounded-full w-fit">
-              100% Authentic Cafe Photos
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {featuredImages.map((img, i) => (
-              <div
-                key={i}
-                className="group relative rounded-3xl overflow-hidden border border-slate-200 bg-white shadow-xs hover:shadow-md transition-all flex flex-col"
-              >
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
-                  <Image
-                    src={img.src}
-                    alt={img.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                  <div className="absolute bottom-2.5 right-2.5 bg-black/75 backdrop-blur-xs text-white text-[10px] font-semibold px-2.5 py-1 rounded-lg">
-                    Home Cafe Logo
-                  </div>
-                </div>
-                <div className="p-5 space-y-1.5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-extrabold text-slate-900 text-sm">{img.title}</h4>
-                    <p className="text-xs text-slate-500 leading-relaxed mt-1">{img.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Unified News, Atmosphere & Events Carousel */}
+      <section id="events" className="scroll-mt-20 px-4 sm:px-8 py-10 max-w-7xl mx-auto border-t border-slate-200">
+        <NewsEventsCarousel
+          items={eventsData}
+          title={t.newsTitle}
+          subtitle={t.newsSubtitle}
+          badgeText={t.newsBadge}
+        />
       </section>
       </main>
 
