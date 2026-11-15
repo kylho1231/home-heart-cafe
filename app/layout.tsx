@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Karla, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
@@ -14,10 +14,54 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#b42356",
+};
+
 export const metadata: Metadata = {
-  title: "Home ❤️ Cafe | Sips of happiness in every cup",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://home-heart-cafe.vercel.app"),
+  title: {
+    default: "Home ❤️ Cafe | Sips of happiness in every cup",
+    template: "%s | Home ❤️ Cafe",
+  },
   description:
-    "Interactive campus ordering for Home ❤️ Cafe. Browse drinks, customize in 3D, and order with verified student ID.",
+    "Interactive campus cafe ordering system for Home ❤️ Cafe. Order handcrafted milk tea, fruit sodas, iced coffee, and crispy fries ahead of your campus break with verified student guest checkout.",
+  keywords: [
+    "Home Cafe",
+    "Campus Cafe",
+    "Milk Tea",
+    "Fruit Soda",
+    "Barkada Bundles",
+    "Coffee",
+    "French Fries",
+    "Student Ordering",
+  ],
+  authors: [{ name: "Home Heart Cafe Team" }],
+  creator: "Home Heart Cafe",
+  publisher: "Home Heart Cafe",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    title: "Home ❤️ Cafe | Campus Cafe Ordering",
+    description:
+      "Sips of happiness in every cup. Order handcrafted milk tea, fruit sodas, and crispy fries ahead of your campus break.",
+    url: "https://home-heart-cafe.vercel.app",
+    siteName: "Home ❤️ Cafe",
+    locale: "en_PH",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Home ❤️ Cafe | Campus Cafe Ordering",
+    description:
+      "Sips of happiness in every cup. Order drinks and fries ahead of your campus break.",
+  },
 };
 
 export default function RootLayout({
