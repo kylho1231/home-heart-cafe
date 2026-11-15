@@ -283,13 +283,35 @@ export async function deleteOrder(id: string): Promise<boolean> {
   return true;
 }
 
+export function getManilaDateKey(isoDate?: string): string {
+  const date = isoDate ? new Date(isoDate) : new Date();
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+// Strict Order Lifecycle State Machine
+const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  pending_verification: ["preparing", "rejected"],
+  preparing: ["ready_for_pickup", "rejected"],
+  ready_for_pickup: ["completed", "rejected"],
+  completed: [], // Terminal state
+  rejected: [], // Terminal state
+};
+
 export async function createOrder(
   data: Omit<CafeOrder, "id" | "orderCode" | "createdAt" | "updatedAt">,
 ): Promise<CafeOrder> {
   const orders = await getOrders();
+  const todayKey = getManilaDateKey();
 
-  const randomDigits = Math.floor(1000 + Math.random() * 9000);
-  const orderCode = `HHC-${randomDigits}`;
+  // Calculate sequential daily sequence in Asia/Manila timezone
+  const todayOrders = orders.filter((o) => getManilaDateKey(o.createdAt) === todayKey);
+  const sequenceNum = String(todayOrders.length + 1).padStart(4, "0");
+  const orderCode = `HC-${sequenceNum}`;
   const now = new Date().toISOString();
 
   const newOrder: CafeOrder = {
@@ -307,7 +329,7 @@ export async function createOrder(
     const filePath = await ensureDataFile();
     await fs.writeFile(filePath, JSON.stringify(orders, null, 2), "utf-8");
   } catch (err) {
-    console.warn("Notice: File write skipped or failed in serverless context, stored in memory.", err);
+    console.warn("Notice: File write skipped or failed in serverless context, stored in memory.");
   }
 
   return newOrder;
@@ -319,6 +341,7 @@ export async function updateOrderStatus(
   rejectionReason?: string,
   staffNotes?: string,
   pickupMinutes?: number,
+  markPaid?: boolean,
 ): Promise<CafeOrder | null> {
   const orders = await getOrders();
   const index = orders.findIndex((o) => o.id === id || o.orderCode === id);
@@ -326,6 +349,17 @@ export async function updateOrderStatus(
   if (index === -1) return null;
 
   const order = orders[index];
+
+  // Validate state transition (allow same status if updating notes/payment)
+  if (status !== order.status) {
+    const allowed = VALID_TRANSITIONS[order.status] || [];
+    if (!allowed.includes(status)) {
+      throw new Error(
+        `Invalid status transition from '${order.status}' to '${status}'. Allowed: ${allowed.join(", ") || "none"}`,
+      );
+    }
+  }
+
   const updated: CafeOrder = {
     ...order,
     status,
@@ -333,6 +367,13 @@ export async function updateOrderStatus(
     rejectionReason: rejectionReason !== undefined ? rejectionReason : order.rejectionReason,
     staffNotes: staffNotes !== undefined ? staffNotes : order.staffNotes,
     pickupEstimatedMinutes: pickupMinutes !== undefined ? pickupMinutes : order.pickupEstimatedMinutes,
+    payment: {
+      ...order.payment,
+      paymentStatus:
+        markPaid || status === "completed"
+          ? "paid_in_full"
+          : order.payment.paymentStatus,
+    },
   };
 
   orders[index] = updated;
@@ -342,7 +383,7 @@ export async function updateOrderStatus(
     const filePath = await ensureDataFile();
     await fs.writeFile(filePath, JSON.stringify(orders, null, 2), "utf-8");
   } catch (err) {
-    console.warn("Notice: File write skipped or failed in serverless context, updated in memory.", err);
+    console.warn("Notice: File write skipped or failed in serverless context, updated in memory.");
   }
 
   return updated;

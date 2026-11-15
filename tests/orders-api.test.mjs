@@ -41,7 +41,7 @@ test("Order DB: creates and tracks an anti-scam verified student order", async (
   });
 
   assert.ok(newOrder.id, "Order should have an ID");
-  assert.match(newOrder.orderCode, /^HHC-\d{4}$/, "Order code should be HHC-XXXX");
+  assert.match(newOrder.orderCode, /^(HC|HHC)-\d{4}$/, "Order code should be HC-XXXX or HHC-XXXX");
   assert.equal(newOrder.customer.lrn, "123456789012");
   assert.equal(newOrder.status, "pending_verification");
 

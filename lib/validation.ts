@@ -289,6 +289,24 @@ export function recalculateOrderPrices(
 
   const unlockedFreeFries = eligibleDrinkSpend >= 200;
 
+  if (unlockedFreeFries) {
+    verifiedItems.push({
+      id: "promo-free-medium-fries",
+      productId: "promo-free-medium-fries",
+      productName: "Free Medium Fries (Promo Reward)",
+      category: "Snacks",
+      flavor: "Cheese",
+      size: "Medium",
+      sugarLevel: "100%",
+      iceLevel: "Regular Ice",
+      addBoba: false,
+      quantity: 1,
+      unitPrice: 0,
+      subtotal: 0,
+      notes: "Reward for ordering ₱200+ in drinks",
+    });
+  }
+
   let downPaymentAmount = 0;
   if (paymentMethod === "gcash_full") {
     downPaymentAmount = totalAmount;

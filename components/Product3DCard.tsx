@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useRef, useState, useCallback } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import { Plus, Sparkles, Check } from "lucide-react";
+import { Plus, Sparkles, Check, Ban } from "lucide-react";
 import { playChime } from "@/lib/sound";
 
 interface ProductSize {
@@ -20,6 +20,7 @@ interface Product3DCardProps {
   accent: string;
   image?: string;
   badge?: string;
+  isAvailable?: boolean;
   isSelected: boolean;
   onSelect: () => void;
   onQuickAdd: (size: string) => void;
@@ -31,99 +32,64 @@ export function Product3DCard({
   description,
   sizes,
   colors,
-  accent,
   image,
   badge,
+  isAvailable = true,
   isSelected,
   onSelect,
   onQuickAdd,
 }: Product3DCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [transform, setTransform] = useState("perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)");
-  const [glarePos, setGlarePos] = useState({ x: 50, y: 50, opacity: 0 });
   const [addedAnimation, setAddedAnimation] = useState(false);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    const rotateX = ((y - centerY) / centerY) * -9; // Max 9 deg
-    const rotateY = ((x - centerX) / centerX) * 9;
-
-    setTransform(
-      `perspective(800px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.025, 1.025, 1.025)`,
-    );
-
-    const glareX = (x / rect.width) * 100;
-    const glareY = (y / rect.height) * 100;
-    setGlarePos({ x: glareX, y: glareY, opacity: 0.25 });
-  }, []);
-
-  const handlePointerLeave = () => {
-    setTransform("perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)");
-    setGlarePos((prev) => ({ ...prev, opacity: 0 }));
-  };
 
   const handleQuickAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isAvailable) return;
     playChime("add");
     setAddedAnimation(true);
     setTimeout(() => setAddedAnimation(false), 800);
-    onQuickAdd(sizes[0].label);
+    onQuickAdd(sizes[0]?.label || "12 oz");
   };
 
   const startingPrice = sizes[0]?.price ?? 0;
+  const sizeCountLabel = sizes.length > 1 ? `${sizes.length} sizes` : sizes[0]?.label || "Regular";
 
   return (
     <div
-      ref={cardRef}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
       onClick={onSelect}
-      style={{
-        transform,
-        transition: "transform 0.15s ease-out, box-shadow 0.2s ease-out, border-color 0.2s",
-      }}
-      className={`group relative flex flex-col justify-between rounded-3xl p-4 bg-white/95 border text-left cursor-pointer transition-shadow shadow-sm hover:shadow-xl select-none ${
-        isSelected
-          ? "border-[#b42356] ring-2 ring-[#b42356]/20 bg-[#fffafd]"
-          : "border-stone-200/80 hover:border-[#b42356]/40"
+      className={`group relative flex flex-col justify-between rounded-3xl p-4 bg-white/95 border text-left cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl select-none ${
+        !isAvailable
+          ? "opacity-60 bg-stone-100/80 border-stone-300 pointer-events-none"
+          : isSelected
+            ? "border-[#b42356] ring-2 ring-[#b42356]/20 bg-[#fffafd] shadow-md"
+            : "border-stone-200/80 hover:border-[#b42356]/40 shadow-sm"
       }`}
     >
-      {/* 3D Dynamic Glare Light Reflection */}
-      <div
-        className="pointer-events-none absolute inset-0 rounded-3xl transition-opacity duration-300"
-        style={{
-          background: `radial-gradient(circle at ${glarePos.x}% ${glarePos.y}%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 65%)`,
-          opacity: glarePos.opacity,
-        }}
-      />
-
       {/* Top Card Badge / Category */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">
           {category}
         </span>
-        {badge ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#f7dce5] text-[#b42356] shadow-xs">
-            <Sparkles className="w-3 h-3" />
-            {badge}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-stone-100 text-stone-600">
+            {sizeCountLabel}
           </span>
-        ) : (
-          <span className="text-[11px] text-stone-400 font-medium">
-            {sizes.length > 1 ? `${sizes.length} sizes` : sizes[0]?.label}
-          </span>
-        )}
+          {badge && isAvailable && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#f7dce5] text-[#b42356] shadow-xs">
+              <Sparkles className="w-2.5 h-2.5" />
+              {badge}
+            </span>
+          )}
+          {!isAvailable && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-800 text-white shadow-xs">
+              Sold Out
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* 3D Visual Drink Stage */}
+      {/* Visual Drink Stage */}
       <div
-        className="relative h-44 w-full rounded-2xl overflow-hidden mb-3.5 flex items-center justify-center transition-transform group-hover:scale-[1.02]"
+        className="relative h-44 w-full rounded-2xl overflow-hidden mb-3.5 flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]"
         style={{
           background: `linear-gradient(135deg, ${colors[0]}40, ${colors[1]}80)`,
         }}
@@ -135,11 +101,11 @@ export function Product3DCard({
               alt={name}
               fill
               className="object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
             />
           </div>
         ) : (
-          /* Stylized 3D Cup Illustration if no image file */
+          /* Stylized Cup Illustration if no image file */
           <div className="relative flex flex-col items-center justify-center">
             <div
               className="w-20 h-28 rounded-b-2xl rounded-t-sm shadow-lg border border-white/70 relative overflow-hidden"
@@ -183,28 +149,35 @@ export function Product3DCard({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={handleQuickAddClick}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-xs transition-all ${
-                addedAnimation
-                  ? "bg-emerald-600 text-white scale-95"
-                  : "bg-[#b42356] hover:bg-[#921a44] text-white active:scale-95"
-              }`}
-              title="Add to cart"
-            >
-              {addedAnimation ? (
-                <>
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Added!</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Order</span>
-                </>
-              )}
-            </button>
+            {isAvailable ? (
+              <button
+                type="button"
+                onClick={handleQuickAddClick}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-xs transition-all cursor-pointer ${
+                  addedAnimation
+                    ? "bg-emerald-600 text-white scale-95"
+                    : "bg-[#b42356] hover:bg-[#921a44] text-white active:scale-95"
+                }`}
+                title="Add to cart"
+              >
+                {addedAnimation ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Added!</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Order</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-stone-200 text-stone-500">
+                <Ban className="w-3.5 h-3.5" />
+                <span>Unavailable</span>
+              </span>
+            )}
           </div>
         </div>
       </div>

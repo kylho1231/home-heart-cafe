@@ -122,7 +122,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { status, rejectionReason, staffNotes, pickupEstimatedMinutes } = body;
+    const { status, rejectionReason, staffNotes, pickupEstimatedMinutes, markPaid } = body;
 
     const validStatuses: OrderStatus[] = [
       "pending_verification",
@@ -139,13 +139,28 @@ export async function PATCH(
       );
     }
 
-    const updated = await updateOrderStatus(
-      id,
-      status,
-      rejectionReason,
-      staffNotes,
-      pickupEstimatedMinutes,
-    );
+    let updated;
+    try {
+      updated = await updateOrderStatus(
+        id,
+        status,
+        rejectionReason,
+        staffNotes,
+        pickupEstimatedMinutes,
+        markPaid,
+      );
+    } catch (transitionErr) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            transitionErr instanceof Error
+              ? transitionErr.message
+              : "Invalid lifecycle transition",
+        },
+        { status: 400 },
+      );
+    }
 
     if (!updated) {
       return NextResponse.json(

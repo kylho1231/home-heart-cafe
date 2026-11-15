@@ -5,6 +5,18 @@ import { isAdminAuthenticated } from "@/lib/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { createOrderSchema, recalculateOrderPrices } from "@/lib/validation";
 
+// In-memory idempotency cache (15-minute sliding window)
+const idempotencyCache = new Map<string, { order: CafeOrder; timestamp: number }>();
+
+function cleanIdempotencyCache() {
+  const now = Date.now();
+  for (const [key, value] of idempotencyCache.entries()) {
+    if (now - value.timestamp > 15 * 60 * 1000) {
+      idempotencyCache.delete(key);
+    }
+  }
+}
+
 /**
  * GET /api/orders
  * Protected Admin Endpoint: Lists all orders & sales reports.
@@ -50,6 +62,27 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
+
+    // 0. Idempotency Key check to prevent double submissions
+    const idempotencyKey =
+      request.headers.get("idempotency-key") ||
+      request.headers.get("x-idempotency-key");
+
+    if (idempotencyKey) {
+      cleanIdempotencyCache();
+      const existing = idempotencyCache.get(idempotencyKey);
+      if (existing) {
+        return NextResponse.json(
+          {
+            success: true,
+            order: existing.order,
+            message: `Order ${existing.order.orderCode} retrieved from session cache.`,
+            isDuplicate: true,
+          },
+          { status: 200 },
+        );
+      }
+    }
 
     // 1. Rate Limiting: Max 10 orders per IP per 10 minutes to prevent spam/abuse
     const rateCheck = checkRateLimit(`order_create:${ip}`, 10, 10 * 60 * 1000);
@@ -138,6 +171,13 @@ export async function POST(request: NextRequest) {
     };
 
     const created = await createOrder(orderData);
+
+    if (idempotencyKey) {
+      idempotencyCache.set(idempotencyKey, {
+        order: created,
+        timestamp: Date.now(),
+      });
+    }
 
     return NextResponse.json(
       {

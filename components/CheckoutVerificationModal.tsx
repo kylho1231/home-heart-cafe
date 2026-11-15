@@ -55,6 +55,13 @@ export function CheckoutVerificationModal({
   const [step, setStep] = useState<1 | 2>(1); // 1: Customer Verification, 2: Payment & Review
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>("");
+
+  React.useEffect(() => {
+    if (isOpen && !idempotencyKey) {
+      setIdempotencyKey(`idem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
+    }
+  }, [isOpen, idempotencyKey]);
 
   if (!isOpen) return null;
 
@@ -149,6 +156,8 @@ export function CheckoutVerificationModal({
   };
 
   const handleSubmitOrder = async () => {
+    if (isSubmitting) return;
+
     if (paymentMethod !== "counter_cash") {
       if (!gcashRef.trim() || gcashRef.replace(/\s/g, "").length < 8) {
         setErrorMessage("Please provide a valid GCash Reference Number (min 8 digits).");
@@ -184,7 +193,10 @@ export function CheckoutVerificationModal({
 
       const res = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -192,6 +204,11 @@ export function CheckoutVerificationModal({
 
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to submit order. Please try again.");
+      }
+
+      // Persist active verification credential for instant tracking
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("home-heart-active-verify", fullName.trim());
       }
 
       playChime("ready");

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "event-acoustic-friday",
+    "title": "Campus Acoustic Friday",
+    "schedule": "Every Friday at 3:00 PM – 5:30 PM",
+    "description": "Live student performances, open mic sessions, and warm handcrafted coffee drinks.",
+    "icon": "music",
+    "badgeColor": "rose"
+  },
+  {
+    "id": "event-study-lounge",
+    "title": "Study & Chill Lounge Hours",
+    "schedule": "Monday – Thursday 4:00 PM – 6:00 PM (Friday 5:30 PM – 7:30 PM)",
+    "description": "High-speed campus Wi-Fi, power charging outlets, quiet ambient study environment, and 10% drink refill discount.",
+    "icon": "book",
+    "badgeColor": "sky"
+  },
+  {
+    "id": "event-teacher-wednesday",
+    "title": "Teacher Appreciation Wednesday",
+    "schedule": "Every Wednesday 8:00 AM – 5:00 PM",
+    "description": "Faculty members receive a free extra shot of espresso or boba pearls on any 16oz or 22oz beverage!",
+    "icon": "coffee",
+    "badgeColor": "amber"
+  }
+]

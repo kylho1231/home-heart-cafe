@@ -32,6 +32,7 @@ import {
 import catalogSource from "./menu-data.json";
 import featuredImageSource from "./featured-images.json";
 import productImages from "./product-images.json";
+import eventsData from "../data/events.json";
 
 import { OrderItem } from "@/lib/types";
 import { playChime } from "@/lib/sound";
@@ -294,6 +295,19 @@ export default function Page() {
   const [trackerModalOpen, setTrackerModalOpen] = useState(false);
   const [activeOrderCode, setActiveOrderCode] = useState<string>("");
   const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [unavailableSlugs, setUnavailableSlugs] = useState<string[]>([]);
+
+  // Fetch stock availability
+  useEffect(() => {
+    fetch("/api/menu/availability")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.unavailable)) {
+          setUnavailableSlugs(data.unavailable);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Restore Cart & Last Order Code from localStorage
   useEffect(() => {
@@ -332,8 +346,10 @@ export default function Page() {
   const currentUnitPrice = useMemo(() => {
     const sizeObj = selectedProduct.sizes.find((s) => s.label === selectedSize) ?? selectedProduct.sizes[0];
     let price = sizeObj?.price ?? 0;
-    if (selectedBoba) price += bobaAddonPrice;
-    if (selectedCreamCheese) price += creamCheeseAddonPrice;
+    const isCreamCheeseCat = selectedProduct.category === "Cream Cheese Series";
+    const isSnack = selectedProduct.category === "Snacks";
+    if (selectedBoba && !isSnack) price += bobaAddonPrice;
+    if (selectedCreamCheese && !isCreamCheeseCat && !isSnack) price += creamCheeseAddonPrice;
     return price;
   }, [selectedProduct, selectedSize, selectedBoba, selectedCreamCheese, bobaAddonPrice]);
 
@@ -384,7 +400,12 @@ export default function Page() {
 
   // Add customized item from customizer
   const handleAddToCart = () => {
-    const itemKey = `${selectedProduct.id}-${selectedSize}-${selectedSugar}-${selectedIce}-${selectedBoba ? "boba" : "noboba"}-${selectedCreamCheese ? "cc" : "nocc"}`;
+    const isCreamCheeseCat = selectedProduct.category === "Cream Cheese Series";
+    const isSnack = selectedProduct.category === "Snacks";
+    const effectiveCreamCheese = !isCreamCheeseCat && !isSnack ? selectedCreamCheese : false;
+    const effectiveBoba = !isSnack ? selectedBoba : false;
+
+    const itemKey = `${selectedProduct.id}-${selectedSize}-${isSnack ? "Snack" : selectedSugar}-${isSnack ? "Snack" : selectedIce}-${effectiveBoba ? "boba" : "noboba"}-${effectiveCreamCheese ? "cc" : "nocc"}`;
 
     const newItem: OrderItem = {
       id: itemKey,
@@ -393,10 +414,10 @@ export default function Page() {
       category: selectedProduct.category,
       flavor: selectedFlavor,
       size: selectedSize,
-      sugarLevel: selectedSugar,
-      iceLevel: selectedIce,
-      addBoba: selectedBoba,
-      addCreamCheese: selectedCreamCheese,
+      sugarLevel: isSnack ? "100%" : selectedSugar,
+      iceLevel: isSnack ? "Regular Ice" : selectedIce,
+      addBoba: effectiveBoba,
+      addCreamCheese: effectiveCreamCheese,
       quantity: 1,
       unitPrice: currentUnitPrice,
       subtotal: currentUnitPrice,
@@ -759,74 +780,80 @@ export default function Page() {
                   </div>
                 </div>
 
-                {/* Sugar & Ice Level Pickers */}
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <label className="text-[11px] font-bold text-stone-600 block mb-1">
-                      Sugar: {selectedSugar}
-                    </label>
-                    <select
-                      value={selectedSugar}
-                      onChange={(e) => setSelectedSugar(e.target.value as any)}
-                      className="w-full px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-medium outline-none"
-                    >
-                      <option value="100%">100% Full Sweet</option>
-                      <option value="75%">75% Less Sweet</option>
-                      <option value="50%">50% Half Sweet</option>
-                      <option value="25%">25% Gentle Sweet</option>
-                      <option value="0%">0% Unsweetened</option>
-                    </select>
+                {/* Sugar & Ice Level Pickers (Drinks only) */}
+                {selectedProduct.category !== "Snacks" && (
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <label className="text-[11px] font-bold text-stone-600 block mb-1">
+                        Sugar: {selectedSugar}
+                      </label>
+                      <select
+                        value={selectedSugar}
+                        onChange={(e) => setSelectedSugar(e.target.value as any)}
+                        className="w-full px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-medium outline-none cursor-pointer"
+                      >
+                        <option value="75%">75% (Barista Default)</option>
+                        <option value="100%">100% Full Sweet</option>
+                        <option value="50%">50% Half Sweet</option>
+                        <option value="25%">25% Gentle Sweet</option>
+                        <option value="0%">0% Unsweetened</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-bold text-stone-600 block mb-1">
+                        Ice: {selectedIce}
+                      </label>
+                      <select
+                        value={selectedIce}
+                        onChange={(e) => setSelectedIce(e.target.value as any)}
+                        className="w-full px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-medium outline-none cursor-pointer"
+                      >
+                        <option value="Regular Ice">Regular Ice</option>
+                        <option value="Less Ice">Less Ice</option>
+                        <option value="Extra Ice">Extra Ice</option>
+                        <option value="No Ice">No Ice</option>
+                      </select>
+                    </div>
                   </div>
+                )}
 
-                  <div>
-                    <label className="text-[11px] font-bold text-stone-600 block mb-1">
-                      Ice: {selectedIce}
-                    </label>
-                    <select
-                      value={selectedIce}
-                      onChange={(e) => setSelectedIce(e.target.value as any)}
-                      className="w-full px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-medium outline-none"
+                {/* Add-on Toggles (Drinks only) */}
+                {selectedProduct.category !== "Snacks" && (
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedBoba(!selectedBoba);
+                        playChime("add");
+                      }}
+                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                        selectedBoba
+                          ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
+                          : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+                      }`}
                     >
-                      <option value="Regular Ice">Regular Ice</option>
-                      <option value="Less Ice">Less Ice</option>
-                      <option value="Extra Ice">Extra Ice</option>
-                      <option value="No Ice">No Ice</option>
-                    </select>
+                      + Boba Pearls (₱10)
+                    </button>
+
+                    {selectedProduct.category !== "Cream Cheese Series" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCreamCheese(!selectedCreamCheese);
+                          playChime("add");
+                        }}
+                        className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          selectedCreamCheese
+                            ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
+                            : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+                        }`}
+                      >
+                        + Cream Cheese (₱15)
+                      </button>
+                    )}
                   </div>
-                </div>
-
-                {/* Add-on Toggles */}
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedBoba(!selectedBoba);
-                      playChime("add");
-                    }}
-                    className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all ${
-                      selectedBoba
-                        ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
-                        : "border-stone-200 bg-white text-stone-600"
-                    }`}
-                  >
-                    + Boba Pearls (₱10)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedCreamCheese(!selectedCreamCheese);
-                      playChime("add");
-                    }}
-                    className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all ${
-                      selectedCreamCheese
-                        ? "border-[#b42356] bg-[#f7dce5] text-[#b42356]"
-                        : "border-stone-200 bg-white text-stone-600"
-                    }`}
-                  >
-                    + Cream Cheese (₱15)
-                  </button>
-                </div>
+                )}
 
                 {/* Optional Barista Note */}
                 <div>
@@ -999,6 +1026,7 @@ export default function Page() {
               accent={product.accent}
               image={product.image}
               badge={product.badge}
+              isAvailable={!unavailableSlugs.includes(product.id)}
               isSelected={selectedProductId === product.id}
               onSelect={() => {
                 setSelectedProductId(product.id);
@@ -1137,35 +1165,35 @@ export default function Page() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 rounded-2xl bg-rose-100 text-[#b42356] flex items-center justify-center font-bold">
-              <Music className="w-5 h-5 text-[#b42356]" />
+          {eventsData.map((ev) => (
+            <div
+              key={ev.id}
+              className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3 hover:shadow-md transition-shadow"
+            >
+              <div
+                className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold ${
+                  ev.badgeColor === "rose"
+                    ? "bg-rose-100 text-[#b42356]"
+                    : ev.badgeColor === "sky"
+                      ? "bg-sky-100 text-sky-700"
+                      : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {ev.icon === "music" ? (
+                  <Music className="w-5 h-5" />
+                ) : ev.icon === "book" ? (
+                  <BookOpen className="w-5 h-5" />
+                ) : (
+                  <Coffee className="w-5 h-5" />
+                )}
+              </div>
+              <h3 className="font-extrabold text-stone-800 text-base">{ev.title}</h3>
+              <div className="text-[11px] font-bold text-[#b42356] bg-[#fce8ef] px-2.5 py-1 rounded-lg inline-block">
+                {ev.schedule}
+              </div>
+              <p className="text-xs text-stone-500 leading-relaxed">{ev.description}</p>
             </div>
-            <h3 className="font-extrabold text-stone-800 text-base">Campus Acoustic Friday</h3>
-            <p className="text-xs text-stone-500 leading-relaxed">
-              Every Friday at 3:00 PM – 5:30 PM. Live student performances, open mic sessions, and warm coffee drinks.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
-              <BookOpen className="w-5 h-5 text-sky-700" />
-            </div>
-            <h3 className="font-extrabold text-stone-800 text-base">Study & Chill Lounge Hours</h3>
-            <p className="text-xs text-stone-500 leading-relaxed">
-              Daily 4:00 PM – 6:00 PM. High-speed Wi-Fi, power outlets, quiet study environment, and 10% refill discount.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-              <Coffee className="w-5 h-5 text-amber-700" />
-            </div>
-            <h3 className="font-extrabold text-stone-800 text-base">Teacher Appreciation Wednesday</h3>
-            <p className="text-xs text-stone-500 leading-relaxed">
-              Faculty members receive a free extra shot of espresso or boba pearls on any 16oz or 22oz beverage!
-            </p>
-          </div>
+          ))}
         </div>
       </section>
 
@@ -1361,6 +1389,9 @@ export default function Page() {
                       </span>
                     </div>
                   )}
+                  <p className="text-[10px] text-stone-400 italic pt-0.5">
+                    * Free Medium Fries promo unlocks at ₱200+ in ala-carte drinks. Bundles and fries do not count toward threshold.
+                  </p>
                 </div>
 
                 <button

@@ -22,30 +22,47 @@ interface OrderTrackerModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialOrderCode?: string;
+  initialCustomerVerify?: string;
 }
 
 export function OrderTrackerModal({
   isOpen,
   onClose,
   initialOrderCode,
+  initialCustomerVerify,
 }: OrderTrackerModalProps) {
   const [searchCode, setSearchCode] = useState(initialOrderCode || "");
+  const [verifyInput, setVerifyInput] = useState(initialCustomerVerify || "");
   const [order, setOrder] = useState<CafeOrder | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastNotifiedStatus, setLastNotifiedStatus] = useState<string>("");
 
-  const fetchOrder = useCallback(async (code: string) => {
+  // Hydrate stored verify key if available
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedVerify = window.localStorage.getItem("home-heart-active-verify");
+      if (savedVerify && !verifyInput) {
+        setVerifyInput(savedVerify);
+      }
+    }
+  }, [verifyInput]);
+
+  const fetchOrder = useCallback(async (code: string, verifyKey?: string) => {
     if (!code.trim()) return;
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/orders/${encodeURIComponent(code.trim())}`);
+      const verifyParam = (verifyKey || verifyInput || "").trim();
+      const url = `/api/orders/${encodeURIComponent(code.trim())}${
+        verifyParam ? `?verify=${encodeURIComponent(verifyParam)}` : ""
+      }`;
+      const res = await fetch(url);
       const data = await res.json();
 
       if (!res.ok || !data.success || !data.order) {
         setOrder(null);
-        setError("Order not found. Please verify your HHC-XXXX Order Code.");
+        setError(data.error || "Order not found. Please verify your Order Code and Customer Name/Phone.");
         return;
       }
 
@@ -64,27 +81,29 @@ export function OrderTrackerModal({
     } finally {
       setLoading(false);
     }
-  }, [lastNotifiedStatus]);
+  }, [verifyInput, lastNotifiedStatus]);
 
   useEffect(() => {
     if (initialOrderCode) {
       setSearchCode(initialOrderCode);
-      fetchOrder(initialOrderCode);
+      const verify = initialCustomerVerify || (typeof window !== "undefined" ? window.localStorage.getItem("home-heart-active-verify") || "" : "");
+      if (verify) setVerifyInput(verify);
+      fetchOrder(initialOrderCode, verify);
     }
-  }, [initialOrderCode, fetchOrder]);
+  }, [initialOrderCode, initialCustomerVerify, fetchOrder]);
 
-  // Real-time polling every 4 seconds while modal is open and order is active
+  // Real-time polling every 12 seconds while modal is open and order is active
   useEffect(() => {
     if (!isOpen || !order || order.status === "completed" || order.status === "rejected") {
       return;
     }
 
     const interval = setInterval(() => {
-      fetchOrder(order.orderCode);
-    }, 4000);
+      fetchOrder(order.orderCode, verifyInput);
+    }, 12000);
 
     return () => clearInterval(interval);
-  }, [isOpen, order, fetchOrder]);
+  }, [isOpen, order, verifyInput, fetchOrder]);
 
   if (!isOpen) return null;
 
@@ -133,33 +152,51 @@ export function OrderTrackerModal({
         </div>
 
         {/* Search Bar */}
-        <div className="p-6 border-b border-stone-100 bg-stone-50/50">
+        <div className="p-6 border-b border-stone-100 bg-stone-50/50 space-y-3">
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              fetchOrder(searchCode);
+              fetchOrder(searchCode, verifyInput);
             }}
-            className="flex gap-2"
+            className="space-y-2.5"
           >
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="relative">
+                <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  required
+                  placeholder="Order Code (e.g. HC-0042)"
+                  value={searchCode}
+                  onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-xs font-mono tracking-wider focus:border-[#b42356] outline-none"
+                />
+              </div>
+
               <input
                 type="text"
-                placeholder="Enter Order Code (e.g. HHC-3104)"
-                value={searchCode}
-                onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm font-mono tracking-wider focus:border-[#b42356] outline-none"
+                required
+                placeholder="Full Name or Phone"
+                value={verifyInput}
+                onChange={(e) => setVerifyInput(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-xs focus:border-[#b42356] outline-none"
               />
             </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 rounded-xl bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+              className="w-full py-2.5 rounded-xl bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <RotateCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span>Track</span>
+              <span>{loading ? "Checking Status..." : "Track Live Order"}</span>
             </button>
           </form>
+
+          {/* One-line required hint */}
+          <p className="text-[11px] text-stone-500 leading-tight">
+            💡 Enter your Order Number and Full Name or Phone Number used during checkout to protect student privacy.
+          </p>
 
           {error && (
             <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
