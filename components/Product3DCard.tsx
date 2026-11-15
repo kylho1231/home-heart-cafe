@@ -89,13 +89,13 @@ export function Product3DCard({
 
       {/* Visual Drink Stage */}
       <div
-        className="relative h-44 w-full rounded-2xl overflow-hidden mb-3.5 flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]"
+        className="relative h-48 w-full rounded-2xl overflow-hidden mb-3.5 flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]"
         style={{
-          background: `linear-gradient(135deg, ${colors[0]}40, ${colors[1]}80)`,
+          background: `radial-gradient(circle at center, ${colors[1]} 0%, ${colors[0]}25 75%, #ffffff 100%)`,
         }}
       >
         {image ? (
-          <div className="relative w-full h-full p-2">
+          <div className="relative w-full h-full p-2.5">
             <Image
               src={image}
               alt={name}
@@ -106,21 +106,10 @@ export function Product3DCard({
             />
           </div>
         ) : (
-          /* Stylized Cup Illustration if no image file */
-          <div className="relative flex flex-col items-center justify-center">
-            <div
-              className="w-20 h-28 rounded-b-2xl rounded-t-sm shadow-lg border border-white/70 relative overflow-hidden"
-              style={{
-                background: `linear-gradient(180deg, ${colors[1]}, ${colors[0]})`,
-              }}
-            >
-              <div className="absolute top-0 inset-x-0 h-2 bg-white/50" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Coffee className="w-6 h-6 text-white/90 drop-shadow-sm" />
-              </div>
-            </div>
-            {/* Straw */}
-            <div className="absolute -top-3 w-1.5 h-8 bg-red-400 rounded-full rotate-12 shadow-sm" />
+          /* Stylized Fallback Icon */
+          <div className="flex flex-col items-center justify-center text-stone-400">
+            <Coffee className="w-10 h-10 text-[#b42356]/60 mb-1" />
+            <span className="text-[10px] font-bold text-stone-500">{name}</span>
           </div>
         )}
       </div>

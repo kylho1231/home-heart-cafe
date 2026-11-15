@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -30,6 +30,10 @@ import {
   Volume2,
   VolumeX,
   AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import catalogSource from "./menu-data.json";
@@ -39,7 +43,6 @@ import eventsData from "../data/events.json";
 
 import { OrderItem } from "@/lib/types";
 import { playChime, isSoundMuted, toggleSound } from "@/lib/sound";
-import { InteractiveCup3D } from "@/components/InteractiveCup3D";
 import { Product3DCard } from "@/components/Product3DCard";
 import { CheckoutVerificationModal } from "@/components/CheckoutVerificationModal";
 import { OrderTrackerModal } from "@/components/OrderTrackerModal";
@@ -307,6 +310,20 @@ export default function Page() {
   const [unavailableSlugs, setUnavailableSlugs] = useState<string[]>([]);
   const [soundMuted, setSoundMutedState] = useState(false);
   const [customerToast, setCustomerToast] = useState<string | null>(null);
+
+  // Menu View Mode (Carousel vs Grid)
+  const [menuViewMode, setMenuViewMode] = useState<"carousel" | "grid">("carousel");
+  const menuCarouselRef = useRef<HTMLDivElement>(null);
+
+  const scrollMenuCarousel = (direction: "left" | "right") => {
+    if (menuCarouselRef.current) {
+      const scrollAmount = Math.max(300, menuCarouselRef.current.clientWidth * 0.75);
+      menuCarouselRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const showCustomerToast = (message: string) => {
     setCustomerToast(message);
@@ -785,7 +802,7 @@ export default function Page() {
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-stone-400 block tracking-wider">
-                    Interactive 3D Preview
+                    3D Product Showcase
                   </span>
                   <h3 className="font-extrabold text-lg text-stone-900">
                     {selectedProduct.name}
@@ -796,22 +813,95 @@ export default function Page() {
                 </span>
               </div>
 
-              {/* 3D Interactive Cup Component */}
-              <div className="h-80 flex items-center justify-center">
-                <InteractiveCup3D
-                  productName={selectedProduct.name}
-                  category={selectedProduct.category}
-                  flavor={selectedFlavor}
-                  size={selectedSize}
-                  colors={selectedProduct.colors}
-                  accent={selectedProduct.accent}
-                  image={selectedProduct.image}
-                  sugarLevel={selectedSugar}
-                  iceLevel={selectedIce}
-                  hasBoba={selectedBoba}
-                  hasCreamCheese={selectedCreamCheese}
-                  interactive={true}
-                />
+              {/* Generated 3D Product Image Showcase */}
+              <div
+                className="relative h-80 w-full rounded-2xl overflow-hidden flex items-center justify-center p-4 border border-stone-200/60 shadow-inner group transition-all"
+                style={{
+                  background: `radial-gradient(circle at center, ${selectedProduct.colors[1]} 0%, ${selectedProduct.colors[0]}30 70%, #fff8ef 100%)`,
+                }}
+              >
+                {selectedProduct.image ? (
+                  <div className="relative w-full h-full max-h-72 transition-transform duration-300 group-hover:scale-105">
+                    <Image
+                      src={selectedProduct.image}
+                      alt={selectedProduct.name}
+                      fill
+                      unoptimized={selectedProduct.image.startsWith("http")}
+                      className="object-contain drop-shadow-2xl"
+                      priority
+                      sizes="(max-width: 768px) 100vw, 420px"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-stone-400">
+                    <Coffee className="w-16 h-16 text-[#b42356]/60 mb-2" />
+                    <span className="text-xs font-bold">{selectedProduct.name}</span>
+                  </div>
+                )}
+
+                {/* Floating Badges */}
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/95 text-stone-700 shadow-xs border border-white">
+                    {selectedProduct.category}
+                  </span>
+                  {selectedProduct.badge && (
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-[#b42356] bg-rose-100/90 shadow-xs border border-rose-200">
+                      {selectedProduct.badge}
+                    </span>
+                  )}
+                </div>
+
+                <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-white/95 text-[#b42356] text-xs font-black shadow-xs border border-white z-10">
+                  {selectedSize} · ₱{currentUnitPrice}
+                </div>
+              </div>
+
+              {/* Quick Horizontal Carousel of Products to Switch in Showcase */}
+              <div className="pt-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
+                    Quick Carousel (Scroll Left-to-Right)
+                  </span>
+                  <span className="text-[10px] text-stone-400 font-semibold">
+                    {productList.length} products
+                  </span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                  {productList.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedProductId(item.id);
+                        setSelectedFlavor(item.flavors[0]);
+                        setSelectedSize(item.sizes[0].label);
+                        playChime("add");
+                      }}
+                      className={`shrink-0 w-16 h-16 rounded-xl border p-1 transition-all flex flex-col items-center justify-center cursor-pointer ${
+                        selectedProductId === item.id
+                          ? "border-[#b42356] ring-2 ring-[#b42356]/30 bg-rose-50/70 shadow-xs scale-105"
+                          : "border-stone-200 bg-white hover:border-[#b42356]/40"
+                      }`}
+                      title={item.name}
+                    >
+                      {item.image && (
+                        <div className="relative w-9 h-9">
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            unoptimized={item.image.startsWith("http")}
+                            className="object-contain"
+                            sizes="36px"
+                          />
+                        </div>
+                      )}
+                      <span className="text-[8px] font-bold text-stone-700 truncate w-full text-center mt-0.5">
+                        {item.name.split(" ")[0]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Live Interactive Flavor, Sugar & Size Chips */}
@@ -1058,48 +1148,173 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Menu Grid with 3D Tilt Cards */}
+      {/* Menu Carousel & Grid Section with 3D Artwork */}
       <section className="px-4 sm:px-8 py-10 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-[#b42356] text-xs font-bold mb-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>3D Product Collection</span>
+            </div>
             <h2 className="text-2xl sm:text-3xl font-black text-[#382323]">
               {activeCategory === "All" ? "Complete Cafe Menu" : activeCategory}
             </h2>
             <p className="text-xs text-stone-500 mt-1">
-              Select any card to preview in 3D or click Order to add directly.
+              Scroll left to right to explore all {filteredProducts.length} handcrafted drinks and snacks.
             </p>
           </div>
-          <span className="text-xs font-bold text-stone-400">
-            {filteredProducts.length} items
-          </span>
+
+          <div className="flex items-center gap-3">
+            {/* View Mode Toggle: Carousel vs Grid */}
+            <div className="flex items-center p-1 rounded-full bg-stone-100 border border-stone-200 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setMenuViewMode("carousel")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all cursor-pointer ${
+                  menuViewMode === "carousel"
+                    ? "bg-[#b42356] text-white shadow-xs"
+                    : "text-stone-600 hover:text-stone-900"
+                }`}
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span>Carousel</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMenuViewMode("grid")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all cursor-pointer ${
+                  menuViewMode === "grid"
+                    ? "bg-[#b42356] text-white shadow-xs"
+                    : "text-stone-600 hover:text-stone-900"
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>Grid</span>
+              </button>
+            </div>
+
+            {/* Carousel Arrow Buttons */}
+            {menuViewMode === "carousel" && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => scrollMenuCarousel("left")}
+                  className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
+                  aria-label="Scroll left"
+                  title="Scroll left"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollMenuCarousel("right")}
+                  className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
+                  aria-label="Scroll right"
+                  title="Scroll right"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* 3D Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <Product3DCard
-              key={product.id}
-              id={product.id}
-              name={product.name}
-              category={product.category}
-              description={product.description}
-              sizes={product.sizes}
-              colors={product.colors}
-              accent={product.accent}
-              image={product.image}
-              badge={product.badge}
-              isAvailable={!unavailableSlugs.includes(product.id)}
-              isSelected={selectedProductId === product.id}
-              onSelect={() => {
-                setSelectedProductId(product.id);
-                setSelectedFlavor(product.flavors[0]);
-                setSelectedSize(product.sizes[0].label);
-                document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              onQuickAdd={(sizeLabel) => handleQuickAdd(product, sizeLabel)}
-            />
-          ))}
-        </div>
+        {/* Carousel View (Scroll Left to Right) */}
+        {menuViewMode === "carousel" ? (
+          <div className="relative group/carousel">
+            {/* Left Floating Arrow on Desktop */}
+            <button
+              type="button"
+              onClick={() => scrollMenuCarousel("left")}
+              className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#b42356] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+              aria-label="Previous items"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            {/* Horizontal Scroll Track */}
+            <div
+              ref={menuCarouselRef}
+              className="flex gap-5 overflow-x-auto pb-6 pt-2 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x"
+            >
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="shrink-0 w-[275px] sm:w-[310px] snap-start"
+                >
+                  <Product3DCard
+                    id={product.id}
+                    name={product.name}
+                    category={product.category}
+                    description={product.description}
+                    sizes={product.sizes}
+                    colors={product.colors}
+                    accent={product.accent}
+                    image={product.image}
+                    badge={product.badge}
+                    isAvailable={!unavailableSlugs.includes(product.id)}
+                    isSelected={selectedProductId === product.id}
+                    onSelect={() => {
+                      setSelectedProductId(product.id);
+                      setSelectedFlavor(product.flavors[0]);
+                      setSelectedSize(product.sizes[0].label);
+                      document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    onQuickAdd={(sizeLabel) => handleQuickAdd(product, sizeLabel)}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Right Floating Arrow on Desktop */}
+            <button
+              type="button"
+              onClick={() => scrollMenuCarousel("right")}
+              className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#b42356] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+              aria-label="Next items"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+
+            {/* Carousel Navigation Hint */}
+            <div className="flex items-center justify-between text-xs text-stone-500 pt-2 px-1">
+              <span className="flex items-center gap-1.5 font-medium">
+                <ArrowRight className="w-3.5 h-3.5 text-[#b42356]" />
+                Swipe or click arrows to scroll left and right
+              </span>
+              <span className="font-semibold text-stone-400">
+                {filteredProducts.length} items
+              </span>
+            </div>
+          </div>
+        ) : (
+          /* Grid View */
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {filteredProducts.map((product) => (
+              <Product3DCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                category={product.category}
+                description={product.description}
+                sizes={product.sizes}
+                colors={product.colors}
+                accent={product.accent}
+                image={product.image}
+                badge={product.badge}
+                isAvailable={!unavailableSlugs.includes(product.id)}
+                isSelected={selectedProductId === product.id}
+                onSelect={() => {
+                  setSelectedProductId(product.id);
+                  setSelectedFlavor(product.flavors[0]);
+                  setSelectedSize(product.sizes[0].label);
+                  document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                onQuickAdd={(sizeLabel) => handleQuickAdd(product, sizeLabel)}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Barkada Bundles Interactive Builder */}
