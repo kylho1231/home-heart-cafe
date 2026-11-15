@@ -1,17 +1,17 @@
 [
   {
     "src": "/products/milk-tea-and-fries.webp",
-    "title": "Milk tea & fries",
-    "description": "A mix of creamy milk teas and golden fries, made for sharing."
+    "title": "Milk Tea & Golden Fries",
+    "description": "Handcrafted brown sugar and taro milk teas paired with a fresh cup of crispy seasoned fries, made for sharing."
   },
   {
     "src": "/products/fruit-soda-and-fries.webp",
-    "title": "Fruit soda break",
-    "description": "Bright fruit sodas and a basket of seasoned fries."
+    "title": "Refreshing Fruit Soda Break",
+    "description": "Sparkling strawberry, blue lemonade, and mango sodas served chilled with crispy French fries."
   },
   {
     "src": "/products/cafe-favorites-to-share.webp",
-    "title": "Café favorites",
-    "description": "Milk tea, a creamy matcha, blue lemonade, and fries for the table."
+    "title": "Cafe Favorites to Share",
+    "description": "Creamy boba milk tea, matcha green tea float, sparkling blue lagoon, and fries for the barkada table."
   }
 ]

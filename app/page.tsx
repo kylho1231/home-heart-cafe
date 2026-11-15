@@ -253,11 +253,26 @@ const products: Product[] = menuData.categories.flatMap((category) =>
   }),
 );
 
-const bundleChoices = paidBundles.map((bundle) => ({
-  ...bundle,
-  id: slugify(bundle.name),
-  drinkCategory: bundle.name.includes("Fruit Soda") ? "Fruit Soda" : "Milk Tea Series",
-}));
+const bundleChoices = paidBundles.map((bundle) => {
+  const id = slugify(bundle.name);
+  const isFruitSoda = bundle.name.includes("Fruit Soda");
+  return {
+    ...bundle,
+    id,
+    image: isFruitSoda
+      ? "/products/barkada-bundle-fruit-soda.webp"
+      : "/products/barkada-bundle-milk-tea.webp",
+    drinkCategory: isFruitSoda ? "Fruit Soda" : "Milk Tea Series",
+    tagline: isFruitSoda
+      ? "3x 12oz Fruit Soda + 1x Large Fries na may Home Cafe logo"
+      : "3x 12oz Milk Tea + 1x Large Fries na may Home Cafe logo",
+    badge: isFruitSoda ? "Sparkling Saver" : "Campus Bestseller",
+    savingsText: isFruitSoda ? "Save ₱45" : "Save ₱50",
+    description: isFruitSoda
+      ? "3 handcrafted 12oz Fruit Sodas + 1 Large French Fries na may official Home Cafe logo."
+      : "3 handcrafted 12oz Milk Teas with pearls + 1 Large French Fries na may official Home Cafe logo.",
+  };
+});
 
 function getBundleDrinks(category: string) {
   return products.filter(
@@ -1091,19 +1106,105 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Free Fries Spend Promo Banner */}
+      {/* Free Medium Fries Spend Promo Spotlight Card */}
       {freeFriesPromotion && (
-        <section className="px-4 sm:px-8 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-stone-900 shadow-inner">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap text-xs sm:text-sm font-bold">
-            <div className="flex items-center gap-2.5">
-              <Gift className="w-5 h-5 text-white" />
-              <span>
-                <strong>{freeFriesPromotion.name}:</strong> {freeFriesPromotion.condition} and get <strong>{freeFriesPromotion.reward}</strong>!
-              </span>
+        <section className="px-4 sm:px-8 py-8 bg-gradient-to-b from-blue-50/50 via-white to-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-[2px] shadow-xl">
+              <div className="rounded-[22px] bg-white p-6 sm:p-8 flex flex-col lg:flex-row items-center gap-8">
+                {/* Photo showcase with Home Cafe logo */}
+                <div className="relative w-full lg:w-1/2 aspect-video sm:aspect-[16/10] rounded-2xl overflow-hidden shadow-lg border border-amber-200/60 bg-amber-50 group">
+                  <Image
+                    src="/products/free-medium-fries-promo.webp"
+                    alt="Spend at least ₱200 and get FREE Medium Fries at Home Cafe"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                  <div className="absolute top-3 left-3 bg-amber-500 text-stone-900 text-xs font-black px-3.5 py-1.5 rounded-full shadow-md flex items-center gap-1.5 uppercase tracking-wider">
+                    <Gift className="w-4 h-4 text-white" />
+                    <span>Promo Offer</span>
+                  </div>
+                  <div className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg">
+                    Real Photo · Home Cafe Logo
+                  </div>
+                </div>
+
+                {/* Offer Details & Cart Tracker */}
+                <div className="w-full lg:w-1/2 space-y-4">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Campus Reward Perk</span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-2xl sm:text-3xl font-black text-[#0f172a] leading-tight">
+                      Spend at least <span className="text-amber-600">₱200</span> & get <span className="text-[#2563eb]">FREE Medium Fries</span>!
+                    </h3>
+                    <p className="text-xs sm:text-sm text-stone-600 mt-2 leading-relaxed">
+                      Treat yourself and your classmates! Buy drinks worth at least ₱200 at Home Cafe, and we'll automatically reward your cart with a hot, crispy serving of Medium French Fries with our authentic Home Cafe cup logo!
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-stone-700">
+                    <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Auto-calculated in cart</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Valid on all handcrafted drinks</span>
+                    </div>
+                  </div>
+
+                  {/* Live Spend Progress Bar */}
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-stone-700 flex items-center gap-1.5">
+                        <Coffee className="w-4 h-4 text-[#2563eb]" />
+                        <span>Drink Spend Progress</span>
+                      </span>
+                      <span className="font-mono font-bold text-stone-900">
+                        ₱{eligibleDrinkSpend} / ₱200
+                      </span>
+                    </div>
+                    <div className="w-full h-3 rounded-full bg-stone-200 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
+                        style={{ width: `${Math.min(100, (eligibleDrinkSpend / 200) * 100)}%` }}
+                      />
+                    </div>
+                    {eligibleDrinkSpend >= 200 ? (
+                      <p className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>🎉 FREE Medium Fries unlocked for your order!</span>
+                      </p>
+                    ) : (
+                      <p className="text-xs text-stone-500">
+                        Add <strong className="text-amber-700 font-semibold">₱{Math.max(0, 200 - eligibleDrinkSpend)}</strong> more in drinks to claim your free fries!
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-1">
+                    <a
+                      href="#menu"
+                      className="px-5 py-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Coffee className="w-3.5 h-3.5" />
+                      <span>Explore Drinks to Qualify</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setCartDrawerOpen(true)}
+                      className="px-4 py-2.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    >
+                      View Cart ({cartItemCount})
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <span className="px-3 py-1 rounded-full bg-white/90 text-amber-900 text-xs font-black shadow-xs">
-              Auto-Calculated in Cart
-            </span>
           </div>
         </section>
       )}
@@ -1345,82 +1446,176 @@ export default function Page() {
       </section>
 
       {/* Barkada Bundles Interactive Builder */}
-      <section id="bundles" className="px-4 sm:px-8 py-12 bg-white border-t border-b border-stone-200">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <section id="bundles" className="px-4 sm:px-8 py-12 bg-stone-50/60 border-t border-b border-stone-200">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-black uppercase">
-                <Flame className="w-3.5 h-3.5" />
+                <Flame className="w-3.5 h-3.5 text-amber-600" />
                 <span>Barkada Saver Bundles</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] mt-1">
-                Share More, Spend Less
+              <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] mt-1.5">
+                Share More, Spend Less With Your Barkada
               </h2>
-              <p className="text-xs text-stone-500">
-                Pick 3 drinks of your choice + 1 Large French Fries!
+              <p className="text-xs sm:text-sm text-stone-600 max-w-2xl mt-1">
+                Freshly prepared combos made for campus groups! Pick between our Fruit Soda or Milk Tea bundles — each includes 3 drinks of your choice + 1 Large French Fries na may official Home Cafe logo.
               </p>
-            </div>
-
-            {/* Bundle Type Selector */}
-            <div className="flex gap-2">
-              {bundleChoices.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  onClick={() => {
-                    setBundleId(b.id);
-                    const drinks = getBundleDrinks(b.drinkCategory);
-                    setBundleDrinkIds(Array.from({ length: 3 }, () => drinks[0]?.id ?? products[0].id));
-                    playChime("add");
-                  }}
-                  className={`px-4 py-2 rounded-2xl text-xs font-bold border transition-all ${
-                    bundleId === b.id
-                      ? "border-[#2563eb] bg-[#2563eb] text-white shadow-md"
-                      : "border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100"
-                  }`}
-                >
-                  {b.name} · ₱{b.price}
-                </button>
-              ))}
             </div>
           </div>
 
+          {/* Two Promotional Bundle Hero Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {bundleChoices.map((b) => {
+              const isSelected = bundleId === b.id;
+              return (
+                <div
+                  key={b.id}
+                  className={`relative rounded-3xl overflow-hidden border-2 transition-all duration-300 flex flex-col bg-white shadow-md hover:shadow-xl ${
+                    isSelected
+                      ? "border-[#2563eb] ring-4 ring-[#2563eb]/10"
+                      : "border-stone-200 hover:border-stone-300"
+                  }`}
+                >
+                  {/* Real Bundle Photo */}
+                  <div className="relative aspect-[16/9] w-full bg-stone-100 overflow-hidden">
+                    <Image
+                      src={b.image}
+                      alt={b.name}
+                      fill
+                      className="object-cover transition-transform duration-500 hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    <div className="absolute top-3 left-3 bg-[#2563eb] text-white text-xs font-black px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
+                      {b.badge}
+                    </div>
+                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-[#0f172a] text-sm font-black px-3.5 py-1 rounded-full shadow-md">
+                      ₱{b.price}
+                    </div>
+                    <div className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg">
+                      Home Cafe Cup Logo
+                    </div>
+                  </div>
+
+                  {/* Bundle Content & Action */}
+                  <div className="p-6 flex flex-col flex-1 justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-black text-[#0f172a]">{b.name}</h3>
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                          {b.savingsText}
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-600 leading-relaxed">
+                        {b.description}
+                      </p>
+                      <div className="pt-2 flex flex-wrap gap-2 text-xs font-medium text-stone-700">
+                        <span className="px-2.5 py-1 rounded-lg bg-stone-100 border border-stone-200/80">
+                          🥤 3x 12oz {b.drinkCategory === "Fruit Soda" ? "Fruit Sodas" : "Milk Teas"}
+                        </span>
+                        <span className="px-2.5 py-1 rounded-lg bg-stone-100 border border-stone-200/80">
+                          🍟 1x Large Seasoned Fries
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBundleId(b.id);
+                        const drinks = getBundleDrinks(b.drinkCategory);
+                        setBundleDrinkIds(Array.from({ length: 3 }, () => drinks[0]?.id ?? products[0].id));
+                        playChime("add");
+                        document.getElementById("bundle-tray-builder")?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className={`w-full py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        isSelected
+                          ? "bg-[#2563eb] text-white shadow-md hover:bg-[#1d4ed8]"
+                          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                      }`}
+                    >
+                      {isSelected ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Selected · Customize Flavors Below ↓</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 text-amber-500" />
+                          <span>Select & Customize · ₱{b.price}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           {/* 4-Slot Tray Builder */}
-          <div className="p-6 rounded-3xl bg-[#ffffff] border border-stone-200/80 shadow-md">
+          <div id="bundle-tray-builder" className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200 shadow-lg space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+              <div>
+                <span className="text-[11px] uppercase font-bold text-[#2563eb] tracking-wider block">
+                  Interactive Mix & Match Tray
+                </span>
+                <h3 className="text-xl font-black text-[#0f172a]">
+                  Customize Your {activeBundle.name}
+                </h3>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-stone-500 block">Bundle Total</span>
+                <span className="text-2xl font-black text-[#2563eb]">₱{activeBundle.price}</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* 3 Drink Slots */}
-              {bundleDrinkIds.map((drinkId, idx) => (
-                <div key={idx} className="p-4 rounded-2xl bg-white border border-stone-200 shadow-2xs">
-                  <span className="text-[10px] uppercase font-bold text-stone-400 block mb-1">
-                    Drink Slot #{idx + 1} (12 oz)
-                  </span>
-                  <select
-                    value={drinkId}
-                    onChange={(e) => {
-                      const next = [...bundleDrinkIds];
-                      next[idx] = e.target.value;
-                      setBundleDrinkIds(next);
-                    }}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-800 bg-stone-50 outline-none"
-                  >
-                    {activeBundleDrinks.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
+              {bundleDrinkIds.map((drinkId, idx) => {
+                const selectedDrink = activeBundleDrinks.find((d) => d.id === drinkId);
+                return (
+                  <div key={idx} className="p-4 rounded-2xl bg-stone-50 border border-stone-200 hover:border-blue-300 transition-colors shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] uppercase font-black text-[#2563eb] tracking-wider">
+                        Drink #{idx + 1} (12 oz)
+                      </span>
+                      <span className="text-[10px] text-stone-400">Included</span>
+                    </div>
+                    <select
+                      value={drinkId}
+                      onChange={(e) => {
+                        const next = [...bundleDrinkIds];
+                        next[idx] = e.target.value;
+                        setBundleDrinkIds(next);
+                      }}
+                      className="w-full px-3 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-800 bg-white outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                    >
+                      {activeBundleDrinks.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedDrink && (
+                      <p className="text-[11px] text-stone-500 truncate">
+                        Selected: <strong className="text-stone-700">{selectedDrink.name}</strong>
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
 
               {/* 1 Large Fries Slot */}
-              <div className="p-4 rounded-2xl bg-white border border-stone-200 shadow-2xs">
-                <span className="text-[10px] uppercase font-bold text-amber-600 block mb-1">
-                  Snack Companion (Large Fries)
-                </span>
+              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 hover:border-amber-300 transition-colors shadow-2xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-black text-amber-700 tracking-wider">
+                    Snack Companion (Large Fries)
+                  </span>
+                  <span className="text-[10px] text-amber-600 font-bold">Included</span>
+                </div>
                 <select
                   value={bundleFriesId}
                   onChange={(e) => setBundleFriesId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-800 bg-stone-50 outline-none"
+                  className="w-full px-3 py-2.5 rounded-xl border border-amber-200 text-xs font-semibold text-stone-800 bg-white outline-none focus:ring-2 focus:ring-amber-500/20"
                 >
                   {products
                     .filter((p) => p.category === "Snacks")
@@ -1430,23 +1625,24 @@ export default function Page() {
                       </option>
                     ))}
                 </select>
+                <p className="text-[11px] text-amber-800">
+                  Crispy fries served in Home Cafe cup
+                </p>
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-stone-200 flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <span className="text-xs text-stone-500 block">Bundle Price</span>
-                <strong className="text-2xl font-black text-[#2563eb]">
-                  ₱{activeBundle.price}
-                </strong>
+            <div className="pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-xs text-stone-600">
+                <span className="font-semibold text-stone-800">Tray Summary:</span>{" "}
+                3x {activeBundle.name.includes("Fruit Soda") ? "Fruit Sodas" : "Milk Teas"} + 1x Large Fries na may Home Cafe logo
               </div>
               <button
                 type="button"
                 onClick={handleAddBundle}
-                className="px-6 py-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+                className="w-full sm:w-auto px-8 py-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-black shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add Bundle to Cart</span>
+                <span>Add {activeBundle.name} to Cart · ₱{activeBundle.price}</span>
               </button>
             </div>
           </div>
@@ -1498,6 +1694,51 @@ export default function Page() {
               <p className="text-xs text-stone-500 leading-relaxed">{ev.description}</p>
             </div>
           ))}
+        </div>
+
+        {/* Real Cafe Photography Showcase */}
+        <div className="pt-6 border-t border-stone-200/80 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 className="text-xl font-black text-[#0f172a]">
+                Real Servings, Fresh Campus Moments
+              </h3>
+              <p className="text-xs text-[#475569]">
+                Capturing the real Home ❤️ Cafe experience: fresh boba, sparkling sodas, and golden fries.
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-[#2563eb] bg-[#dbeafe] px-3 py-1 rounded-full w-fit">
+              100% Authentic Cafe Photos
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {featuredImages.map((img, i) => (
+              <div
+                key={i}
+                className="group relative rounded-3xl overflow-hidden border border-stone-200 bg-white shadow-sm hover:shadow-md transition-all flex flex-col"
+              >
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-stone-100">
+                  <Image
+                    src={img.src}
+                    alt={img.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <div className="absolute bottom-2.5 right-2.5 bg-black/75 backdrop-blur-xs text-white text-[10px] font-semibold px-2.5 py-1 rounded-lg">
+                    Home Cafe Logo
+                  </div>
+                </div>
+                <div className="p-5 space-y-1.5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-extrabold text-stone-900 text-sm">{img.title}</h4>
+                    <p className="text-xs text-stone-500 leading-relaxed mt-1">{img.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
