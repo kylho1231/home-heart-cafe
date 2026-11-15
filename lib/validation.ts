@@ -71,6 +71,10 @@ for (const cat of menuCatalog.categories) {
   }
 }
 
+export function registerCustomProduct(product: CanonicalProduct) {
+  canonicalProductsMap.set(product.slug, product);
+}
+
 // Allowed add-on prices from single source of truth
 export const EXTRA_BOBA_PRICE = 10;
 export const CREAM_CHEESE_ADDON_PRICE = 15;
@@ -104,7 +108,7 @@ export const orderItemInputSchema = z.object({
  */
 export const customerVerificationSchema = z
   .object({
-    role: z.enum(["student", "teacher_staff"]),
+    role: z.enum(["student", "teacher_staff", "walk_in_customer"]),
     fullName: z
       .string()
       .trim()
@@ -117,13 +121,15 @@ export const customerVerificationSchema = z
     contactNumber: z
       .string()
       .trim()
-      .min(7, "Contact number must be at least 7 digits")
-      .max(20, "Contact number must be under 20 characters"),
-    idPhotoUrl: z.string().min(1, "School or Faculty ID photo is required"),
+      .max(20, "Contact number must be under 20 characters")
+      .optional()
+      .default("Counter Pickup"),
+    idPhotoUrl: z.string().optional(),
     selfiePhotoUrl: z.string().optional(),
     privacyConsent: z
       .boolean()
-      .refine((val) => val === true, "You must agree to the data privacy terms pursuant to RA 10173"),
+      .optional()
+      .default(true),
   })
   .superRefine((data, ctx) => {
     if (data.role === "student") {
@@ -142,12 +148,40 @@ export const customerVerificationSchema = z
           path: ["gradeSection"],
         });
       }
+      if (!data.idPhotoUrl || data.idPhotoUrl.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "School or Faculty ID photo is required",
+          path: ["idPhotoUrl"],
+        });
+      }
+      if (!data.privacyConsent) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "You must agree to the data privacy terms pursuant to RA 10173",
+          path: ["privacyConsent"],
+        });
+      }
     } else if (data.role === "teacher_staff") {
       if (!data.department || data.department.trim().length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Department or Faculty Designation is required for teachers/staff",
           path: ["department"],
+        });
+      }
+      if (!data.idPhotoUrl || data.idPhotoUrl.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "School or Faculty ID photo is required",
+          path: ["idPhotoUrl"],
+        });
+      }
+      if (!data.privacyConsent) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "You must agree to the data privacy terms pursuant to RA 10173",
+          path: ["privacyConsent"],
         });
       }
     }

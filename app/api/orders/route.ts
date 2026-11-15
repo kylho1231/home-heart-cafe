@@ -135,21 +135,22 @@ export async function POST(request: NextRequest) {
     }
 
     const isTeacher = customer.role === "teacher_staff";
+    const isWalkIn = customer.role === "walk_in_customer";
 
     const orderData: Omit<CafeOrder, "id" | "orderCode" | "createdAt" | "updatedAt"> = {
-      status: "pending_verification",
-      pickupEstimatedMinutes: 15,
+      status: isWalkIn ? "preparing" : "pending_verification",
+      pickupEstimatedMinutes: isWalkIn ? 5 : 15,
       customer: {
         role: customer.role,
-        fullName: customer.fullName.trim(),
-        lrn: isTeacher ? undefined : (customer.lrn || "").replace(/\D/g, ""),
-        gradeSection: isTeacher ? undefined : customer.gradeSection?.trim(),
+        fullName: customer.fullName.trim() || (isWalkIn ? "Walk-in Counter Customer" : "Valued Customer"),
+        lrn: isTeacher || isWalkIn ? undefined : (customer.lrn || "").replace(/\D/g, ""),
+        gradeSection: isTeacher || isWalkIn ? undefined : customer.gradeSection?.trim(),
         department: isTeacher ? customer.department?.trim() : undefined,
         employeeId: isTeacher ? customer.employeeId?.trim() : undefined,
-        contactNumber: customer.contactNumber.trim(),
-        idPhotoUrl: customer.idPhotoUrl,
+        contactNumber: customer.contactNumber.trim() || "Counter Pickup",
+        idPhotoUrl: customer.idPhotoUrl || (isWalkIn ? "/products/chocolate-milk-tea.webp" : undefined),
         selfiePhotoUrl: customer.selfiePhotoUrl,
-        privacyConsent: customer.privacyConsent,
+        privacyConsent: customer.privacyConsent ?? true,
       },
       items: recalculated.items,
       payment: {
@@ -158,16 +159,17 @@ export async function POST(request: NextRequest) {
         totalAmount: recalculated.totalAmount,
         gcashReferenceNumber: payment.gcashReferenceNumber?.trim() || undefined,
         receiptScreenshotUrl: payment.receiptScreenshotUrl || undefined,
-        paymentStatus:
-          payment.method === "counter_cash"
+        paymentStatus: isWalkIn
+          ? "paid_in_full"
+          : payment.method === "counter_cash"
             ? "unpaid"
-            : payment.method === "gcash_full"
-              ? "downpayment_pending_verification"
-              : "downpayment_pending_verification",
+            : "downpayment_pending_verification",
       },
-      staffNotes: isTeacher
-        ? "Faculty order received. Pending ID verification."
-        : "Student order received. Pending ID verification.",
+      staffNotes: isWalkIn
+        ? "Walk-in counter sale rung up at cashier terminal."
+        : isTeacher
+          ? "Faculty order received. Pending ID verification."
+          : "Student order received. Pending ID verification.",
     };
 
     const created = await createOrder(orderData);

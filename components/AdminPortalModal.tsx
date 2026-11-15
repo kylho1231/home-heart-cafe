@@ -25,9 +25,12 @@ import {
   DollarSign,
   AlertCircle,
   Search,
+  Plus,
 } from "lucide-react";
 import { CafeOrder, OrderStatus } from "@/lib/types";
 import { playChime } from "@/lib/sound";
+import { AdminNewSalePOS } from "./AdminNewSalePOS";
+import { AdminAddProductModal } from "./AdminAddProductModal";
 
 interface AdminPortalModalProps {
   isOpen: boolean;
@@ -38,8 +41,12 @@ interface MenuItemStock {
   id: string;
   name: string;
   category: string;
+  description?: string;
+  sizes: Array<{ label: string; price: number }>;
   startingPrice: number;
+  image?: string;
   isAvailable: boolean;
+  isCustom?: boolean;
 }
 
 export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
@@ -49,7 +56,9 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
   const [loginErrorMessage, setLoginErrorMessage] = useState<string | null>(null);
 
   // Admin Top-Level Tab
-  const [activeTab, setActiveTab] = useState<"queue" | "stock" | "reports">("queue");
+  const [activeTab, setActiveTab] = useState<"queue" | "new_sale" | "products" | "reports">("queue");
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
 
   // Orders State
   const [orders, setOrders] = useState<CafeOrder[]>([]);
@@ -144,15 +153,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
       }
       const data = await res.json();
       if (data.success && Array.isArray(data.menu)) {
-        setMenuItems(
-          data.menu.map((m: any) => ({
-            id: m.id,
-            name: m.name,
-            category: m.category,
-            startingPrice: m.startingPrice,
-            isAvailable: m.isAvailable,
-          })),
-        );
+        setMenuItems(data.menu);
       }
       const unavailRes = await fetch("/api/menu/availability");
       const unavailData = await unavailRes.json();
@@ -166,16 +167,35 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
     }
   }, []);
 
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this custom product?")) return;
+    try {
+      const res = await fetch(`/api/admin/menu/products?id=${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAdminToast("Custom product deleted successfully.", "success");
+        fetchStock();
+      } else {
+        showAdminToast(data.error || "Failed to delete product.", "error");
+      }
+    } catch {
+      showAdminToast("Network error deleting product.", "error");
+    }
+  };
+
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       fetchOrders();
+      fetchStock();
       const interval = setInterval(fetchOrders, 8000);
       return () => clearInterval(interval);
     }
-  }, [isOpen, isAuthenticated, fetchOrders]);
+  }, [isOpen, isAuthenticated, fetchOrders, fetchStock]);
 
   useEffect(() => {
-    if (isOpen && isAuthenticated && activeTab === "stock") {
+    if (isOpen && isAuthenticated && (activeTab === "products" || activeTab === "new_sale")) {
       fetchStock();
     }
   }, [isOpen, isAuthenticated, activeTab, fetchStock]);
@@ -395,9 +415,14 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
   }, [menuItems]);
 
   const filteredStockItems = useMemo(() => {
-    if (stockFilterCategory === "All") return menuItems;
-    return menuItems.filter((m) => m.category === stockFilterCategory);
-  }, [menuItems, stockFilterCategory]);
+    return menuItems.filter((m) => {
+      const matchCat = stockFilterCategory === "All" || m.category === stockFilterCategory;
+      const matchSearch =
+        m.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+        m.category.toLowerCase().includes(productSearch.toLowerCase());
+      return matchCat && matchSearch;
+    });
+  }, [menuItems, stockFilterCategory, productSearch]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/70 backdrop-blur-sm overflow-y-auto">
@@ -493,9 +518,9 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
         ) : (
           /* Authenticated Admin Dashboard */
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Navigation Tabs (Queue, Stock, Reports) */}
-            <div className="px-6 py-2 bg-stone-900 text-white flex items-center justify-between text-xs font-bold border-b border-stone-800">
-              <div className="flex items-center gap-2">
+            {/* Navigation Tabs (Queue, New Sale, Products, Reports) */}
+            <div className="px-6 py-2 bg-stone-900 text-white flex items-center justify-between text-xs font-bold border-b border-stone-800 flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setActiveTab("queue")}
@@ -511,15 +536,28 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
 
                 <button
                   type="button"
-                  onClick={() => setActiveTab("stock")}
+                  onClick={() => setActiveTab("new_sale")}
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
-                    activeTab === "stock"
+                    activeTab === "new_sale"
                       ? "bg-[#b42356] text-white shadow-xs"
                       : "text-stone-300 hover:text-white hover:bg-stone-800"
                   }`}
                 >
-                  <Sliders className="w-3.5 h-3.5" />
-                  <span>Stock & Availability</span>
+                  <DollarSign className="w-3.5 h-3.5 text-amber-300" />
+                  <span>New Walk-in Sale</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("products")}
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                    activeTab === "products"
+                      ? "bg-[#b42356] text-white shadow-xs"
+                      : "text-stone-300 hover:text-white hover:bg-stone-800"
+                  }`}
+                >
+                  <Coffee className="w-3.5 h-3.5" />
+                  <span>Product Manager ({menuItems.length})</span>
                 </button>
 
                 <button
@@ -536,17 +574,39 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                 </button>
               </div>
 
-              {activeTab === "queue" && (
-                <button
-                  type="button"
-                  onClick={fetchOrders}
-                  disabled={loading}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-stone-300 hover:text-white shrink-0 cursor-pointer"
-                >
-                  <RotateCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-                  <span>Refresh Queue</span>
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {activeTab === "queue" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("new_sale")}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#b42356] hover:bg-[#921a44] text-white text-[11px] font-bold shadow-xs cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ New Walk-in</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={fetchOrders}
+                      disabled={loading}
+                      className="flex items-center gap-1 text-[11px] font-semibold text-stone-300 hover:text-white shrink-0 cursor-pointer"
+                    >
+                      <RotateCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                      <span>Refresh</span>
+                    </button>
+                  </>
+                )}
+                {activeTab === "products" && (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddProductOpen(true)}
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[#b42356] hover:bg-[#921a44] text-white text-[11px] font-bold shadow-xs cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Product</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* In-Modal Admin Toast Notification */}
@@ -1002,56 +1062,93 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
               </div>
             )}
 
-            {/* TAB 2: STOCK & AVAILABILITY */}
-            {activeTab === "stock" && (
+            {/* TAB: NEW SALE POS */}
+            {activeTab === "new_sale" && (
+              <AdminNewSalePOS
+                menuItems={menuItems as any}
+                onSaleCompleted={(order, change) => {
+                  showAdminToast(
+                    `Sale #${order.orderCode} recorded! Change due: ₱${change.toFixed(2)}.`,
+                    "success",
+                  );
+                  fetchOrders();
+                  setActiveTab("queue");
+                }}
+              />
+            )}
+
+            {/* TAB: PRODUCT & STOCK MANAGER */}
+            {activeTab === "products" && (
               <div className="flex-1 flex flex-col overflow-hidden p-6 space-y-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <h3 className="font-black text-lg text-stone-800">
-                      Product Stock & Sold-Out Toggles
+                      Product & Inventory Manager
                     </h3>
                     <p className="text-xs text-stone-500">
-                      Instantly hide or disable items on the student ordering menu when ingredients run out.
+                      Add new drinks and snacks, control pricing variants, and toggle live availability.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={fetchStock}
-                    disabled={stockLoading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-semibold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer"
-                  >
-                    <RotateCw className={`w-3.5 h-3.5 ${stockLoading ? "animate-spin" : ""}`} />
-                    <span>Refresh Stock</span>
-                  </button>
-                </div>
-
-                {/* Category Filter for Stock */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                  {categoriesInStock.map((cat) => (
+                  <div className="flex items-center gap-2">
                     <button
-                      key={cat}
                       type="button"
-                      onClick={() => setStockFilterCategory(cat)}
-                      className={`px-3 py-1.5 rounded-full transition-colors shrink-0 cursor-pointer ${
-                        stockFilterCategory === cat
-                          ? "bg-[#b42356] text-white font-bold"
-                          : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
-                      }`}
+                      onClick={() => setIsAddProductOpen(true)}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
                     >
-                      {cat}
+                      <Plus className="w-4 h-4" />
+                      <span>Add New Product</span>
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={fetchStock}
+                      disabled={stockLoading}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-2xl border border-stone-200 bg-white text-xs font-semibold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer"
+                    >
+                      <RotateCw className={`w-3.5 h-3.5 ${stockLoading ? "animate-spin" : ""}`} />
+                      <span>Refresh</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* Stock Table */}
+                {/* Search & Category Filter for Products */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  <div className="relative flex-1 max-w-sm">
+                    <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Filter by product name..."
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-semibold focus:border-[#b42356] outline-none"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                    {categoriesInStock.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setStockFilterCategory(cat)}
+                        className={`px-3 py-1.5 rounded-full transition-colors shrink-0 cursor-pointer ${
+                          stockFilterCategory === cat
+                            ? "bg-[#b42356] text-white font-bold"
+                            : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Product Table */}
                 <div className="flex-1 overflow-y-auto rounded-2xl border border-stone-200 bg-white">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-stone-100 text-stone-600 font-bold uppercase text-[10px] tracking-wider border-b border-stone-200 sticky top-0">
                       <tr>
-                        <th className="px-4 py-3">Product Name</th>
+                        <th className="px-4 py-3">Product</th>
                         <th className="px-4 py-3">Category</th>
-                        <th className="px-4 py-3">Starting Price</th>
-                        <th className="px-4 py-3 text-right">Availability Status</th>
+                        <th className="px-4 py-3">Sizes & Prices</th>
+                        <th className="px-4 py-3 text-right">Availability & Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
@@ -1059,25 +1156,68 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                         const isSoldOut = unavailableSlugs.has(item.id);
                         return (
                           <tr key={item.id} className="hover:bg-stone-50/70 transition-colors">
-                            <td className="px-4 py-3 font-semibold text-stone-800">
-                              {item.name}
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="relative w-9 h-9 rounded-lg bg-stone-100 overflow-hidden shrink-0 flex items-center justify-center">
+                                  {item.image ? (
+                                    <Image src={item.image} alt={item.name} fill className="object-contain" />
+                                  ) : (
+                                    <Coffee className="w-5 h-5 text-stone-300" />
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-1.5">
+                                    <strong className="font-semibold text-stone-900">{item.name}</strong>
+                                    {item.isCustom && (
+                                      <span className="px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 text-[9px] font-black uppercase">
+                                        Custom
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-stone-400 block truncate max-w-xs">
+                                    {item.description || "Prepared fresh to order."}
+                                  </span>
+                                </div>
+                              </div>
                             </td>
-                            <td className="px-4 py-3 text-stone-500">{item.category}</td>
-                            <td className="px-4 py-3 font-mono font-medium text-stone-700">
-                              ₱{item.startingPrice}
+                            <td className="px-4 py-3 text-stone-500 font-medium">{item.category}</td>
+                            <td className="px-4 py-3 font-medium text-stone-700">
+                              {item.sizes && item.sizes.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {item.sizes.map((s, idx) => (
+                                    <span key={idx} className="px-1.5 py-0.5 rounded bg-stone-100 text-[10px]">
+                                      {s.label}: ₱{s.price}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span>₱{item.startingPrice}</span>
+                              )}
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleStock(item.id, !isSoldOut)}
-                                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                                  isSoldOut
-                                    ? "bg-red-100 text-red-700 hover:bg-red-200"
-                                    : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                                }`}
-                              >
-                                {isSoldOut ? "● Sold Out (Disabled)" : "✓ In Stock (Live)"}
-                              </button>
+                              <div className="inline-flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleStock(item.id, !isSoldOut)}
+                                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                                    isSoldOut
+                                      ? "bg-red-100 text-red-700 hover:bg-red-200"
+                                      : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                                  }`}
+                                >
+                                  {isSoldOut ? "● Sold Out" : "✓ In Stock"}
+                                </button>
+                                {item.isCustom && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteProduct(item.id)}
+                                    className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                                    title="Delete custom product"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         );
@@ -1286,6 +1426,16 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
             </div>
           </div>
         )}
+
+        {/* Add New Product Modal */}
+        <AdminAddProductModal
+          isOpen={isAddProductOpen}
+          onClose={() => setIsAddProductOpen(false)}
+          onProductAdded={(newProd) => {
+            showAdminToast(`Product "${newProd.name}" added to menu!`, "success");
+            fetchStock();
+          }}
+        />
       </div>
     </div>
   );

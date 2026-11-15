@@ -263,8 +263,14 @@ function getBundleDrinks(category: string) {
 }
 
 export default function Page() {
+  const [productList, setProductList] = useState<Product[]>(products);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(productList.map((p) => p.category)))],
+    [productList],
+  );
 
   // Cart State (Persisted in localStorage)
   const [cart, setCart] = useState<OrderItem[]>([]);
@@ -316,13 +322,34 @@ export default function Page() {
     return () => window.removeEventListener("home-heart-sound-changed", handleSoundChange);
   }, []);
 
-  // Fetch stock availability
+  // Fetch live menu & stock availability
   useEffect(() => {
-    fetch("/api/menu/availability")
+    fetch("/api/menu")
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.unavailable)) {
-          setUnavailableSlugs(data.unavailable);
+        if (data?.success) {
+          if (Array.isArray(data.products) && data.products.length > 0) {
+            const mapped: Product[] = data.products.map((p: any) => {
+              const palette = getProductPalette(p.category, p.name);
+              const slug = slugify(p.name);
+              return {
+                id: p.id || slug,
+                name: p.name,
+                category: p.category,
+                description: p.description || "",
+                flavors: [p.name],
+                sizes: p.sizes,
+                colors: palette.colors,
+                accent: palette.accent,
+                image: p.image || productImageMap[p.id || slug] || "/products/chocolate-milk-tea.webp",
+                badge: p.isBestseller ? "Bestseller" : p.isCustom ? "New" : undefined,
+              };
+            });
+            setProductList(mapped);
+          }
+          if (Array.isArray(data.unavailableSlugs)) {
+            setUnavailableSlugs(data.unavailableSlugs);
+          }
         }
       })
       .catch(() => {});
@@ -355,18 +382,18 @@ export default function Page() {
   }, [cart, cartHydrated]);
 
   const selectedProduct = useMemo(
-    () => products.find((p) => p.id === selectedProductId) ?? products[0],
-    [selectedProductId],
+    () => productList.find((p) => p.id === selectedProductId) ?? productList[0] ?? products[0],
+    [productList, selectedProductId],
   );
 
   const bobaAddonPrice = menuData.addOns.find((a) => a.name === "Extra Boba Pearls")?.price ?? 10;
   const creamCheeseAddonPrice = 15;
 
   const currentUnitPrice = useMemo(() => {
-    const sizeObj = selectedProduct.sizes.find((s) => s.label === selectedSize) ?? selectedProduct.sizes[0];
+    const sizeObj = selectedProduct?.sizes?.find((s) => s.label === selectedSize) ?? selectedProduct?.sizes?.[0];
     let price = sizeObj?.price ?? 0;
-    const isCreamCheeseCat = selectedProduct.category === "Cream Cheese Series";
-    const isSnack = selectedProduct.category === "Snacks";
+    const isCreamCheeseCat = selectedProduct?.category === "Cream Cheese Series";
+    const isSnack = selectedProduct?.category === "Snacks";
     if (selectedBoba && !isSnack) price += bobaAddonPrice;
     if (selectedCreamCheese && !isCreamCheeseCat && !isSnack) price += creamCheeseAddonPrice;
     return price;
@@ -374,7 +401,7 @@ export default function Page() {
 
   const filteredProducts = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
-    return products.filter((p) => {
+    return productList.filter((p) => {
       const matchCat = activeCategory === "All" || p.category === activeCategory;
       const matchQuery =
         !query ||
@@ -382,7 +409,7 @@ export default function Page() {
         p.category.toLowerCase().includes(query);
       return matchCat && matchQuery;
     });
-  }, [activeCategory, searchTerm]);
+  }, [productList, activeCategory, searchTerm]);
 
   const cartSubtotal = useMemo(
     () => cart.reduce((sum, it) => sum + it.subtotal, 0),
@@ -399,8 +426,8 @@ export default function Page() {
   );
 
   const featuredDrinks = useMemo(
-    () => products.filter((p) => p.badge === "Bestseller"),
-    [],
+    () => productList.filter((p) => p.badge === "Bestseller").slice(0, 5),
+    [productList],
   );
 
   const cartItemCount = useMemo(

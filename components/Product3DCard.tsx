@@ -100,6 +100,7 @@ export function Product3DCard({
               src={image}
               alt={name}
               fill
+              unoptimized={image.startsWith("http")}
               className="object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
             />

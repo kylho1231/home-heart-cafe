@@ -3,6 +3,7 @@ import productImages from "../app/product-images.json" with { type: "json" };
 import fs from "fs/promises";
 import path from "path";
 import os from "os";
+import { registerCustomProduct } from "./validation";
 
 export interface MenuItemSize {
   label: string;
@@ -21,6 +22,7 @@ export interface MenuItem {
   allowsBoba: boolean;
   allowsCreamCheese: boolean;
   isAvailable: boolean;
+  isCustom?: boolean;
 }
 
 const productImageMap = productImages as Record<string, string>;
@@ -90,11 +92,125 @@ export async function setItemAvailability(slug: string, isAvailable: boolean): P
   return isAvailable;
 }
 
+// Custom products storage
+let inMemoryCustomProducts: MenuItem[] = [];
+let customProductsLoaded = false;
+
+function getCustomProductsFilePath(): string {
+  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+    return path.join(os.tmpdir(), "home-heart-cafe-custom-products.json");
+  }
+  return path.join(process.cwd(), "data", "custom-products.json");
+}
+
+export async function getCustomProducts(): Promise<MenuItem[]> {
+  if (customProductsLoaded) return inMemoryCustomProducts;
+  try {
+    const filePath = getCustomProductsFilePath();
+    const raw = await fs.readFile(filePath, "utf-8");
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      inMemoryCustomProducts = parsed;
+      customProductsLoaded = true;
+
+      // Register with validation catalog
+      for (const item of inMemoryCustomProducts) {
+        const prices: Record<string, number> = {};
+        item.sizes.forEach((s) => {
+          prices[s.label] = s.price;
+        });
+        registerCustomProduct({
+          slug: item.id,
+          name: item.name,
+          category: item.category,
+          prices,
+        });
+      }
+    }
+  } catch {
+    // No custom products yet
+  }
+  return inMemoryCustomProducts;
+}
+
+async function persistCustomProducts(): Promise<void> {
+  try {
+    const filePath = getCustomProductsFilePath();
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(inMemoryCustomProducts, null, 2), "utf-8");
+  } catch {}
+}
+
+export async function addCustomProduct(data: {
+  name: string;
+  category: string;
+  description?: string;
+  sizes: MenuItemSize[];
+  image?: string;
+  allowsBoba?: boolean;
+  allowsCreamCheese?: boolean;
+}): Promise<MenuItem> {
+  await getCustomProducts();
+  const slug = slugify(data.name);
+
+  // Check if exists
+  const existingIdx = inMemoryCustomProducts.findIndex((p) => p.id === slug);
+  const startingPrice = Math.min(...data.sizes.map((s) => s.price));
+
+  const newItem: MenuItem = {
+    id: slug,
+    name: data.name,
+    category: data.category,
+    description: data.description || `${data.category} specialty prepared fresh.`,
+    sizes: data.sizes,
+    startingPrice: isFinite(startingPrice) ? startingPrice : 0,
+    image: data.image || "/products/chocolate-milk-tea.webp",
+    isBestseller: false,
+    allowsBoba: data.allowsBoba ?? true,
+    allowsCreamCheese: data.allowsCreamCheese ?? false,
+    isAvailable: true,
+    isCustom: true,
+  };
+
+  if (existingIdx >= 0) {
+    inMemoryCustomProducts[existingIdx] = newItem;
+  } else {
+    inMemoryCustomProducts.push(newItem);
+  }
+
+  // Register in validation engine
+  const prices: Record<string, number> = {};
+  newItem.sizes.forEach((s) => {
+    prices[s.label] = s.price;
+  });
+  registerCustomProduct({
+    slug: newItem.id,
+    name: newItem.name,
+    category: newItem.category,
+    prices,
+  });
+
+  await persistCustomProducts();
+  return newItem;
+}
+
+export async function deleteCustomProduct(id: string): Promise<boolean> {
+  await getCustomProducts();
+  const beforeCount = inMemoryCustomProducts.length;
+  inMemoryCustomProducts = inMemoryCustomProducts.filter((p) => p.id !== id);
+  if (inMemoryCustomProducts.length !== beforeCount) {
+    await persistCustomProducts();
+    return true;
+  }
+  return false;
+}
+
 /**
- * Builds the canonical list of menu items from app/menu-data.json
+ * Builds the canonical list of menu items from app/menu-data.json + dynamic custom products
  */
 export async function getCanonicalMenu(): Promise<MenuItem[]> {
   await loadAvailability();
+  const customItems = await getCustomProducts();
 
   const items: MenuItem[] = [];
 
@@ -120,16 +236,30 @@ export async function getCanonicalMenu(): Promise<MenuItem[]> {
         id: slug,
         name: item.name,
         category: cat.category,
-        description: rawItem.description || (isSnack ? "Crispy golden shoestring fries tossed in your favorite savory seasoning." : `${cat.category} prepared fresh to order.`),
+        description:
+          rawItem.description ||
+          (isSnack
+            ? "Crispy golden shoestring fries tossed in your favorite savory seasoning."
+            : `${cat.category} prepared fresh to order.`),
         sizes,
         startingPrice: sizes[0]?.price || 0,
-        image: productImageMap[slug],
+        image: productImageMap[slug] || "/products/chocolate-milk-tea.webp",
         isBestseller,
         allowsBoba: !isSnack,
         allowsCreamCheese: !isCreamCheeseCat && !isSnack,
         isAvailable: !unavailableSet.has(slug),
+        isCustom: false,
       });
     }
+  }
+
+  // Append custom items
+  for (const custom of customItems) {
+    items.push({
+      ...custom,
+      isAvailable: !unavailableSet.has(custom.id),
+      isCustom: true,
+    });
   }
 
   return items;

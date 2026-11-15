@@ -5,7 +5,7 @@ export type OrderStatus =
   | "completed"
   | "rejected";
 
-export type CustomerRole = "student" | "teacher_staff";
+export type CustomerRole = "student" | "teacher_staff" | "walk_in_customer";
 
 export interface OrderItem {
   id: string;
