@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import {
   Star,
+  Plus,
   Sparkles,
   ArrowRight,
   Shuffle,
@@ -132,7 +133,7 @@ export function CurvedSpotlightRail({
         </svg>
 
         {/* Cards dynamically placed along the quadratic curve */}
-        <div className="relative mx-auto flex h-[380px] max-w-5xl items-start justify-between px-4 pt-6">
+        <div className="relative mx-auto flex h-[360px] max-w-5xl items-start justify-between px-4 pt-6">
           {bestsellers.map((item, idx) => {
             const mid = (bestsellers.length - 1) / 2;
             const norm = mid === 0 ? 0 : (idx - mid) / mid; // -1 to +1
@@ -151,47 +152,62 @@ export function CurvedSpotlightRail({
                 style={{
                   transform: `translateY(${arcDropY}px) rotate(${
                     isSpotlit ? 0 : tiltDeg
-                  }deg) scale(${isSpotlit ? 1.12 : isDimmed ? 0.92 : 1})`,
+                  }deg) scale(${isSpotlit ? 1.08 : isDimmed ? 0.94 : 1})`,
                 }}
-                className={`group relative w-48 cursor-pointer rounded-3xl border bg-white p-4 shadow-md transition-all duration-300 ease-out select-none ${
+                className={`group relative w-48 cursor-pointer rounded-3xl border bg-white p-4 shadow-md transition-all duration-300 ease-out select-none flex flex-col justify-between ${
                   isSpotlit
-                    ? "z-30 border-[#2563eb] shadow-2xl ring-4 ring-[#2563eb]/20"
-                    : "z-10 border-stone-200/90"
-                } ${isDimmed ? "opacity-50 blur-[0.4px]" : "opacity-100"}`}
+                    ? "z-30 border-[#2563eb] shadow-xl ring-4 ring-[#2563eb]/20"
+                    : "z-10 border-stone-200/90 hover:border-blue-300"
+                } ${isDimmed ? "opacity-60 blur-[0.3px]" : "opacity-100"}`}
               >
-                {/* Header Badge & Price */}
-                <div className="mb-2 flex items-center justify-between text-xs font-bold">
-                  <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#2563eb] border border-blue-200/80">
-                    Bestseller
-                  </span>
-                  <span className="font-extrabold text-stone-900">
-                    ₱{item.price}
-                  </span>
+                <div>
+                  {/* Header Badge & Price */}
+                  <div className="mb-2 flex items-center justify-between text-xs font-bold">
+                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#2563eb] border border-blue-200/80">
+                      ⭐ Favorite
+                    </span>
+                    <span className="font-extrabold text-stone-900 text-xs">
+                      from ₱{item.price}
+                    </span>
+                  </div>
+
+                  {/* Product Image Stage */}
+                  <div className="relative mx-auto my-2 h-28 w-28 overflow-hidden rounded-2xl bg-gradient-to-b from-blue-50/60 to-white flex items-center justify-center p-1.5">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={112}
+                      height={112}
+                      sizes="112px"
+                      className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+
+                  {/* Name & Snippet */}
+                  <h3 className="line-clamp-1 text-sm font-black text-stone-900 group-hover:text-[#2563eb] transition-colors">
+                    {item.name}
+                  </h3>
+                  <p className="mt-1 line-clamp-1 text-[11px] leading-relaxed text-stone-500">
+                    {item.description.slice(0, 58)}
+                  </p>
                 </div>
 
-                {/* Product Image Stage */}
-                <div className="relative mx-auto my-2.5 h-32 w-32 overflow-hidden rounded-2xl bg-gradient-to-b from-blue-50/60 to-white flex items-center justify-center p-1.5">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={128}
-                    height={128}
-                    className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-108"
-                  />
-                </div>
-
-                {/* Name & Snippet */}
-                <h3 className="line-clamp-1 text-sm font-black text-stone-900 group-hover:text-[#2563eb] transition-colors">
-                  {item.name}
-                </h3>
-                <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-stone-500">
-                  {item.description}
-                </p>
-
-                {/* Action CTA */}
-                <div className="mt-3.5 flex items-center justify-between border-t border-stone-100 pt-2.5 text-xs font-bold text-[#2563eb]">
-                  <span>Customize Cup</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                {/* Single Action CTA */}
+                <div className="mt-3 pt-2.5 border-t border-stone-100 flex items-center justify-between">
+                  <span className="text-[10px] text-stone-400 font-bold uppercase">
+                    {item.sizes ? (typeof item.sizes === 'number' ? `${item.sizes} sizes` : `${item.sizes.length} sizes`) : "Standard"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelect?.(item);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add</span>
+                  </button>
                 </div>
               </div>
             );
@@ -200,40 +216,47 @@ export function CurvedSpotlightRail({
       </div>
 
       {/* Mobile Snap Carousel for Bestsellers */}
-      <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 no-scrollbar md:hidden px-1">
+      <div className="flex snap-x snap-mandatory gap-3.5 overflow-x-auto pb-4 no-scrollbar md:hidden px-1">
         {bestsellers.map((item) => (
           <div
             key={item.id}
             onClick={() => onSelect?.(item)}
-            className="w-64 shrink-0 snap-center rounded-3xl border border-stone-200 bg-white p-4 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+            className="w-56 shrink-0 snap-start rounded-3xl border border-stone-200 bg-white p-4 shadow-sm active:scale-[0.98] transition-all cursor-pointer flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between text-xs font-bold">
-              <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-black uppercase text-[#2563eb] border border-blue-200">
-                Bestseller
-              </span>
-              <span className="text-sm font-extrabold text-stone-900">
-                ₱{item.price}
-              </span>
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold">
+                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-black uppercase text-[#2563eb] border border-blue-200">
+                  ⭐ Favorite
+                </span>
+                <span className="text-xs font-black text-stone-900">
+                  from ₱{item.price}
+                </span>
+              </div>
+              <div className="relative mx-auto my-2.5 h-28 w-28 flex items-center justify-center">
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  width={112}
+                  height={112}
+                  sizes="112px"
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <h3 className="font-black text-stone-900 text-sm truncate">{item.name}</h3>
+              <p className="mt-1 line-clamp-1 text-[11px] text-stone-500">
+                {item.description.slice(0, 58)}
+              </p>
             </div>
-            <div className="relative mx-auto my-3 h-32 w-32 flex items-center justify-center">
-              <Image
-                src={item.image}
-                alt={item.name}
-                width={128}
-                height={128}
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <h3 className="font-black text-stone-900 text-sm">{item.name}</h3>
-            <p className="mt-1 line-clamp-2 text-xs text-stone-500">
-              {item.description}
-            </p>
             <button
               type="button"
-              className="mt-3.5 w-full rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] py-2.5 text-xs font-bold text-white transition-all flex items-center justify-center gap-1.5 shadow-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect?.(item);
+              }}
+              className="mt-3 w-full rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] py-2 text-xs font-bold text-white transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer active:scale-95"
             >
-              <span>Customize Cup</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add</span>
             </button>
           </div>
         ))}

@@ -1013,10 +1013,10 @@ export default function Page() {
               <span>Campus Favorites</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a]">
-              Featured Drinks &amp; Bestsellers
+              Campus Favorites
             </h2>
             <p className="text-xs sm:text-sm text-[#475569] mt-0.5">
-              Hover or tap any card along the curved spotlight rail to explore top campus picks.
+              Most ordered by students and teachers
             </p>
           </div>
         </div>
