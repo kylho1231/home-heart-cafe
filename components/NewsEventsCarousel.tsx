@@ -41,11 +41,18 @@ export function NewsEventsCarousel({
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isAutoplay, setIsAutoplay] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const scrollCarousel = (direction: "left" | "right") => {
     if (!carouselRef.current) return;
-    const offset = direction === "left" ? -340 : 340;
+    const offset = direction === "left" ? -300 : 300;
     carouselRef.current.scrollBy({ left: offset, behavior: "smooth" });
+  };
+
+  const scrollToIndex = (index: number) => {
+    if (!carouselRef.current) return;
+    carouselRef.current.scrollTo({ left: index * 280, behavior: "smooth" });
+    setActiveIndex(index);
   };
 
   useEffect(() => {
@@ -55,13 +62,21 @@ export function NewsEventsCarousel({
       const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
       if (scrollLeft + clientWidth >= scrollWidth - 10) {
         carouselRef.current.scrollTo({ left: 0, behavior: "smooth" });
+        setActiveIndex(0);
       } else {
-        carouselRef.current.scrollBy({ left: 340, behavior: "smooth" });
+        carouselRef.current.scrollBy({ left: 300, behavior: "smooth" });
       }
     }, 4500);
 
     return () => clearInterval(interval);
   }, [isAutoplay, isHovered]);
+
+  const handleScroll = () => {
+    if (!carouselRef.current) return;
+    const scrollPos = carouselRef.current.scrollLeft;
+    const idx = Math.round(scrollPos / 280);
+    setActiveIndex(Math.min(Math.max(0, idx), items.length - 1));
+  };
 
   const renderIcon = (icon: string) => {
     switch (icon) {
@@ -152,12 +167,13 @@ export function NewsEventsCarousel({
       >
         <div
           ref={carouselRef}
-          className="flex gap-4 overflow-x-auto pb-4 pt-1 px-0.5 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x"
+          onScroll={handleScroll}
+          className="flex gap-3.5 sm:gap-4 overflow-x-auto pb-3 pt-1 px-0.5 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x"
         >
           {items.map((item) => (
             <div
               key={item.id}
-              className="shrink-0 w-[290px] sm:w-[330px] snap-start rounded-3xl bg-white border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col group/card"
+              className="shrink-0 w-[260px] sm:w-[300px] snap-start rounded-2xl sm:rounded-3xl bg-white border border-slate-200 overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col group/card"
             >
               {/* Image Preview with Schedule Badge */}
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
@@ -166,29 +182,46 @@ export function NewsEventsCarousel({
                   alt={item.title}
                   fill
                   className="object-cover group-hover/card:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 640px) 290px, 330px"
+                  sizes="(max-width: 640px) 260px, 300px"
                 />
-                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-xs text-slate-900 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1.5 border border-slate-200/80">
+                <div className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-xs text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1.5 border border-slate-200/80">
                   {renderIcon(item.icon)}
                   <span>{item.schedule}</span>
                 </div>
-                <div className="absolute bottom-2.5 right-2.5 bg-black/75 backdrop-blur-xs text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
+                <div className="absolute bottom-2 right-2 bg-black/75 backdrop-blur-xs text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
                   Home ❤️ Cafe
                 </div>
               </div>
 
-              {/* Card Body - Concise and Compact */}
-              <div className="p-4 space-y-1.5 flex-1 flex flex-col justify-between">
+              {/* Card Body - Concise, Compact, Student Friendly */}
+              <div className="p-3.5 space-y-1 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-sm leading-snug group-hover/card:text-blue-600 transition-colors line-clamp-1">
+                  <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm leading-snug group-hover/card:text-blue-600 transition-colors line-clamp-1">
                     {item.title}
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
                     {item.description}
                   </p>
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+
+        {/* Interactive Pagination Dots */}
+        <div className="flex items-center justify-center gap-1.5 pt-2">
+          {items.map((it, idx) => (
+            <button
+              key={it.id}
+              type="button"
+              onClick={() => scrollToIndex(idx)}
+              className={`h-2 rounded-full transition-all cursor-pointer ${
+                activeIndex === idx
+                  ? "w-6 bg-blue-600"
+                  : "w-2 bg-slate-200 hover:bg-slate-300"
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
           ))}
         </div>
       </div>

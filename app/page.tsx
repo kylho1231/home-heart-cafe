@@ -112,6 +112,18 @@ const productImageMap: Record<string, string> = productImages;
 const featuredImages = featuredImageSource;
 const categories = ["All", ...menuData.categories.map(({ category }) => category)];
 
+const categoryIcons: Record<string, string> = {
+  All: "✨",
+  "Cream Cheese Series": "🍓",
+  "Milk Tea Series": "🧋",
+  "Milky Bomb Tea": "💥",
+  "Fruit Soda": "🍊",
+  "Yakult Fruit Soda": "🥛",
+  "Coffee Series": "☕",
+  "Float Series": "🍦",
+  Snacks: "🍟",
+};
+
 const paidBundles = menuData.bundlesAndPromos.filter(
   (bundle): bundle is CatalogBundle =>
     typeof bundle.price === "number" && Array.isArray(bundle.includes),
@@ -1141,13 +1153,14 @@ export default function Page() {
                   setActiveCategory(cat);
                   playChime("add");
                 }}
-                className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeCategory === cat
                     ? "bg-[#2563eb] text-white shadow-xs"
                     : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
                 }`}
               >
-                {cat}
+                <span>{categoryIcons[cat] || "🥤"}</span>
+                <span>{cat}</span>
               </button>
             ))}
           </div>
@@ -1274,14 +1287,14 @@ export default function Page() {
             {/* Horizontal Scroll Track */}
             <div
               ref={menuCarouselRef}
-              className={`flex gap-5 overflow-x-auto pb-6 pt-2 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x transition-opacity duration-200 ${
+              className={`flex gap-3.5 sm:gap-4 overflow-x-auto pb-5 pt-2 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x transition-opacity duration-200 ${
                 isShuffling ? "opacity-50" : "opacity-100"
               }`}
             >
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="shrink-0 w-[275px] sm:w-[310px] snap-start"
+                  className="shrink-0 w-[210px] sm:w-[245px] md:w-[260px] snap-start"
                 >
                   <Product3DCard
                     id={product.id}
@@ -1345,18 +1358,18 @@ export default function Page() {
           </div>
 
           {/* Stepped Interactive Builder */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md space-y-8">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-md space-y-6">
             {/* Step 1: Choose Bundle Type */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-2.5">
                 <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center shrink-0">
                   1
                 </span>
-                <h3 className="text-base sm:text-lg font-black text-slate-900">
+                <h3 className="text-sm sm:text-base font-black text-slate-900">
                   Choose Bundle Type
                 </h3>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {bundleChoices.map((b) => {
                   const isSelected = bundleId === b.id;
                   return (
@@ -1369,7 +1382,7 @@ export default function Page() {
                         setBundleDrinkIds(Array.from({ length: 3 }, () => drinks[0]?.id ?? products[0].id));
                         playChime("add");
                       }}
-                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                         isSelected
                           ? "border-blue-600 bg-blue-50/60 ring-2 ring-blue-600/20 shadow-xs"
                           : "border-slate-200 bg-white hover:border-slate-300"
@@ -1380,19 +1393,19 @@ export default function Page() {
                           <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 block">
                             {b.badge}
                           </span>
-                          <strong className="text-base font-black text-slate-900 block mt-0.5">
+                          <strong className="text-sm font-black text-slate-900 block mt-0.5">
                             {b.name}
                           </strong>
                         </div>
-                        <span className="text-lg font-black text-blue-600">
+                        <span className="text-base font-black text-blue-600">
                           ₱{b.price}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                      <p className="text-[11px] text-slate-500 mt-1 line-clamp-1">
                         {b.description}
                       </p>
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-600">
-                        <span>3x 12oz {b.drinkCategory === "Fruit Soda" ? "Fruit Sodas" : "Milk Teas"} + 1 Large Fries</span>
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-600">
+                        <span>3x 12oz Drinks + Large Fries</span>
                         <span className="text-emerald-600 font-bold">{b.savingsText}</span>
                       </div>
                     </button>
@@ -1403,73 +1416,48 @@ export default function Page() {
 
             {/* Step 2: Pick 3 Drinks */}
             <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center justify-between gap-2 mb-2.5">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center shrink-0">
                     2
                   </span>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900">
+                  <h3 className="text-sm sm:text-base font-black text-slate-900">
                     Pick 3 Drinks (12 oz each)
                   </h3>
                 </div>
-                <span className="text-xs text-blue-600 font-bold">
-                  {activeBundle.drinkCategory} Series
+                <span className="text-[11px] text-blue-600 font-bold bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+                  {activeBundle.drinkCategory}
                 </span>
               </div>
 
-              {/* 3 Selected Drink Slots */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                {bundleDrinkIds.map((drinkId, idx) => {
-                  const selectedDrink = activeBundleDrinks.find((d) => d.id === drinkId);
-                  return (
-                    <div
-                      key={idx}
-                      className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between"
+              {/* Compact Unified Drink Slots */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[0, 1, 2].map((slotIdx) => (
+                  <div
+                    key={slotIdx}
+                    className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+                      <span>Drink #{slotIdx + 1} (12 oz)</span>
+                      <span className="text-blue-600 font-semibold">Included</span>
+                    </div>
+                    <select
+                      value={bundleDrinkIds[slotIdx] || ""}
+                      onChange={(e) => {
+                        const next = [...bundleDrinkIds];
+                        next[slotIdx] = e.target.value;
+                        setBundleDrinkIds(next);
+                      }}
+                      className="w-full px-2.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-blue-600 cursor-pointer"
                     >
-                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 mb-1">
-                        <span>Drink #{idx + 1}</span>
-                        <span className="text-blue-600 font-semibold">12 oz</span>
-                      </div>
-                      <strong className="text-sm font-bold text-slate-900 truncate">
-                        {selectedDrink?.name || "Select Drink"}
-                      </strong>
-                      <span className="text-[10px] text-slate-500 mt-0.5 truncate">
-                        {selectedDrink?.description || "Handcrafted beverage"}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Drink Selector Chips for each slot */}
-              <div className="space-y-3 pt-2">
-                <span className="text-xs font-bold text-slate-700 block">
-                  Select drinks from available flavors:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[0, 1, 2].map((slotIdx) => (
-                    <div key={slotIdx} className="space-y-1.5">
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                        Slot #{slotIdx + 1}
-                      </span>
-                      <select
-                        value={bundleDrinkIds[slotIdx] || ""}
-                        onChange={(e) => {
-                          const next = [...bundleDrinkIds];
-                          next[slotIdx] = e.target.value;
-                          setBundleDrinkIds(next);
-                        }}
-                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-blue-600"
-                      >
-                        {activeBundleDrinks.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
-                </div>
+                      {activeBundleDrinks.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
               </div>
             </div>
 
