@@ -752,9 +752,16 @@ export default function Page() {
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 transition-shadow">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Logo & Brand Identity */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#2563eb] to-[#60a5fa] text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-              <Coffee className="w-5 h-5 text-amber-200" />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="relative w-10 h-10 rounded-2xl overflow-hidden shadow-md group-hover:scale-105 transition-transform shrink-0 border border-slate-200 bg-white">
+              <Image
+                src="/icon.svg"
+                alt="Home Heart Cafe Logo"
+                width={40}
+                height={40}
+                priority
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
@@ -1565,9 +1572,15 @@ export default function Page() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Col 1: Brand & Tagline */}
             <div className="space-y-3 md:col-span-1">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
-                  <Coffee className="w-4 h-4 text-amber-200" />
+              <div className="flex items-center gap-2.5">
+                <div className="relative w-10 h-10 rounded-2xl overflow-hidden shadow-xs shrink-0 border border-slate-200 bg-white">
+                  <Image
+                    src="/icon.svg"
+                    alt="Home Heart Cafe Logo"
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="flex items-center gap-1 font-black text-lg">
                   <span>Home</span>

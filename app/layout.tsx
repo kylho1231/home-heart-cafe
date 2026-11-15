@@ -47,6 +47,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico" },
+    ],
+    apple: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
   openGraph: {
     title: "Home ❤️ Cafe | Campus Cafe Ordering",
     description:
@@ -55,12 +63,21 @@ export const metadata: Metadata = {
     siteName: "Home ❤️ Cafe",
     locale: "en_PH",
     type: "website",
+    images: [
+      {
+        url: "/logo.svg",
+        width: 800,
+        height: 240,
+        alt: "Home Heart Cafe Logo",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Home ❤️ Cafe | Campus Cafe Ordering",
     description:
       "Sips of happiness in every cup. Order drinks and fries ahead of your campus break.",
+    images: ["/logo.svg"],
   },
 };
 

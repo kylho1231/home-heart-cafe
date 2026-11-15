@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import {
   X,
   Send,
@@ -219,8 +220,8 @@ export function AiBaristaModal({
         {/* Header: Hearty · AI Barista */}
         <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between shadow-xs shrink-0">
           <div className="flex items-center gap-3">
-            <div className="relative w-9 h-9 rounded-full bg-blue-600/30 border border-blue-400/40 flex items-center justify-center">
-              <Coffee className="w-5 h-5 text-amber-300" />
+            <div className="relative w-9 h-9 rounded-full overflow-hidden border border-white/30 shrink-0 bg-white">
+              <Image src="/icon.svg" alt="Hearty" width={36} height={36} className="w-full h-full object-cover" />
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
             </div>
             <div>
@@ -322,8 +323,8 @@ export function AiBaristaModal({
           {/* Typing Indicator: 3 bouncing dots */}
           {isLoading && (
             <div className="flex items-center gap-2 py-1 px-2">
-              <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                <Coffee className="w-3.5 h-3.5 text-blue-600" />
+              <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-slate-200 bg-white">
+                <Image src="/icon.svg" alt="Hearty" width={28} height={28} className="w-full h-full object-cover" />
               </div>
               <div className="px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 flex items-center gap-1.5 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:-0.3s]" />
