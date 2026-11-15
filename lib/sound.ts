@@ -1,9 +1,39 @@
 // Synthesizes pleasant cafe sound effects using browser Web Audio API
+
+const SOUND_STORAGE_KEY = "home-heart-sound-muted";
+
+export function isSoundMuted(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(SOUND_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function setSoundMuted(muted: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(SOUND_STORAGE_KEY, muted ? "true" : "false");
+    window.dispatchEvent(new CustomEvent("home-heart-sound-changed", { detail: { muted } }));
+  } catch {}
+}
+
+export function toggleSound(): boolean {
+  const current = isSoundMuted();
+  const next = !current;
+  setSoundMuted(next);
+  return next;
+}
+
 export function playChime(type: "add" | "ready" | "success" | "notification" = "add") {
   if (typeof window === "undefined") return;
+  if (isSoundMuted()) return;
 
   try {
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
 
     const ctx = new AudioContextClass();

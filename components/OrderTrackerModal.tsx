@@ -14,6 +14,7 @@ import {
   QrCode,
   ShieldCheck,
   Receipt,
+  Copy,
 } from "lucide-react";
 import { CafeOrder } from "@/lib/types";
 import { playChime } from "@/lib/sound";
@@ -37,6 +38,16 @@ export function OrderTrackerModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastNotifiedStatus, setLastNotifiedStatus] = useState<string>("");
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyOrderCode = () => {
+    if (!order?.orderCode) return;
+    try {
+      navigator.clipboard.writeText(order.orderCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
 
   // Hydrate stored verify key if available
   useEffect(() => {
@@ -328,9 +339,29 @@ export function OrderTrackerModal({
                   <span className="text-[10px] uppercase font-bold text-stone-400 block">
                     Order Reference
                   </span>
-                  <strong className="text-xl font-black text-[#b42356] tracking-wider font-mono">
-                    #{order.orderCode}
-                  </strong>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <strong className="text-2xl font-black text-[#b42356] tracking-wider font-mono">
+                      #{order.orderCode}
+                    </strong>
+                    <button
+                      type="button"
+                      onClick={handleCopyOrderCode}
+                      className="px-2 py-1 rounded-lg border border-stone-200 hover:border-[#b42356] bg-white text-[11px] font-semibold text-stone-600 hover:text-[#b42356] transition-colors flex items-center gap-1 shadow-2xs cursor-pointer"
+                      title="Copy order code"
+                    >
+                      {copied ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-700 font-bold">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] uppercase font-bold text-stone-400 block">
@@ -340,6 +371,12 @@ export function OrderTrackerModal({
                     ~{order.pickupEstimatedMinutes} mins
                   </span>
                 </div>
+              </div>
+
+              {/* Pickup Counter Instructions */}
+              <div className="p-2.5 rounded-xl bg-amber-50/90 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-2">
+                <span className="font-bold shrink-0">📍 Pickup Instructions:</span>
+                <span>Show this screen or order code <strong>#{order.orderCode}</strong> to the cashier at the counter.</span>
               </div>
 
               {/* Student Verified Info */}
@@ -410,7 +447,7 @@ export function OrderTrackerModal({
         <div className="px-6 py-3.5 bg-stone-50 border-t border-stone-200 flex items-center justify-between text-xs text-stone-500">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span>Live auto-updating every 4s</span>
+            <span>Live auto-updating every 12s</span>
           </span>
           <button
             onClick={onClose}

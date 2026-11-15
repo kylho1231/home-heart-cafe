@@ -27,6 +27,9 @@ import {
   BookOpen,
   Lock,
   Star,
+  Volume2,
+  VolumeX,
+  AlertCircle,
 } from "lucide-react";
 
 import catalogSource from "./menu-data.json";
@@ -35,7 +38,7 @@ import productImages from "./product-images.json";
 import eventsData from "../data/events.json";
 
 import { OrderItem } from "@/lib/types";
-import { playChime } from "@/lib/sound";
+import { playChime, isSoundMuted, toggleSound } from "@/lib/sound";
 import { InteractiveCup3D } from "@/components/InteractiveCup3D";
 import { Product3DCard } from "@/components/Product3DCard";
 import { CheckoutVerificationModal } from "@/components/CheckoutVerificationModal";
@@ -296,6 +299,22 @@ export default function Page() {
   const [activeOrderCode, setActiveOrderCode] = useState<string>("");
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [unavailableSlugs, setUnavailableSlugs] = useState<string[]>([]);
+  const [soundMuted, setSoundMutedState] = useState(false);
+  const [customerToast, setCustomerToast] = useState<string | null>(null);
+
+  const showCustomerToast = (message: string) => {
+    setCustomerToast(message);
+    setTimeout(() => setCustomerToast(null), 3500);
+  };
+
+  useEffect(() => {
+    setSoundMutedState(isSoundMuted());
+    const handleSoundChange = (e: any) => {
+      setSoundMutedState(e.detail?.muted ?? isSoundMuted());
+    };
+    window.addEventListener("home-heart-sound-changed", handleSoundChange);
+    return () => window.removeEventListener("home-heart-sound-changed", handleSoundChange);
+  }, []);
 
   // Fetch stock availability
   useEffect(() => {
@@ -493,7 +512,7 @@ export default function Page() {
 
     const validDrinks = selectedDrinks.filter((p): p is Product => p !== undefined);
     if (validDrinks.length !== 3 || !friesProduct) {
-      window.alert("Please select 3 drinks and 1 large fries.");
+      showCustomerToast("Please select 3 drinks and 1 large fries to complete your bundle.");
       return;
     }
 
@@ -633,6 +652,22 @@ export default function Page() {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Audio Chime Mute Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                const next = toggleSound();
+                setSoundMutedState(next);
+              }}
+              className={`p-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] transition-colors shadow-2xs cursor-pointer ${
+                soundMuted ? "text-stone-400" : "text-[#b42356]"
+              }`}
+              aria-label={soundMuted ? "Unmute cafe chimes" : "Mute cafe chimes"}
+              title={soundMuted ? "Unmute cafe chimes" : "Mute cafe chimes"}
+            >
+              {soundMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            </button>
+
             {/* Live Order Tracker Trigger */}
             <button
               type="button"
@@ -1306,6 +1341,17 @@ export default function Page() {
                   <ShoppingBag className="w-12 h-12 mx-auto text-stone-300" />
                   <p className="font-semibold text-sm">Your cart is empty.</p>
                   <p className="text-xs text-stone-400">Add a drink or fries from the menu to get started!</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCartDrawerOpen(false);
+                      document.getElementById("featured")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="mt-4 px-4 py-2 rounded-full bg-[#b42356] hover:bg-[#941743] text-white text-xs font-bold transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Explore Bestsellers</span>
+                  </button>
                 </div>
               ) : (
                 cart.map((item) => (
@@ -1412,14 +1458,14 @@ export default function Page() {
       )}
 
       {/* Floating AI Barista Widget Button in Bottom Right */}
-      <div className="fixed bottom-5 right-5 z-40">
+      <div className={`fixed ${cart.length > 0 ? "bottom-20 sm:bottom-5" : "bottom-5"} right-4 sm:right-5 z-40 transition-all`}>
         <button
           type="button"
           onClick={() => {
             setAiModalOpen(true);
             playChime("notification");
           }}
-          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95 border-2 border-white/60"
+          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95 border-2 border-white/60 cursor-pointer"
         >
           <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-white animate-pulse" />
           <Coffee className="w-5 h-5 text-amber-200" />
@@ -1428,6 +1474,47 @@ export default function Page() {
           </span>
         </button>
       </div>
+
+      {/* Mobile Sticky Bottom Cart Bar */}
+      {cart.length > 0 && !cartDrawerOpen && (
+        <div className="fixed bottom-0 inset-x-0 z-30 sm:hidden bg-[#382323] text-white px-4 py-3 shadow-2xl flex items-center justify-between border-t border-white/10 animate-in slide-in-from-bottom duration-200">
+          <div>
+            <span className="text-[10px] text-white/70 block uppercase font-bold tracking-wider">
+              Your Order ({cartItemCount} {cartItemCount === 1 ? "item" : "items"})
+            </span>
+            <strong className="text-base font-black text-amber-300 font-mono">
+              ₱{cartSubtotal}
+            </strong>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCartDrawerOpen(true)}
+            className="px-4 py-2 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer active:scale-95"
+          >
+            <ShoppingBag className="w-3.5 h-3.5 text-white" />
+            <span>View Cart</span>
+          </button>
+        </div>
+      )}
+
+      {/* In-App Customer Toast Banner */}
+      {customerToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-sm w-full px-4 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="p-3.5 rounded-2xl bg-stone-900 text-white text-xs font-bold shadow-2xl flex items-center justify-between border border-white/20">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>{customerToast}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCustomerToast(null)}
+              className="p-1 text-white/70 hover:text-white rounded-full cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* All Modal Integrations */}
       <CheckoutVerificationModal

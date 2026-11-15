@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Plus, Sparkles, Check, Ban } from "lucide-react";
+import { Plus, Sparkles, Check, Ban, Coffee } from "lucide-react";
 import { playChime } from "@/lib/sound";
 
 interface ProductSize {
@@ -114,10 +114,8 @@ export function Product3DCard({
               }}
             >
               <div className="absolute top-0 inset-x-0 h-2 bg-white/50" />
-              <div className="absolute inset-x-0 bottom-0 h-10 bg-black/15 flex items-center justify-center">
-                <span className="text-[10px] font-bold text-white/90 drop-shadow-sm">
-                  {sizes[0]?.label}
-                </span>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Coffee className="w-6 h-6 text-white/90 drop-shadow-sm" />
               </div>
             </div>
             {/* Straw */}

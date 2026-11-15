@@ -24,6 +24,7 @@ import {
   Sliders,
   DollarSign,
   AlertCircle,
+  Search,
 } from "lucide-react";
 import { CafeOrder, OrderStatus } from "@/lib/types";
 import { playChime } from "@/lib/sound";
@@ -76,6 +77,22 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
   // Sound alert on new order
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [prevOrderCount, setPrevOrderCount] = useState(0);
+
+  // Search & Filter
+  const [orderSearch, setOrderSearch] = useState("");
+
+  // In-modal Toast Banner State
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  // Rejection & Purge Confirmation States
+  const [rejectModalOrder, setRejectModalOrder] = useState<string | null>(null);
+  const [rejectReasonInput, setRejectReasonInput] = useState("Invalid LRN or unconfirmed credentials");
+  const [purgeConfirmOrder, setPurgeConfirmOrder] = useState<string | null>(null);
+
+  const showAdminToast = (text: string, type: "success" | "error" = "success") => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   // Check existing session on modal open
   useEffect(() => {
@@ -233,11 +250,13 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
       const data = await res.json();
       if (data.success) {
         playChime(newStatus === "ready_for_pickup" ? "ready" : "success");
+        showAdminToast(`Order status updated to ${newStatus.replace(/_/g, " ")}.`, "success");
         fetchOrders();
       } else {
-        alert(data.error || "Failed to update order status.");
+        showAdminToast(data.error || "Failed to update order status.", "error");
       }
     } catch (err) {
+      showAdminToast("Network error updating order status.", "error");
       console.error("Status update error:", err);
     }
   };
@@ -277,15 +296,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
     }
   };
 
-  const handlePurgeCustomerData = async (orderId: string) => {
-    if (
-      !window.confirm(
-        "Purge customer personal credentials (LRN, name, photos) pursuant to RA 10173? Financial totals will remain intact for sales reporting.",
-      )
-    ) {
-      return;
-    }
-
+  const executePurgeCustomerData = async (orderId: string) => {
     try {
       const res = await fetch(`/api/orders/${orderId}?action=anonymize`, {
         method: "DELETE",
@@ -293,18 +304,21 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
       const data = await res.json();
       if (data.success) {
         playChime("success");
+        showAdminToast("Customer PII purged successfully pursuant to RA 10173.", "success");
+        setPurgeConfirmOrder(null);
         fetchOrders();
       } else {
-        alert(data.error || "Failed to purge customer data.");
+        showAdminToast(data.error || "Failed to purge customer data.", "error");
       }
     } catch (err) {
+      showAdminToast("Network error purging customer data.", "error");
       console.error("Purge error:", err);
     }
   };
 
   const exportOrdersCsv = () => {
     if (orders.length === 0) {
-      alert("No orders to export.");
+      showAdminToast("No orders available to export.", "error");
       return;
     }
 
@@ -360,10 +374,19 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
     document.body.removeChild(link);
   };
 
-  const filteredOrders = orders.filter((o) => {
-    if (filter === "all") return true;
-    return o.status === filter;
-  });
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      const matchesFilter = filter === "all" || o.status === filter;
+      if (!matchesFilter) return false;
+      if (!orderSearch.trim()) return true;
+      const q = orderSearch.trim().toLowerCase();
+      return (
+        o.orderCode.toLowerCase().includes(q) ||
+        o.customer.fullName.toLowerCase().includes(q) ||
+        (o.customer.lrn && o.customer.lrn.toLowerCase().includes(q))
+      );
+    });
+  }, [orders, filter, orderSearch]);
 
   const categoriesInStock = useMemo(() => {
     const set = new Set<string>();
@@ -526,6 +549,29 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
               )}
             </div>
 
+            {/* In-Modal Admin Toast Notification */}
+            {toastMessage && (
+              <div
+                className={`px-6 py-2 text-xs font-bold flex items-center justify-between ${
+                  toastMessage.type === "success"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-rose-600 text-white"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{toastMessage.text}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setToastMessage(null)}
+                  className="p-1 hover:bg-white/20 rounded-full cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
             {/* TAB 1: KITCHEN QUEUE */}
             {activeTab === "queue" && (
               <div className="flex-1 flex flex-col overflow-hidden">
@@ -565,9 +611,9 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   </div>
                 </div>
 
-                {/* Filter Tabs Bar */}
-                <div className="px-6 py-2.5 bg-stone-100/70 border-b border-stone-200 flex items-center justify-between gap-3 overflow-x-auto text-xs font-semibold">
-                  <div className="flex items-center gap-1.5 shrink-0">
+                {/* Filter Tabs Bar with Search */}
+                <div className="px-6 py-2.5 bg-stone-100/70 border-b border-stone-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs font-semibold">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 py-0.5">
                     {[
                       { key: "all", label: `All (${orders.length})` },
                       {
@@ -590,7 +636,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                       <button
                         key={t.key}
                         onClick={() => setFilter(t.key)}
-                        className={`px-3 py-1.5 rounded-full transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-full transition-all shrink-0 cursor-pointer ${
                           filter === t.key
                             ? "bg-[#b42356] text-white shadow-xs"
                             : "bg-white text-stone-600 hover:bg-stone-200/70"
@@ -599,6 +645,27 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                         {t.label}
                       </button>
                     ))}
+                  </div>
+
+                  {/* Search by Order #, Name, or LRN */}
+                  <div className="relative w-full sm:w-64 shrink-0">
+                    <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search #, name, or LRN..."
+                      value={orderSearch}
+                      onChange={(e) => setOrderSearch(e.target.value)}
+                      className="w-full pl-8 pr-7 py-1.5 rounded-full border border-stone-200 bg-white text-xs text-stone-800 placeholder-stone-400 focus:border-[#b42356] outline-none shadow-2xs"
+                    />
+                    {orderSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setOrderSearch("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 text-xs cursor-pointer"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -642,6 +709,12 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                               >
                                 {order.status.replace(/_/g, " ").toUpperCase()}
                               </span>
+                              {order.status === "pending_verification" && (
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500 text-white shadow-xs animate-pulse flex items-center gap-1">
+                                  <ShieldCheck className="w-3.5 h-3.5" />
+                                  <span>ID VERIFICATION REQUIRED</span>
+                                </span>
+                              )}
                               <span
                                 className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                                   order.customer.role === "teacher_staff"
@@ -898,8 +971,8 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const reason = window.prompt("Reason for rejecting/canceling this order:", "Invalid LRN or unconfirmed credentials");
-                                    if (reason) handleUpdateStatus(order.id, "rejected", reason);
+                                    setRejectReasonInput("Invalid LRN or unconfirmed credentials");
+                                    setRejectModalOrder(order.id);
                                   }}
                                   className="w-full py-1.5 rounded-2xl text-red-600 hover:bg-red-50 text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
                                 >
@@ -911,7 +984,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                               {!order.customer.anonymized && (
                                 <button
                                   type="button"
-                                  onClick={() => handlePurgeCustomerData(order.id)}
+                                  onClick={() => setPurgeConfirmOrder(order.id)}
                                   className="w-full py-1 rounded-xl text-stone-500 hover:text-red-700 hover:bg-red-50 text-[10px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
                                   title="Permanently remove student ID & photos pursuant to RA 10173"
                                 >
@@ -1137,6 +1210,78 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   fill
                   className="object-contain"
                 />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rejection / Scam Flag Dialog Modal */}
+        {rejectModalOrder && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-xs">
+            <div className="w-full max-w-sm rounded-3xl bg-white p-5 space-y-3.5 shadow-2xl border border-stone-200">
+              <div className="flex items-center gap-2 text-rose-600 font-black text-sm">
+                <XCircle className="w-5 h-5" />
+                <span>Reject / Flag Order</span>
+              </div>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                Provide a reason for rejecting this order. The customer will see this message in their live order tracker.
+              </p>
+              <input
+                type="text"
+                value={rejectReasonInput}
+                onChange={(e) => setRejectReasonInput(e.target.value)}
+                placeholder="Reason (e.g. Unconfirmed credentials, wrong LRN)..."
+                className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-800 outline-none focus:border-rose-500 font-medium"
+              />
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setRejectModalOrder(null)}
+                  className="px-3 py-1.5 rounded-xl border border-stone-200 text-xs font-semibold text-stone-600 hover:bg-stone-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleUpdateStatus(rejectModalOrder, "rejected", rejectReasonInput);
+                    setRejectModalOrder(null);
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+                >
+                  Confirm Rejection
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Purge Personal Data Confirmation Dialog (RA 10173) */}
+        {purgeConfirmOrder && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-xs">
+            <div className="w-full max-w-sm rounded-3xl bg-white p-5 space-y-3.5 shadow-2xl border border-stone-200">
+              <div className="flex items-center gap-2 text-rose-600 font-black text-sm">
+                <Trash2 className="w-5 h-5" />
+                <span>Purge Student PII (RA 10173)</span>
+              </div>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                Permanently scrub student personal credentials (LRN, name, photos) pursuant to Philippine Data Privacy Act? Financial totals will remain intact for sales reporting.
+              </p>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setPurgeConfirmOrder(null)}
+                  className="px-3 py-1.5 rounded-xl border border-stone-200 text-xs font-semibold text-stone-600 hover:bg-stone-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => executePurgeCustomerData(purgeConfirmOrder)}
+                  className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+                >
+                  Purge Personal Data
+                </button>
               </div>
             </div>
           </div>
