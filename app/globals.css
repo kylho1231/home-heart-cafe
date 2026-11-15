@@ -22,11 +22,32 @@
 @theme inline {
   --color-background: var(--cream);
   --color-foreground: var(--cocoa);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-karla), Arial, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, serif;
 }
 
 * {
   box-sizing: border-box;
+}
+
+button,
+a,
+select,
+input[type="checkbox"],
+input[type="radio"],
+label[for] {
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 html {

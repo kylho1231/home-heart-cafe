@@ -181,7 +181,7 @@ export function OrderTrackerModal({
                   </div>
                   <div>
                     <strong className="text-base font-black block">
-                      🔔 YOUR ORDER IS READY FOR PICKUP!
+                      YOUR ORDER IS READY FOR PICKUP!
                     </strong>
                     <span className="text-xs text-white/90">
                       Please head to Counter 1 to claim your order. Show your Order Code <strong>#{order.orderCode}</strong>.

@@ -22,6 +22,9 @@ import {
   Clock,
   Layers,
   X,
+  Heart,
+  Music,
+  BookOpen,
 } from "lucide-react";
 
 import catalogSource from "./menu-data.json";
@@ -516,7 +519,7 @@ export default function Page() {
                 <span className="font-black text-xl tracking-tight text-[#382323]">
                   Home
                 </span>
-                <span className="text-red-500 text-lg">❤️</span>
+                <Heart className="w-4 h-4 fill-red-500 text-red-500 inline-block mx-0.5" />
                 <span className="font-black text-xl tracking-tight text-[#b42356]">
                   Cafe
                 </span>
@@ -1009,7 +1012,7 @@ export default function Page() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
             <div className="w-10 h-10 rounded-2xl bg-rose-100 text-[#b42356] flex items-center justify-center font-bold">
-              🎸
+              <Music className="w-5 h-5 text-[#b42356]" />
             </div>
             <h3 className="font-extrabold text-stone-800 text-base">Campus Acoustic Friday</h3>
             <p className="text-xs text-stone-500 leading-relaxed">
@@ -1019,7 +1022,7 @@ export default function Page() {
 
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
             <div className="w-10 h-10 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
-              📚
+              <BookOpen className="w-5 h-5 text-sky-700" />
             </div>
             <h3 className="font-extrabold text-stone-800 text-base">Study & Chill Lounge Hours</h3>
             <p className="text-xs text-stone-500 leading-relaxed">
@@ -1029,7 +1032,7 @@ export default function Page() {
 
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-              ☕
+              <Coffee className="w-5 h-5 text-amber-700" />
             </div>
             <h3 className="font-extrabold text-stone-800 text-base">Teacher Appreciation Wednesday</h3>
             <p className="text-xs text-stone-500 leading-relaxed">
@@ -1167,7 +1170,7 @@ export default function Page() {
           <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-white animate-pulse" />
           <Coffee className="w-5 h-5 text-amber-200" />
           <span className="text-xs font-black tracking-wide">
-            Ask Hearty ☕
+            Ask Hearty
           </span>
         </button>
       </div>

@@ -34,6 +34,46 @@
       "paymentStatus": "downpayment_pending_verification"
     },
     "staffNotes": "Automated test order",
+    "id": "ord-1794701015828-guisw",
+    "orderCode": "HHC-9922",
+    "createdAt": "2026-11-15T00:03:35.828Z",
+    "updatedAt": "2026-11-15T00:03:35.879Z"
+  },
+  {
+    "status": "ready_for_pickup",
+    "pickupEstimatedMinutes": 15,
+    "customer": {
+      "fullName": "Test Student Juan",
+      "lrn": "123456789012",
+      "gradeSection": "Grade 11 - STEM",
+      "contactNumber": "09171112222",
+      "idPhotoUrl": "data:image/png;base64,mockId",
+      "selfiePhotoUrl": "data:image/png;base64,mockSelfie"
+    },
+    "items": [
+      {
+        "id": "item-test-1",
+        "productId": "okinawa-cream-cheese",
+        "productName": "Okinawa Cream Cheese",
+        "category": "Cream Cheese Series",
+        "flavor": "Okinawa",
+        "size": "16 oz",
+        "sugarLevel": "75%",
+        "iceLevel": "Regular Ice",
+        "addBoba": true,
+        "quantity": 1,
+        "unitPrice": 69,
+        "subtotal": 69
+      }
+    ],
+    "payment": {
+      "method": "gcash_downpayment",
+      "downPaymentAmount": 35,
+      "totalAmount": 69,
+      "gcashReferenceNumber": "9021849102941",
+      "paymentStatus": "downpayment_pending_verification"
+    },
+    "staffNotes": "Automated test order",
     "id": "ord-1794699031600-qeq01",
     "orderCode": "HHC-5185",
     "createdAt": "2026-11-14T23:30:31.599Z",

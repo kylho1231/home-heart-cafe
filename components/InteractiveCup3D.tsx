@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Sparkles, RefreshCw, Volume2 } from "lucide-react";
+import { Sparkles, RefreshCw, Volume2, Heart } from "lucide-react";
 import { playChime } from "@/lib/sound";
 
 interface InteractiveCup3DProps {
@@ -248,7 +248,7 @@ export function InteractiveCup3D({
           >
             <div className="flex items-center justify-center gap-1 text-[11px] font-bold tracking-wider text-[#b42356] uppercase">
               <span>Home</span>
-              <span className="text-red-500 text-xs">❤️</span>
+              <Heart className="w-2.5 h-2.5 fill-red-500 text-red-500 inline-block" />
               <span>Café</span>
             </div>
             <div className="text-[12px] font-semibold text-[#382323] truncate max-w-[100px] mx-auto mt-0.5">
