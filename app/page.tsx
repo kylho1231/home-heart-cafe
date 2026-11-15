@@ -313,8 +313,7 @@ export default function Page() {
   const [soundMuted, setSoundMutedState] = useState(false);
   const [customerToast, setCustomerToast] = useState<string | null>(null);
 
-  // Menu View Mode (Carousel vs Grid)
-  const [menuViewMode, setMenuViewMode] = useState<"carousel" | "grid">("carousel");
+  // Carousel Autoplay & Animation Controls
   const [isAutoplay, setIsAutoplay] = useState(true);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
   const menuCarouselRef = useRef<HTMLDivElement>(null);
@@ -331,7 +330,7 @@ export default function Page() {
 
   // Carousel Autoplay & Animation Loop
   useEffect(() => {
-    if (!isAutoplay || isCarouselHovered || menuViewMode !== "carousel") return;
+    if (!isAutoplay || isCarouselHovered) return;
     const timer = setInterval(() => {
       if (menuCarouselRef.current) {
         const container = menuCarouselRef.current;
@@ -344,7 +343,7 @@ export default function Page() {
       }
     }, 3200);
     return () => clearInterval(timer);
-  }, [isAutoplay, isCarouselHovered, menuViewMode]);
+  }, [isAutoplay, isCarouselHovered]);
 
   const showCustomerToast = (message: string) => {
     setCustomerToast(message);
@@ -764,84 +763,101 @@ export default function Page() {
         </div>
       </nav>
 
-      {/* Hero Showcase Section with 3D Interactive Drink Experience */}
-      <section className="relative overflow-hidden pt-6 pb-12 px-4 sm:px-8 border-b border-stone-200/60 bg-gradient-to-b from-[#ffffff] via-[#f8fafc] to-[#ffffff]">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left Hero Copy */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#dbeafe] text-[#2563eb] text-xs font-bold uppercase tracking-wider shadow-2xs">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Campus Cafe · Order Ahead for Break</span>
-            </div>
+      {/* Hero Showcase Section with Centered Architecture & 3D Interactive Experience */}
+      <section className="relative overflow-hidden pt-10 pb-16 px-4 sm:px-8 border-b border-blue-100/80 bg-gradient-to-b from-white via-blue-50/30 to-white">
+        {/* Ambient background decoration */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-blue-100/40 via-sky-50/20 to-transparent blur-3xl -z-10 pointer-events-none" />
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#0f172a] tracking-tight leading-[1.05]">
-              Your next happy sip starts here.
-            </h1>
-
-            <p className="text-base text-[#475569] leading-relaxed max-w-xl">
-              Order drinks and crispy fries ahead of your break. Pick up at the counter freshly prepared.
-            </p>
-
-            {/* Campus Identity & Verification Trust Pill */}
-            <div className="p-4 rounded-2xl bg-white/90 border border-[#e9dcd3] shadow-xs flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#2563eb] flex items-center justify-center shrink-0 border border-blue-100">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div className="text-xs">
-                <strong className="text-[#0f172a] block font-bold">
-                  Campus Identity & Pickup Verification
-                </strong>
-                <span className="text-[#475569]">
-                  No account needed. Quick guest checkout with school ID verification for students and faculty. Pick up freshly prepared at the counter.
-                </span>
-              </div>
-            </div>
-
-            {/* Quick CTAs */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <a
-                href="#menu"
-                className="px-6 py-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
-              >
-                <span>Explore the menu</span>
-                <ArrowRight className="w-4 h-4" />
-              </a>
-              <button
-                type="button"
-                onClick={() => setAiModalOpen(true)}
-                className="px-5 py-3 rounded-full bg-white hover:bg-stone-50 border border-[#e9dcd3] text-[#0f172a] text-sm font-bold shadow-xs transition-all flex items-center gap-2"
-              >
-                <Coffee className="w-4 h-4 text-[#2563eb]" />
-                <span>Ask Home</span>
-              </button>
-            </div>
+        <div className="max-w-5xl mx-auto text-center space-y-6">
+          {/* Centered Campus Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50/90 border border-blue-200/80 text-blue-700 text-xs font-bold uppercase tracking-wider shadow-2xs backdrop-blur-xs">
+            <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-spin" style={{ animationDuration: "6s" }} />
+            <span>Campus Cafe · Order Ahead for Break</span>
           </div>
 
-          {/* Right Hero Interactive 3D Showcase */}
-          <div className="lg:col-span-6 flex flex-col items-center justify-center relative">
-            <div id="customizer" className="relative w-full max-w-md rounded-3xl bg-white/70 border border-white p-6 shadow-xl backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-2">
+          {/* Centered Headline */}
+          <h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-[1.08] max-w-4xl mx-auto">
+            Sips of Happiness,{" "}
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 bg-clip-text text-transparent">
+              Zero Waiting Time.
+            </span>
+          </h1>
+
+          {/* Centered Subtitle */}
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
+            Order ahead before recess or break. Pick your drink, verify with your school ID, and pick up freshly prepared at the counter with zero line.
+          </p>
+
+          {/* Centered Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <a
+              href="#menu"
+              className="px-7 py-3.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+            >
+              <span>Explore 3D Menu</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+            <button
+              type="button"
+              onClick={() => setAiModalOpen(true)}
+              className="px-6 py-3.5 rounded-full bg-white hover:bg-blue-50/60 border border-slate-200 hover:border-blue-300 text-slate-800 text-sm font-bold shadow-xs transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+            >
+              <Coffee className="w-4 h-4 text-blue-600" />
+              <span>Ask Home (AI Barista)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTrackerModalOpen(true)}
+              className="px-5 py-3.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <BellRing className="w-4 h-4 text-amber-600" />
+              <span>Track Order</span>
+            </button>
+          </div>
+
+          {/* Trust and Policy Micro-Bar */}
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-3 text-xs text-slate-500 font-semibold">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
+              <span>School ID Verification (Anti-Scam)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>Free Fries at ₱200+ Drink Spend</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-emerald-600" />
+              <span>Instant Counter Ready</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Centered Glassmorphism 3D Showcase & Customizer Stage */}
+        <div id="customizer" className="mt-12 max-w-4xl mx-auto rounded-3xl bg-white/95 border border-blue-100/90 shadow-2xl p-6 sm:p-8 backdrop-blur-md">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            {/* Left Column: 3D Product Image Display */}
+            <div className="md:col-span-6 flex flex-col items-center">
+              <div className="w-full flex items-center justify-between mb-3 px-1">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-stone-400 block tracking-wider">
-                    3D Product Showcase
+                  <span className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">
+                    {selectedProduct.category}
                   </span>
-                  <h3 className="font-extrabold text-lg text-stone-900">
+                  <h3 className="font-extrabold text-xl text-slate-900 leading-tight">
                     {selectedProduct.name}
                   </h3>
                 </div>
-                <span className="text-xl font-black text-[#2563eb]">
+                <span className="text-2xl font-black text-blue-600">
                   ₱{currentUnitPrice}
                 </span>
               </div>
 
-              {/* Generated 3D Product Image Showcase with Floating Animation */}
+              {/* Product Stage */}
               <div
-                className="relative h-80 w-full rounded-2xl overflow-hidden flex items-center justify-center p-4 border border-blue-100 shadow-inner group transition-all"
+                className="relative h-72 sm:h-80 w-full rounded-2xl overflow-hidden flex items-center justify-center p-4 border border-blue-100/80 shadow-inner group transition-all"
                 style={{
                   background: `radial-gradient(circle at center, #eff6ff 0%, #dbeafe60 60%, #ffffff 100%)`,
                 }}
               >
-                {/* Soft animated radial glow in background */}
                 <div
                   className="absolute inset-0 animate-glow-pulse pointer-events-none"
                   style={{
@@ -850,7 +866,7 @@ export default function Page() {
                 />
 
                 {selectedProduct.image ? (
-                  <div className="relative w-full h-full max-h-72 transition-transform duration-300 group-hover:scale-105 animate-float">
+                  <div className="relative w-full h-full max-h-64 transition-transform duration-300 group-hover:scale-105 animate-float">
                     <Image
                       src={selectedProduct.image}
                       alt={selectedProduct.name}
@@ -858,41 +874,41 @@ export default function Page() {
                       unoptimized={selectedProduct.image.startsWith("http")}
                       className="object-contain drop-shadow-2xl"
                       priority
-                      sizes="(max-width: 768px) 100vw, 420px"
+                      sizes="(max-width: 768px) 100vw, 380px"
                     />
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center text-stone-400">
-                    <Coffee className="w-16 h-16 text-[#2563eb]/60 mb-2" />
+                    <Coffee className="w-16 h-16 text-blue-600/60 mb-2" />
                     <span className="text-xs font-bold">{selectedProduct.name}</span>
                   </div>
                 )}
 
                 {/* Floating Badges */}
                 <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/95 text-stone-700 shadow-xs border border-white">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/95 text-slate-700 shadow-xs border border-white">
                     {selectedProduct.category}
                   </span>
                   {selectedProduct.badge && (
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-[#2563eb] bg-rose-100/90 shadow-xs border border-blue-200">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-blue-600 bg-blue-100/90 shadow-xs border border-blue-200">
                       {selectedProduct.badge}
                     </span>
                   )}
                 </div>
 
-                <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-white/95 text-[#2563eb] text-xs font-black shadow-xs border border-white z-10">
+                <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-white/95 text-blue-600 text-xs font-black shadow-xs border border-white z-10">
                   {selectedSize} · ₱{currentUnitPrice}
                 </div>
               </div>
 
-              {/* Quick Horizontal Carousel of Products to Switch in Showcase */}
-              <div className="pt-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
-                    Quick Carousel (Scroll Left-to-Right)
+              {/* Quick Carousel Swiper right under image */}
+              <div className="w-full pt-3">
+                <div className="flex items-center justify-between mb-1.5 px-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Quick Pick (Swipe left to right)
                   </span>
-                  <span className="text-[10px] text-stone-400 font-semibold">
-                    {productList.length} products
+                  <span className="text-[10px] text-blue-600 font-bold">
+                    {productList.length} drinks
                   </span>
                 </div>
                 <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
@@ -908,8 +924,8 @@ export default function Page() {
                       }}
                       className={`shrink-0 w-16 h-16 rounded-xl border p-1 transition-all flex flex-col items-center justify-center cursor-pointer ${
                         selectedProductId === item.id
-                          ? "border-[#2563eb] ring-2 ring-[#2563eb]/30 bg-blue-50/70 shadow-xs scale-105"
-                          : "border-stone-200 bg-white hover:border-[#2563eb]/40"
+                          ? "border-blue-600 ring-2 ring-blue-500/30 bg-blue-50/90 shadow-xs scale-105"
+                          : "border-slate-200 bg-white hover:border-blue-300"
                       }`}
                       title={item.name}
                     >
@@ -925,93 +941,103 @@ export default function Page() {
                           />
                         </div>
                       )}
-                      <span className="text-[8px] font-bold text-stone-700 truncate w-full text-center mt-0.5">
+                      <span className="text-[8px] font-bold text-slate-700 truncate w-full text-center mt-0.5">
                         {item.name.split(" ")[0]}
                       </span>
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
 
-              {/* Live Interactive Flavor, Sugar & Size Chips */}
-              <div className="space-y-3 pt-4 border-t border-stone-100">
-                {/* Size Chips */}
-                <div>
-                  <label className="text-[11px] font-bold text-stone-600 block mb-1">
-                    Select Size
-                  </label>
-                  <div className="flex gap-2">
-                    {selectedProduct.sizes.map((s) => (
-                      <button
-                        key={s.label}
-                        type="button"
-                        onClick={() => {
-                          setSelectedSize(s.label);
-                          playChime("add");
-                        }}
-                        className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all ${
-                          selectedSize === s.label
-                            ? "bg-[#2563eb] text-white shadow-xs"
-                            : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-                        }`}
-                      >
-                        {s.label} · ₱{s.price}
-                      </button>
-                    ))}
+            {/* Right Column: Customization Controls & Add To Order */}
+            <div className="md:col-span-6 space-y-4">
+              <div>
+                <h4 className="text-sm font-black text-slate-900 mb-1">Customize Your Drink</h4>
+                <p className="text-xs text-slate-500">Pick your size, sweetness, and favorite add-ons.</p>
+              </div>
+
+              {/* Size Chips */}
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">
+                  Select Size
+                </label>
+                <div className="flex gap-2">
+                  {selectedProduct.sizes.map((s) => (
+                    <button
+                      key={s.label}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSize(s.label);
+                        playChime("add");
+                      }}
+                      className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        selectedSize === s.label
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      {s.label} · ₱{s.price}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sugar & Ice Level Pickers (Drinks only) */}
+              {selectedProduct.category !== "Snacks" && (
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                      Sugar Level: {selectedSugar}
+                    </label>
+                    <select
+                      value={selectedSugar}
+                      onChange={(e) => setSelectedSugar(e.target.value as any)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium outline-none cursor-pointer focus:border-blue-600"
+                    >
+                      <option value="75%">75% (Barista Default)</option>
+                      <option value="100%">100% Full Sweet</option>
+                      <option value="50%">50% Half Sweet</option>
+                      <option value="25%">25% Gentle Sweet</option>
+                      <option value="0%">0% Unsweetened</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                      Ice Level: {selectedIce}
+                    </label>
+                    <select
+                      value={selectedIce}
+                      onChange={(e) => setSelectedIce(e.target.value as any)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium outline-none cursor-pointer focus:border-blue-600"
+                    >
+                      <option value="Regular Ice">Regular Ice</option>
+                      <option value="Less Ice">Less Ice</option>
+                      <option value="Extra Ice">Extra Ice</option>
+                      <option value="No Ice">No Ice</option>
+                    </select>
                   </div>
                 </div>
+              )}
 
-                {/* Sugar & Ice Level Pickers (Drinks only) */}
-                {selectedProduct.category !== "Snacks" && (
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <label className="text-[11px] font-bold text-stone-600 block mb-1">
-                        Sugar: {selectedSugar}
-                      </label>
-                      <select
-                        value={selectedSugar}
-                        onChange={(e) => setSelectedSugar(e.target.value as any)}
-                        className="w-full px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-medium outline-none cursor-pointer"
-                      >
-                        <option value="75%">75% (Barista Default)</option>
-                        <option value="100%">100% Full Sweet</option>
-                        <option value="50%">50% Half Sweet</option>
-                        <option value="25%">25% Gentle Sweet</option>
-                        <option value="0%">0% Unsweetened</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-[11px] font-bold text-stone-600 block mb-1">
-                        Ice: {selectedIce}
-                      </label>
-                      <select
-                        value={selectedIce}
-                        onChange={(e) => setSelectedIce(e.target.value as any)}
-                        className="w-full px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-medium outline-none cursor-pointer"
-                      >
-                        <option value="Regular Ice">Regular Ice</option>
-                        <option value="Less Ice">Less Ice</option>
-                        <option value="Extra Ice">Extra Ice</option>
-                        <option value="No Ice">No Ice</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                {/* Add-on Toggles (Drinks only) */}
-                {selectedProduct.category !== "Snacks" && (
-                  <div className="flex gap-2 pt-1">
+              {/* Add-on Toggles (Drinks only) */}
+              {selectedProduct.category !== "Snacks" && (
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                    Add-ons & Toppings
+                  </label>
+                  <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => {
                         setSelectedBoba(!selectedBoba);
                         playChime("add");
                       }}
-                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                         selectedBoba
-                          ? "border-[#2563eb] bg-[#dbeafe] text-[#2563eb]"
-                          : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+                          ? "border-blue-600 bg-blue-50 text-blue-700"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                       }`}
                     >
                       + Boba Pearls (₱10)
@@ -1024,39 +1050,42 @@ export default function Page() {
                           setSelectedCreamCheese(!selectedCreamCheese);
                           playChime("add");
                         }}
-                        className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                        className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                           selectedCreamCheese
-                            ? "border-[#2563eb] bg-[#dbeafe] text-[#2563eb]"
-                            : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+                            ? "border-blue-600 bg-blue-50 text-blue-700"
+                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         + Cream Cheese (₱15)
                       </button>
                     )}
                   </div>
-                )}
-
-                {/* Optional Barista Note */}
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Add note for barista (e.g. less ice, extra napkin)..."
-                    value={orderNotes}
-                    onChange={(e) => setOrderNotes(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-stone-50/70 text-xs text-stone-800 placeholder-stone-400 outline-none focus:border-[#2563eb]"
-                  />
                 </div>
+              )}
 
-                {/* Add To Cart CTA */}
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  className="w-full py-2.5 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 mt-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add to Order · ₱{currentUnitPrice}</span>
-                </button>
+              {/* Special Note */}
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  Barista Note (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. less ice, extra straw..."
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50/70 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-blue-600 focus:bg-white"
+                />
               </div>
+
+              {/* Add To Cart CTA */}
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add to Order · ₱{currentUnitPrice}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1177,7 +1206,7 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Menu Carousel & Grid Section with 3D Artwork */}
+      {/* Menu Carousel Section with 3D Artwork (Carousel Only) */}
       <section className="px-4 sm:px-8 py-10 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
@@ -1193,187 +1222,126 @@ export default function Page() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* View Mode Toggle: Carousel vs Grid */}
-            <div className="flex items-center p-1 rounded-full bg-stone-100 border border-stone-200 text-xs font-bold">
+          {/* Carousel Controls & Animation Toggle */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsAutoplay(!isAutoplay)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-all cursor-pointer ${
+                isAutoplay
+                  ? "border-blue-200 bg-blue-50 text-blue-700 shadow-2xs"
+                  : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+              }`}
+              title={isAutoplay ? "Pause auto-scroll animation" : "Start auto-scroll animation"}
+            >
+              {isAutoplay ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping inline-block" />
+                  <Pause className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Auto-scroll</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 text-stone-500 fill-stone-500" />
+                  <span className="hidden sm:inline">Play</span>
+                </>
+              )}
+            </button>
+
+            <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={() => setMenuViewMode("carousel")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all cursor-pointer ${
-                  menuViewMode === "carousel"
-                    ? "bg-[#2563eb] text-white shadow-xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
+                onClick={() => scrollMenuCarousel("left")}
+                className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
+                aria-label="Scroll left"
+                title="Scroll left"
               >
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>Carousel</span>
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 type="button"
-                onClick={() => setMenuViewMode("grid")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all cursor-pointer ${
-                  menuViewMode === "grid"
-                    ? "bg-[#2563eb] text-white shadow-xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
+                onClick={() => scrollMenuCarousel("right")}
+                className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
+                aria-label="Scroll right"
+                title="Scroll right"
               >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                <span>Grid</span>
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-
-            {/* Carousel Controls & Animation Toggle */}
-            {menuViewMode === "carousel" && (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAutoplay(!isAutoplay)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-all cursor-pointer ${
-                    isAutoplay
-                      ? "border-blue-200 bg-blue-50 text-blue-700 shadow-2xs"
-                      : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
-                  }`}
-                  title={isAutoplay ? "Pause auto-scroll animation" : "Start auto-scroll animation"}
-                >
-                  {isAutoplay ? (
-                    <>
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping inline-block" />
-                      <Pause className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Auto-scroll</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-3.5 h-3.5 text-stone-500 fill-stone-500" />
-                      <span className="hidden sm:inline">Play</span>
-                    </>
-                  )}
-                </button>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => scrollMenuCarousel("left")}
-                    className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
-                    aria-label="Scroll left"
-                    title="Scroll left"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => scrollMenuCarousel("right")}
-                    className="p-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] text-stone-700 shadow-2xs cursor-pointer hover:bg-stone-50 active:scale-95 transition-all"
-                    aria-label="Scroll right"
-                    title="Scroll right"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
         {/* Carousel View (Scroll Left to Right) */}
-        {menuViewMode === "carousel" ? (
-          <div
-            className="relative group/carousel"
-            onMouseEnter={() => setIsCarouselHovered(true)}
-            onMouseLeave={() => setIsCarouselHovered(false)}
+        <div
+          className="relative group/carousel"
+          onMouseEnter={() => setIsCarouselHovered(true)}
+          onMouseLeave={() => setIsCarouselHovered(false)}
+        >
+          {/* Left Floating Arrow on Desktop */}
+          <button
+            type="button"
+            onClick={() => scrollMenuCarousel("left")}
+            className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+            aria-label="Previous items"
           >
-            {/* Left Floating Arrow on Desktop */}
-            <button
-              type="button"
-              onClick={() => scrollMenuCarousel("left")}
-              className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
-              aria-label="Previous items"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
+            <ChevronLeft className="w-5 h-5" />
+          </button>
 
-            {/* Horizontal Scroll Track */}
-            <div
-              ref={menuCarouselRef}
-              className="flex gap-5 overflow-x-auto pb-6 pt-2 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x"
-            >
-              {filteredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="shrink-0 w-[275px] sm:w-[310px] snap-start"
-                >
-                  <Product3DCard
-                    id={product.id}
-                    name={product.name}
-                    category={product.category}
-                    description={product.description}
-                    sizes={product.sizes}
-                    colors={product.colors}
-                    accent={product.accent}
-                    image={product.image}
-                    badge={product.badge}
-                    isAvailable={!unavailableSlugs.includes(product.id)}
-                    isSelected={selectedProductId === product.id}
-                    onSelect={() => {
-                      setSelectedProductId(product.id);
-                      setSelectedFlavor(product.flavors[0]);
-                      setSelectedSize(product.sizes[0].label);
-                      document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    onQuickAdd={(sizeLabel) => handleQuickAdd(product, sizeLabel)}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Right Floating Arrow on Desktop */}
-            <button
-              type="button"
-              onClick={() => scrollMenuCarousel("right")}
-              className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
-              aria-label="Next items"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-
-            {/* Carousel Navigation Hint */}
-            <div className="flex items-center justify-between text-xs text-stone-500 pt-2 px-1">
-              <span className="flex items-center gap-1.5 font-medium">
-                <ArrowRight className="w-3.5 h-3.5 text-[#2563eb]" />
-                Swipe or click arrows to scroll left and right
-              </span>
-              <span className="font-semibold text-stone-400">
-                {filteredProducts.length} items
-              </span>
-            </div>
-          </div>
-        ) : (
-          /* Grid View */
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {/* Horizontal Scroll Track */}
+          <div
+            ref={menuCarouselRef}
+            className="flex gap-5 overflow-x-auto pb-6 pt-2 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x"
+          >
             {filteredProducts.map((product) => (
-              <Product3DCard
+              <div
                 key={product.id}
-                id={product.id}
-                name={product.name}
-                category={product.category}
-                description={product.description}
-                sizes={product.sizes}
-                colors={product.colors}
-                accent={product.accent}
-                image={product.image}
-                badge={product.badge}
-                isAvailable={!unavailableSlugs.includes(product.id)}
-                isSelected={selectedProductId === product.id}
-                onSelect={() => {
-                  setSelectedProductId(product.id);
-                  setSelectedFlavor(product.flavors[0]);
-                  setSelectedSize(product.sizes[0].label);
-                  document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
-                }}
-                onQuickAdd={(sizeLabel) => handleQuickAdd(product, sizeLabel)}
-              />
+                className="shrink-0 w-[275px] sm:w-[310px] snap-start"
+              >
+                <Product3DCard
+                  id={product.id}
+                  name={product.name}
+                  category={product.category}
+                  description={product.description}
+                  sizes={product.sizes}
+                  colors={product.colors}
+                  accent={product.accent}
+                  image={product.image}
+                  badge={product.badge}
+                  isAvailable={!unavailableSlugs.includes(product.id)}
+                  isSelected={selectedProductId === product.id}
+                  onSelect={() => {
+                    setSelectedProductId(product.id);
+                    setSelectedFlavor(product.flavors[0]);
+                    setSelectedSize(product.sizes[0].label);
+                    document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  onQuickAdd={(sizeLabel) => handleQuickAdd(product, sizeLabel)}
+                />
+              </div>
             ))}
           </div>
-        )}
+
+          {/* Right Floating Arrow on Desktop */}
+          <button
+            type="button"
+            onClick={() => scrollMenuCarousel("right")}
+            className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+            aria-label="Next items"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          {/* Carousel Navigation Hint */}
+          <div className="flex items-center justify-between text-xs text-stone-500 pt-2 px-1">
+            <span className="flex items-center gap-1.5 font-medium">
+              <ArrowRight className="w-3.5 h-3.5 text-[#2563eb]" />
+              Swipe or click arrows to scroll left and right
+            </span>
+            <span className="font-semibold text-stone-400">
+              {filteredProducts.length} items
+            </span>
+          </div>
+        </div>
       </section>
 
       {/* Barkada Bundles Interactive Builder */}
