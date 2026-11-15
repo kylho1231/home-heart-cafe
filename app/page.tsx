@@ -1810,12 +1810,13 @@ export default function Page() {
             setAiModalOpen(true);
             playChime("notification");
           }}
-          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95 border-2 border-white/60 cursor-pointer"
+          aria-label="Ask Hearty AI Barista"
+          className="group relative flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:shadow-2xl transition-all duration-200 active:scale-95 border border-white/40 cursor-pointer"
         >
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-white animate-pulse" />
-          <Coffee className="w-5 h-5 text-amber-200" />
-          <span className="text-xs font-black tracking-wide">
-            Ask Home
+          <span className="absolute -top-1 -right-1 w-3 rounded-full h-3 bg-emerald-400 ring-2 ring-white animate-pulse" />
+          <Coffee className="w-4 h-4 text-amber-200" />
+          <span className="text-xs font-extrabold tracking-wide">
+            Ask Hearty
           </span>
         </button>
       </div>
