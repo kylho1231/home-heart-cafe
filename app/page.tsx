@@ -1232,203 +1232,204 @@ export default function Page() {
       </section>
 
       {/* Barkada Bundles Interactive Builder */}
-      <section id="bundles" className="scroll-mt-20 px-4 sm:px-8 py-12 bg-stone-50/60 border-t border-b border-stone-200">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-black uppercase">
-                <Flame className="w-3.5 h-3.5 text-amber-600" />
-                <span>Barkada Saver Bundles</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] mt-1.5">
-                Share More, Spend Less With Your Barkada
-              </h2>
-              <p className="text-xs sm:text-sm text-stone-600 max-w-2xl mt-1">
-                Freshly prepared combos made for campus groups! Pick between our Fruit Soda or Milk Tea bundles — each includes 3 drinks of your choice + 1 Large French Fries na may official Home Cafe logo.
-              </p>
+      <section id="bundles" className="scroll-mt-20 px-4 sm:px-8 py-12 bg-slate-50/70 border-t border-b border-slate-200">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider">
+              <Flame className="w-3.5 h-3.5 text-amber-600" />
+              <span>Barkada Saver Bundles</span>
             </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1.5">
+              Share More, Spend Less With Your Barkada
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1">
+              Freshly prepared combos made for campus groups! Pick between Fruit Soda (₱135) or Milk Tea (₱155) — each includes 3 drinks + 1 Large French Fries.
+            </p>
           </div>
 
-          {/* Two Promotional Bundle Hero Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {bundleChoices.map((b) => {
-              const isSelected = bundleId === b.id;
-              return (
-                <div
-                  key={b.id}
-                  className={`relative rounded-3xl overflow-hidden border-2 transition-all duration-300 flex flex-col bg-white shadow-md hover:shadow-xl ${
-                    isSelected
-                      ? "border-[#2563eb] ring-4 ring-[#2563eb]/10"
-                      : "border-stone-200 hover:border-stone-300"
-                  }`}
-                >
-                  {/* Real Bundle Photo */}
-                  <div className="relative aspect-[16/9] w-full bg-stone-100 overflow-hidden">
-                    <Image
-                      src={b.image}
-                      alt={b.name}
-                      fill
-                      className="object-cover transition-transform duration-500 hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                    <div className="absolute top-3 left-3 bg-[#2563eb] text-white text-xs font-black px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
-                      {b.badge}
-                    </div>
-                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-[#0f172a] text-sm font-black px-3.5 py-1 rounded-full shadow-md">
-                      ₱{b.price}
-                    </div>
-                    <div className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg">
-                      Home Cafe Cup Logo
-                    </div>
-                  </div>
-
-                  {/* Bundle Content & Action */}
-                  <div className="p-6 flex flex-col flex-1 justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-black text-[#0f172a]">{b.name}</h3>
-                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                          {b.savingsText}
-                        </span>
-                      </div>
-                      <p className="text-xs text-stone-600 leading-relaxed">
-                        {b.description}
-                      </p>
-                      <div className="pt-2 flex flex-wrap gap-2 text-xs font-medium text-stone-700">
-                        <span className="px-2.5 py-1 rounded-lg bg-stone-100 border border-stone-200/80">
-                          🥤 3x 12oz {b.drinkCategory === "Fruit Soda" ? "Fruit Sodas" : "Milk Teas"}
-                        </span>
-                        <span className="px-2.5 py-1 rounded-lg bg-stone-100 border border-stone-200/80">
-                          🍟 1x Large Seasoned Fries
-                        </span>
-                      </div>
-                    </div>
-
+          {/* Stepped Interactive Builder */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md space-y-8">
+            {/* Step 1: Choose Bundle Type */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center shrink-0">
+                  1
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-slate-900">
+                  Choose Bundle Type
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {bundleChoices.map((b) => {
+                  const isSelected = bundleId === b.id;
+                  return (
                     <button
+                      key={b.id}
                       type="button"
                       onClick={() => {
                         setBundleId(b.id);
                         const drinks = getBundleDrinks(b.drinkCategory);
                         setBundleDrinkIds(Array.from({ length: 3 }, () => drinks[0]?.id ?? products[0].id));
                         playChime("add");
-                        document.getElementById("bundle-tray-builder")?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className={`w-full py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                         isSelected
-                          ? "bg-[#2563eb] text-white shadow-md hover:bg-[#1d4ed8]"
-                          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                          ? "border-blue-600 bg-blue-50/60 ring-2 ring-blue-600/20 shadow-xs"
+                          : "border-slate-200 bg-white hover:border-slate-300"
                       }`}
                     >
-                      {isSelected ? (
-                        <>
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Selected · Customize Flavors Below ↓</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4 text-amber-500" />
-                          <span>Select & Customize · ₱{b.price}</span>
-                        </>
-                      )}
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 block">
+                            {b.badge}
+                          </span>
+                          <strong className="text-base font-black text-slate-900 block mt-0.5">
+                            {b.name}
+                          </strong>
+                        </div>
+                        <span className="text-lg font-black text-blue-600">
+                          ₱{b.price}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                        {b.description}
+                      </p>
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-600">
+                        <span>3x 12oz {b.drinkCategory === "Fruit Soda" ? "Fruit Sodas" : "Milk Teas"} + 1 Large Fries</span>
+                        <span className="text-emerald-600 font-bold">{b.savingsText}</span>
+                      </div>
                     </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            </div>
 
-          {/* 4-Slot Tray Builder */}
-          <div id="bundle-tray-builder" className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200 shadow-lg space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
-              <div>
-                <span className="text-[11px] uppercase font-bold text-[#2563eb] tracking-wider block">
-                  Interactive Mix & Match Tray
+            {/* Step 2: Pick 3 Drinks */}
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center shrink-0">
+                    2
+                  </span>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">
+                    Pick 3 Drinks (12 oz each)
+                  </h3>
+                </div>
+                <span className="text-xs text-blue-600 font-bold">
+                  {activeBundle.drinkCategory} Series
                 </span>
-                <h3 className="text-xl font-black text-[#0f172a]">
-                  Customize Your {activeBundle.name}
+              </div>
+
+              {/* 3 Selected Drink Slots */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                {bundleDrinkIds.map((drinkId, idx) => {
+                  const selectedDrink = activeBundleDrinks.find((d) => d.id === drinkId);
+                  return (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between"
+                    >
+                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 mb-1">
+                        <span>Drink #{idx + 1}</span>
+                        <span className="text-blue-600 font-semibold">12 oz</span>
+                      </div>
+                      <strong className="text-sm font-bold text-slate-900 truncate">
+                        {selectedDrink?.name || "Select Drink"}
+                      </strong>
+                      <span className="text-[10px] text-slate-500 mt-0.5 truncate">
+                        {selectedDrink?.description || "Handcrafted beverage"}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Drink Selector Chips for each slot */}
+              <div className="space-y-3 pt-2">
+                <span className="text-xs font-bold text-slate-700 block">
+                  Select drinks from available flavors:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[0, 1, 2].map((slotIdx) => (
+                    <div key={slotIdx} className="space-y-1.5">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                        Slot #{slotIdx + 1}
+                      </span>
+                      <select
+                        value={bundleDrinkIds[slotIdx] || ""}
+                        onChange={(e) => {
+                          const next = [...bundleDrinkIds];
+                          next[slotIdx] = e.target.value;
+                          setBundleDrinkIds(next);
+                        }}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-blue-600"
+                      >
+                        {activeBundleDrinks.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3: Pick Your Fries */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center shrink-0">
+                  3
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-slate-900">
+                  Pick Your Large French Fries
                 </h3>
               </div>
-              <div className="text-right">
-                <span className="text-xs text-stone-500 block">Bundle Total</span>
-                <span className="text-2xl font-black text-[#2563eb]">₱{activeBundle.price}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {products
+                  .filter((p) => p.category === "Snacks")
+                  .map((fries) => {
+                    const isSelected = bundleFriesId === fries.id;
+                    return (
+                      <button
+                        key={fries.id}
+                        type="button"
+                        onClick={() => {
+                          setBundleFriesId(fries.id);
+                          playChime("add");
+                        }}
+                        className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                          isSelected
+                            ? "border-amber-500 bg-amber-50 text-amber-950 ring-2 ring-amber-500/20 font-bold"
+                            : "border-slate-200 bg-white hover:border-slate-300 text-slate-700"
+                        }`}
+                      >
+                        <div>
+                          <strong className="text-xs font-bold block">{fries.name}</strong>
+                          <span className="text-[10px] text-slate-500">Large Size · Included</span>
+                        </div>
+                        <span className="text-lg">🍟</span>
+                      </button>
+                    );
+                  })}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* 3 Drink Slots */}
-              {bundleDrinkIds.map((drinkId, idx) => {
-                const selectedDrink = activeBundleDrinks.find((d) => d.id === drinkId);
-                return (
-                  <div key={idx} className="p-4 rounded-2xl bg-stone-50 border border-stone-200 hover:border-blue-300 transition-colors shadow-2xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase font-black text-[#2563eb] tracking-wider">
-                        Drink #{idx + 1} (12 oz)
-                      </span>
-                      <span className="text-[10px] text-stone-400">Included</span>
-                    </div>
-                    <select
-                      value={drinkId}
-                      onChange={(e) => {
-                        const next = [...bundleDrinkIds];
-                        next[idx] = e.target.value;
-                        setBundleDrinkIds(next);
-                      }}
-                      className="w-full px-3 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-800 bg-white outline-none focus:ring-2 focus:ring-[#2563eb]/20"
-                    >
-                      {activeBundleDrinks.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name}
-                        </option>
-                      ))}
-                    </select>
-                    {selectedDrink && (
-                      <p className="text-[11px] text-stone-500 truncate">
-                        Selected: <strong className="text-stone-700">{selectedDrink.name}</strong>
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* 1 Large Fries Slot */}
-              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 hover:border-amber-300 transition-colors shadow-2xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-black text-amber-700 tracking-wider">
-                    Snack Companion (Large Fries)
-                  </span>
-                  <span className="text-[10px] text-amber-600 font-bold">Included</span>
-                </div>
-                <select
-                  value={bundleFriesId}
-                  onChange={(e) => setBundleFriesId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-amber-200 text-xs font-semibold text-stone-800 bg-white outline-none focus:ring-2 focus:ring-amber-500/20"
-                >
-                  {products
-                    .filter((p) => p.category === "Snacks")
-                    .map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.name}
-                      </option>
-                    ))}
-                </select>
-                <p className="text-[11px] text-amber-800">
-                  Crispy fries served in Home Cafe cup
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-xs text-stone-600">
-                <span className="font-semibold text-stone-800">Tray Summary:</span>{" "}
-                3x {activeBundle.name.includes("Fruit Soda") ? "Fruit Sodas" : "Milk Teas"} + 1x Large Fries na may Home Cafe logo
+            {/* Step 4: Summary & Add to Cart */}
+            <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-xs text-slate-600 text-center sm:text-left">
+                <strong className="text-slate-900 block sm:inline">Bundle Summary: </strong>
+                3x 12oz {activeBundle.drinkCategory} + 1x Large Fries
               </div>
               <button
                 type="button"
                 onClick={handleAddBundle}
-                className="w-full sm:w-auto px-8 py-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-black shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                disabled={bundleDrinkIds.length !== 3 || !bundleFriesId}
+                className="w-full sm:w-auto px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add {activeBundle.name} to Cart · ₱{activeBundle.price}</span>
+                <span>Add {activeBundle.name} · ₱{activeBundle.price}</span>
               </button>
             </div>
           </div>
