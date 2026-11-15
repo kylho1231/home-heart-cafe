@@ -2,7 +2,7 @@
   {
     "id": "event-acoustic-friday",
     "title": "Campus Acoustic Friday",
-    "schedule": "Every Friday at 3:00 PM – 5:30 PM",
+    "schedule": "Every Friday 3:00 PM – 6:00 PM",
     "description": "Live student performances, open mic sessions, and warm handcrafted coffee drinks.",
     "icon": "music",
     "badgeColor": "rose"
@@ -10,7 +10,7 @@
   {
     "id": "event-study-lounge",
     "title": "Study & Chill Lounge Hours",
-    "schedule": "Monday – Thursday 4:00 PM – 6:00 PM (Friday 5:30 PM – 7:30 PM)",
+    "schedule": "Monday – Thursday 4:00 PM – 6:00 PM",
     "description": "High-speed campus Wi-Fi, power charging outlets, quiet ambient study environment, and 10% drink refill discount.",
     "icon": "book",
     "badgeColor": "sky"

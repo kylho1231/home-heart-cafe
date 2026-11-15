@@ -84,11 +84,11 @@ export async function POST(request: NextRequest) {
     ) {
       reply =
         "📅 **Upcoming Events at Home ❤️ Cafe:**\n\n" +
-        "• 🎸 **Campus Acoustic Friday (Every Friday, 3:00 PM – 5:30 PM)**\n" +
+        "• 🎸 **Campus Acoustic Friday (Every Friday, 3:00 PM – 6:00 PM)**\n" +
         "  Enjoy student acoustic performances and chill study vibes while sipping your favorite drinks!\n\n" +
-        "• 📚 **Study & Chill Lounge Hours (Daily, 4:00 PM – 6:00 PM)**\n" +
+        "• 📚 **Study & Chill Lounge Hours (Monday – Thursday, 4:00 PM – 6:00 PM)**\n" +
         "  Quiet hours with high-speed Wi-Fi, power outlets, and 10% off on second drink refills for students reviewing for exams!\n\n" +
-        "• ☕ **Teacher's Coffee Appreciation (Wednesdays)**\n" +
+        "• ☕ **Teacher's Coffee Appreciation (Wednesdays, 8:00 AM – 5:00 PM)**\n" +
         "  Faculty members enjoy a complimentary extra espresso shot or boba pearls on any 16oz/22oz beverage.\n\n" +
         "• 🎮 **Board Games & Cards Corner (Daily)**\n" +
         "  Free access to Scrabble, Uno, and Jenga while waiting for your order!";

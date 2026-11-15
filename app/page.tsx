@@ -1455,15 +1455,15 @@ export default function Page() {
           {eventsData.map((ev) => (
             <div
               key={ev.id}
-              className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3 hover:shadow-md transition-shadow"
+              className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-3 hover:shadow-md transition-shadow"
             >
               <div
                 className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold ${
                   ev.badgeColor === "rose"
-                    ? "bg-rose-100 text-[#2563eb]"
+                    ? "bg-rose-50 text-rose-600"
                     : ev.badgeColor === "sky"
-                      ? "bg-sky-100 text-sky-700"
-                      : "bg-amber-100 text-amber-700"
+                      ? "bg-sky-50 text-sky-600"
+                      : "bg-amber-50 text-amber-600"
                 }`}
               >
                 {ev.icon === "music" ? (
@@ -1474,17 +1474,17 @@ export default function Page() {
                   <Coffee className="w-5 h-5" />
                 )}
               </div>
-              <h3 className="font-extrabold text-stone-800 text-base">{ev.title}</h3>
-              <div className="text-[11px] font-bold text-[#2563eb] bg-[#dbeafe] px-2.5 py-1 rounded-lg inline-block">
+              <h3 className="font-extrabold text-slate-800 text-base">{ev.title}</h3>
+              <div className="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg inline-block">
                 {ev.schedule}
               </div>
-              <p className="text-xs text-stone-500 leading-relaxed">{ev.description}</p>
+              <p className="text-xs text-slate-500 leading-relaxed">{ev.description}</p>
             </div>
           ))}
         </div>
 
         {/* Real Cafe Photography Showcase */}
-        <div className="pt-6 border-t border-stone-200/80 space-y-4">
+        <div className="pt-6 border-t border-slate-200/80 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h3 className="text-xl font-black text-[#0f172a]">
@@ -1503,9 +1503,9 @@ export default function Page() {
             {featuredImages.map((img, i) => (
               <div
                 key={i}
-                className="group relative rounded-3xl overflow-hidden border border-stone-200 bg-white shadow-sm hover:shadow-md transition-all flex flex-col"
+                className="group relative rounded-3xl overflow-hidden border border-slate-200 bg-white shadow-xs hover:shadow-md transition-all flex flex-col"
               >
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-stone-100">
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                   <Image
                     src={img.src}
                     alt={img.title}
@@ -1519,8 +1519,8 @@ export default function Page() {
                 </div>
                 <div className="p-5 space-y-1.5 flex-1 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-extrabold text-stone-900 text-sm">{img.title}</h4>
-                    <p className="text-xs text-stone-500 leading-relaxed mt-1">{img.description}</p>
+                    <h4 className="font-extrabold text-slate-900 text-sm">{img.title}</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed mt-1">{img.description}</p>
                   </div>
                 </div>
               </div>
@@ -1530,84 +1530,110 @@ export default function Page() {
       </section>
 
       {/* Useful & Hospitable Cafe Footer */}
-      <footer className="border-t border-stone-200/80 bg-white py-12 px-4 sm:px-8 text-[#0f172a]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start justify-between gap-8">
-          <div className="space-y-3 max-w-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#2563eb] to-[#60a5fa] text-white flex items-center justify-center shadow-xs">
-                <Coffee className="w-4 h-4 text-amber-200" />
+      <footer className="border-t border-slate-200 bg-white py-12 px-4 sm:px-8 text-slate-900">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Col 1: Brand & Tagline */}
+            <div className="space-y-3 md:col-span-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                  <Coffee className="w-4 h-4 text-amber-200" />
+                </div>
+                <div className="flex items-center gap-1 font-black text-lg">
+                  <span>Home</span>
+                  <Heart className="w-4 h-4 fill-red-500 text-red-500" />
+                  <span className="text-blue-600">Cafe</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1 font-black text-lg">
-                <span>Home</span>
-                <Heart className="w-4 h-4 fill-red-500 text-red-500" />
-                <span className="text-[#2563eb]">Cafe</span>
-              </div>
+              <p className="text-xs font-semibold text-blue-700 italic">
+                “Sips of happiness in every cup.”
+              </p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Handcrafted drinks and crispy fries made fresh for campus breaks. Order ahead for quick counter pickup.
+              </p>
             </div>
-            <p className="text-xs text-[#475569] leading-relaxed">
-              Campus cafe serving handcrafted milk tea, fruit sodas, rich coffee, and crispy golden fries. Order ahead for quick pickup during campus breaks.
-            </p>
-            <div className="text-[11px] text-stone-400">
-              © 2026 Home Heart Cafe. All rights reserved.
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-xs">
-            <div>
-              <span className="font-bold text-[#0f172a] block mb-2.5 uppercase tracking-wider text-[11px]">
-                Quick Menu
+            {/* Col 2: Quick Links */}
+            <div className="text-xs">
+              <span className="font-bold text-slate-900 block mb-3 uppercase tracking-wider text-[11px]">
+                Quick Links
               </span>
-              <ul className="space-y-2 text-[#475569]">
+              <ul className="space-y-2 text-slate-600">
                 <li>
-                  <a href="#featured" className="hover:text-[#2563eb] transition-colors">
-                    Featured Bestsellers
+                  <a href="#featured" className="hover:text-blue-600 transition-colors">
+                    Campus Favorites
                   </a>
                 </li>
                 <li>
-                  <a href="#menu" className="hover:text-[#2563eb] transition-colors">
+                  <a href="#menu" className="hover:text-blue-600 transition-colors">
                     Full Drink Menu
                   </a>
                 </li>
                 <li>
-                  <a href="#bundles" className="hover:text-[#2563eb] transition-colors">
+                  <a href="#bundles" className="hover:text-blue-600 transition-colors">
                     Barkada Bundles
                   </a>
                 </li>
                 <li>
-                  <a href="#events" className="hover:text-[#2563eb] transition-colors">
+                  <a href="#events" className="hover:text-blue-600 transition-colors">
                     Campus Events
                   </a>
                 </li>
-              </ul>
-            </div>
-
-            <div>
-              <span className="font-bold text-[#0f172a] block mb-2.5 uppercase tracking-wider text-[11px]">
-                Customer Care
-              </span>
-              <ul className="space-y-2 text-[#475569]">
                 <li>
                   <button
                     type="button"
                     onClick={() => setTrackerModalOpen(true)}
-                    className="hover:text-[#2563eb] transition-colors text-left"
+                    className="hover:text-blue-600 transition-colors text-left cursor-pointer"
                   >
                     Track Active Order
                   </button>
                 </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => setAiModalOpen(true)}
-                    className="hover:text-[#2563eb] transition-colors text-left"
-                  >
-                    Ask Home (AI Barista)
-                  </button>
-                </li>
-                <li>
-                  <span className="text-stone-400">GCash & Counter Cash</span>
-                </li>
               </ul>
             </div>
+
+            {/* Col 3: Hours & Location */}
+            <div className="text-xs space-y-3">
+              <div>
+                <span className="font-bold text-slate-900 block mb-1.5 uppercase tracking-wider text-[11px]">
+                  Hours of Operation
+                </span>
+                <p className="text-slate-700 font-medium">Monday – Saturday: 7:30 AM – 6:30 PM</p>
+                <p className="text-slate-400">Closed Sundays & Official Holidays</p>
+              </div>
+              <div>
+                <span className="font-bold text-slate-900 block mb-1.5 uppercase tracking-wider text-[11px]">
+                  Campus Location
+                </span>
+                <p className="text-slate-700 font-medium">Main Campus, Building A, Ground Floor</p>
+                <p className="text-slate-400">Beside Student Lounge & Quadrangle</p>
+              </div>
+            </div>
+
+            {/* Col 4: Payments & Data Privacy */}
+            <div className="text-xs space-y-3">
+              <div>
+                <span className="font-bold text-slate-900 block mb-1.5 uppercase tracking-wider text-[11px]">
+                  Payment Accepted
+                </span>
+                <p className="text-slate-700 font-medium">GCash (Downpayment / Full) & Cash at Counter</p>
+              </div>
+              <div>
+                <span className="font-bold text-slate-900 block mb-1.5 uppercase tracking-wider text-[11px]">
+                  Data Privacy Guarantee
+                </span>
+                <p className="text-slate-500 leading-relaxed text-[11px]">
+                  Customer verification photos are used solely for order security and auto-deleted in compliance with RA 10173.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-slate-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+            <p>© 2026 Home Heart Cafe. All rights reserved.</p>
+            <p className="flex items-center gap-1 font-medium text-slate-500">
+              Crafted with <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500 inline" /> for students &amp; faculty.
+            </p>
           </div>
         </div>
       </footer>
