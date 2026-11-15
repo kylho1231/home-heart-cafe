@@ -119,11 +119,11 @@ export const customerVerificationSchema = z
       .trim()
       .min(7, "Contact number must be at least 7 digits")
       .max(20, "Contact number must be under 20 characters"),
-    idPhotoUrl: z.string().min(1, "School ID photo is required"),
-    selfiePhotoUrl: z.string().min(1, "Claim verification photo is required"),
+    idPhotoUrl: z.string().min(1, "School or Faculty ID photo is required"),
+    selfiePhotoUrl: z.string().optional(),
     privacyConsent: z
       .boolean()
-      .refine((val) => val === true, "You must agree to the data privacy terms to order"),
+      .refine((val) => val === true, "You must agree to the data privacy terms pursuant to RA 10173"),
   })
   .superRefine((data, ctx) => {
     if (data.role === "student") {

@@ -33,10 +33,12 @@ export interface CustomerVerification {
   gradeSection?: string; // Grade & Section for students
   department?: string; // Faculty / Department for teachers & staff
   employeeId?: string; // Optional Faculty ID for teachers
-  contactNumber: string;
-  idPhotoUrl: string; // Base64 or uploaded URL
-  selfiePhotoUrl: string; // Base64 or uploaded selfie photo
+  contactNumber?: string;
+  idPhotoUrl?: string; // Base64 or uploaded URL
+  selfiePhotoUrl?: string; // Base64 or uploaded selfie photo
   privacyConsent?: boolean; // Data Privacy Act (RA 10173) consent flag
+  anonymized?: boolean; // True if customer PII was purged pursuant to RA 10173
+  anonymizedAt?: string; // Timestamp of data anonymization
 }
 
 export interface PaymentInfo {

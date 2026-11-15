@@ -19,6 +19,8 @@ import {
   Volume2,
   VolumeX,
   LogOut,
+  EyeOff,
+  Trash2,
 } from "lucide-react";
 import { CafeOrder, OrderStatus } from "@/lib/types";
 import { playChime } from "@/lib/sound";
@@ -46,6 +48,46 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
 
   // Photo viewer modal
   const [inspectedImage, setInspectedImage] = useState<{ url: string; title: string } | null>(null);
+
+  // Masked LRN toggle set (data privacy RA 10173)
+  const [unmaskedOrderIds, setUnmaskedOrderIds] = useState<Set<string>>(new Set());
+
+  const toggleUnmask = (orderId: string) => {
+    setUnmaskedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  };
+
+  const handlePurgeCustomerData = async (orderId: string) => {
+    if (
+      !window.confirm(
+        "Purge customer personal credentials (LRN, name, photos) pursuant to RA 10173? Financial totals will remain intact for sales reporting.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}?action=anonymize`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        playChime("success");
+        fetchOrders();
+      } else {
+        alert(data.error || "Failed to purge customer data.");
+      }
+    } catch (err) {
+      console.error("Purge error:", err);
+    }
+  };
 
   // Sound alert on new order
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -396,6 +438,11 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                           >
                             {order.customer.role === "teacher_staff" ? "Faculty / Staff" : "Student"}
                           </span>
+                          {order.customer.anonymized && (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
+                              PII Purged (RA 10173)
+                            </span>
+                          )}
                           <span className="text-[11px] text-stone-400">
                             {new Date(order.createdAt).toLocaleTimeString([], {
                               hour: "2-digit",
@@ -416,9 +463,11 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                               {order.customer.fullName}
                             </strong>
                             <span className="text-stone-500 block text-[11px]">
-                              {order.customer.role === "teacher_staff"
-                                ? `${order.customer.department || "Faculty/Staff"} · ${order.customer.contactNumber}`
-                                : `${order.customer.gradeSection} · ${order.customer.contactNumber}`}
+                              {order.customer.anonymized
+                                ? "Data scrubbed under RA 10173"
+                                : order.customer.role === "teacher_staff"
+                                  ? `${order.customer.department || "Faculty/Staff"} · ${order.customer.contactNumber}`
+                                  : `${order.customer.gradeSection} · ${order.customer.contactNumber}`}
                             </span>
                           </div>
 
@@ -428,17 +477,45 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                                 ? "Department / Designation"
                                 : "12-Digit LRN (DepEd)"}
                             </span>
-                            <strong className="font-mono text-sm text-[#b42356]">
-                              {order.customer.role === "teacher_staff"
-                                ? order.customer.department || "Faculty / Staff"
-                                : order.customer.lrn || "—"}
-                            </strong>
+                            <div className="flex items-center gap-1.5">
+                              <strong className="font-mono text-sm text-[#b42356]">
+                                {order.customer.anonymized
+                                  ? "[Purged]"
+                                  : order.customer.role === "teacher_staff"
+                                    ? order.customer.department || "Faculty / Staff"
+                                    : order.customer.lrn
+                                      ? unmaskedOrderIds.has(order.id)
+                                        ? order.customer.lrn
+                                        : `••••••••${order.customer.lrn.slice(-4)}`
+                                      : "—"}
+                              </strong>
+                              {!order.customer.anonymized &&
+                                order.customer.role === "student" &&
+                                order.customer.lrn && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleUnmask(order.id)}
+                                    className="p-1 rounded-md hover:bg-stone-200/60 text-stone-500 hover:text-stone-800 transition-colors cursor-pointer"
+                                    title={
+                                      unmaskedOrderIds.has(order.id)
+                                        ? "Mask LRN"
+                                        : "Reveal full LRN for verification"
+                                    }
+                                  >
+                                    {unmaskedOrderIds.has(order.id) ? (
+                                      <EyeOff className="w-3.5 h-3.5" />
+                                    ) : (
+                                      <Eye className="w-3.5 h-3.5" />
+                                    )}
+                                  </button>
+                                )}
+                            </div>
                           </div>
                         </div>
 
                         {/* Verification Photo Previews */}
                         <div className="flex items-center gap-3">
-                          {order.customer.idPhotoUrl && (
+                          {!order.customer.anonymized && order.customer.idPhotoUrl && (
                             <button
                               type="button"
                               onClick={() =>
@@ -461,7 +538,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                             </button>
                           )}
 
-                          {order.customer.selfiePhotoUrl && (
+                          {!order.customer.anonymized && order.customer.selfiePhotoUrl && (
                             <button
                               type="button"
                               onClick={() =>
@@ -587,10 +664,22 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                                 const reason = window.prompt("Reason for rejecting/canceling this order:", "Invalid LRN or unconfirmed credentials");
                                 if (reason) handleUpdateStatus(order.id, "rejected", reason);
                               }}
-                              className="w-full py-1.5 rounded-2xl text-red-600 hover:bg-red-50 text-[11px] font-semibold transition-colors flex items-center justify-center gap-1"
+                              className="w-full py-1.5 rounded-2xl text-red-600 hover:bg-red-50 text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
                             >
                               <XCircle className="w-3.5 h-3.5" />
                               <span>Reject / Flag as Scam</span>
+                            </button>
+                          )}
+
+                          {!order.customer.anonymized && (
+                            <button
+                              type="button"
+                              onClick={() => handlePurgeCustomerData(order.id)}
+                              className="w-full py-1 rounded-xl text-stone-500 hover:text-red-700 hover:bg-red-50 text-[10px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                              title="Permanently remove student ID & photos pursuant to RA 10173"
+                            >
+                              <Trash2 className="w-3 h-3 text-red-500" />
+                              <span>Purge Customer PII (RA 10173)</span>
                             </button>
                           )}
                         </div>

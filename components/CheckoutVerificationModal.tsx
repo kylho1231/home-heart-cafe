@@ -44,6 +44,7 @@ export function CheckoutVerificationModal({
   const [contactNumber, setContactNumber] = useState("");
   const [idPhotoPreview, setIdPhotoPreview] = useState<string | null>(null);
   const [selfiePhotoPreview, setSelfiePhotoPreview] = useState<string | null>(null);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
 
   // Payment Form State
   const [paymentMethod, setPaymentMethod] = useState<"gcash_downpayment" | "gcash_full" | "counter_cash">("gcash_downpayment");
@@ -129,8 +130,10 @@ export function CheckoutVerificationModal({
       return false;
     }
 
-    if (!selfiePhotoPreview) {
-      setErrorMessage("Please upload a quick face photo or selfie for order claim verification.");
+    if (!privacyConsent) {
+      setErrorMessage(
+        "Please read and consent to the Data Privacy Notice (RA 10173) to proceed.",
+      );
       return false;
     }
 
@@ -166,7 +169,8 @@ export function CheckoutVerificationModal({
           department: role === "teacher_staff" ? department.trim() : undefined,
           contactNumber: contactNumber.trim(),
           idPhotoUrl: idPhotoPreview,
-          selfiePhotoUrl: selfiePhotoPreview,
+          selfiePhotoUrl: selfiePhotoPreview || undefined,
+          privacyConsent: true,
         },
         items: cart,
         payment: {
@@ -455,10 +459,10 @@ export function CheckoutVerificationModal({
                   )}
                 </div>
 
-                {/* Face Photo / Selfie */}
+                {/* Face Photo / Selfie (Optional for Counter Claim) */}
                 <div className="border border-dashed border-stone-300 rounded-2xl p-4 bg-stone-50/50 hover:bg-stone-50 transition-colors text-center relative">
                   <label className="block text-xs font-bold text-stone-800 mb-2">
-                    2. Face Photo / Selfie <span className="text-red-500">*</span>
+                    2. Face Photo / Selfie <span className="text-stone-400 font-normal">(Optional)</span>
                   </label>
                   {selfiePhotoPreview ? (
                     <div className="relative h-32 w-full rounded-xl overflow-hidden border border-emerald-300 shadow-sm">
@@ -498,6 +502,33 @@ export function CheckoutVerificationModal({
                     </label>
                   )}
                 </div>
+              </div>
+
+              {/* Data Privacy Act Notice (RA 10173) */}
+              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-stone-700 text-xs space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+                  <strong className="font-bold text-amber-950">
+                    Data Privacy Notice (RA 10173 Compliance)
+                  </strong>
+                </div>
+                <p className="text-[11px] leading-relaxed text-stone-600">
+                  Home ❤️ Cafe collects your name, student/faculty ID, and verification photo strictly for counter claim identification and fraud prevention during break rushes. Your data is stored securely in encrypted transit, never shared or used for commercial marketing, and automatically purged from our records after 30 days.
+                </p>
+                <label className="flex items-start gap-2.5 pt-1 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={privacyConsent}
+                    onChange={(e) => {
+                      setPrivacyConsent(e.target.checked);
+                      if (e.target.checked) setErrorMessage(null);
+                    }}
+                    className="mt-0.5 w-4 h-4 rounded border-stone-300 text-[#B51F57] focus:ring-[#B51F57] cursor-pointer"
+                  />
+                  <span className="text-[11px] font-semibold text-stone-800 leading-snug">
+                    I have read and consent to the collection and verification of my school credentials pursuant to Republic Act No. 10173 (Data Privacy Act of 2012). <span className="text-red-500">*</span>
+                  </span>
+                </label>
               </div>
             </div>
           ) : (

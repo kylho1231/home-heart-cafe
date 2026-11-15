@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderById, updateOrderStatus } from "@/lib/orders-db";
+import { getOrderById, updateOrderStatus, anonymizeOrderCustomer, deleteOrder } from "@/lib/orders-db";
 import { OrderStatus } from "@/lib/types";
 import { isAdminAuthenticated } from "@/lib/auth";
 
@@ -36,14 +36,15 @@ export async function GET(
     const verifyQuery = (searchParams.get("verify") || "").trim().toLowerCase();
 
     // If query was empty, check if request is for the newly created order in current session
-    const customerName = order.customer.fullName.toLowerCase();
-    const contactDigits = order.customer.contactNumber.replace(/\D/g, "");
+    const customerName = (order.customer.fullName || "").toLowerCase();
+    const rawContact = order.customer.contactNumber || "";
+    const contactDigits = rawContact.replace(/\D/g, "");
     const queryDigits = verifyQuery.replace(/\D/g, "");
 
     const isMatch =
       verifyQuery &&
       (customerName.includes(verifyQuery) ||
-        (queryDigits.length >= 4 && contactDigits.includes(queryDigits)));
+        (queryDigits.length >= 4 && contactDigits.length >= 4 && contactDigits.includes(queryDigits)));
 
     if (!isMatch) {
       return NextResponse.json(
@@ -69,7 +70,7 @@ export async function GET(
         fullName: order.customer.fullName,
         gradeSection: order.customer.gradeSection,
         department: order.customer.department,
-        contactNumber: `***-***-${order.customer.contactNumber.slice(-4)}`,
+        contactNumber: rawContact ? `***-***-${rawContact.slice(-4)}` : undefined,
         lrn: order.customer.lrn ? `********${order.customer.lrn.slice(-4)}` : undefined,
         // Omit raw photos from public tracking response
         idPhotoUrl: undefined,
@@ -162,6 +163,64 @@ export async function PATCH(
     console.error("PATCH /api/orders/[id] error:", error);
     return NextResponse.json(
       { success: false, error: "Failed to update order." },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * DELETE /api/orders/[id]
+ * Protected Admin Endpoint: Deletes an order or purges customer PII pursuant to RA 10173.
+ * Query params: ?action=anonymize (default) or ?action=delete
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    if (!isAdminAuthenticated(request)) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized. Admin session required." },
+        { status: 401 },
+      );
+    }
+
+    const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get("action") || "anonymize";
+
+    if (action === "delete") {
+      const deleted = await deleteOrder(id);
+      if (!deleted) {
+        return NextResponse.json(
+          { success: false, error: "Order not found." },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        message: "Order successfully deleted from records.",
+      });
+    }
+
+    // Default action: anonymize PII
+    const anonymized = await anonymizeOrderCustomer(id);
+    if (!anonymized) {
+      return NextResponse.json(
+        { success: false, error: "Order not found." },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      order: anonymized,
+      message: "Customer personal credentials permanently purged pursuant to RA 10173.",
+    });
+  } catch (error) {
+    console.error("DELETE /api/orders/[id] error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to process data deletion request." },
       { status: 500 },
     );
   }

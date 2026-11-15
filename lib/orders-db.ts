@@ -171,6 +171,46 @@ async function ensureDataFile(): Promise<string> {
   return filePath;
 }
 
+// 30-Day Data Retention pursuant to RA 10173 (Philippine Data Privacy Act)
+const RETENTION_PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
+
+export function anonymizeCustomerRecord(order: CafeOrder): CafeOrder {
+  return {
+    ...order,
+    customer: {
+      role: order.customer.role,
+      fullName: `Customer #${order.orderCode.slice(-4)}`,
+      lrn: undefined,
+      gradeSection: undefined,
+      department: undefined,
+      employeeId: undefined,
+      contactNumber: "••••••••",
+      idPhotoUrl: undefined,
+      selfiePhotoUrl: undefined,
+      privacyConsent: order.customer.privacyConsent,
+      anonymized: true,
+      anonymizedAt: order.customer.anonymizedAt || new Date().toISOString(),
+    },
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function applyRetentionPolicy(ordersList: CafeOrder[]): { updated: CafeOrder[]; hasChanges: boolean } {
+  const now = Date.now();
+  let hasChanges = false;
+
+  const updated = ordersList.map((ord) => {
+    const ageMs = now - new Date(ord.createdAt).getTime();
+    if (ageMs > RETENTION_PERIOD_MS && !ord.customer.anonymized) {
+      hasChanges = true;
+      return anonymizeCustomerRecord(ord);
+    }
+    return ord;
+  });
+
+  return { updated, hasChanges };
+}
+
 export async function getOrders(): Promise<CafeOrder[]> {
   try {
     const filePath = await ensureDataFile();
@@ -182,6 +222,18 @@ export async function getOrders(): Promise<CafeOrder[]> {
     }
   } catch {
     // Retain in-memory copy
+  }
+
+  // Enforce automatic 30-day retention cleanup
+  const { updated, hasChanges } = applyRetentionPolicy(inMemoryOrders);
+  if (hasChanges) {
+    inMemoryOrders = updated;
+    try {
+      const filePath = await ensureDataFile();
+      await fs.writeFile(filePath, JSON.stringify(inMemoryOrders, null, 2), "utf-8");
+    } catch {
+      // Ignored in read-only environment
+    }
   }
 
   return [...inMemoryOrders].sort(
@@ -196,6 +248,39 @@ export async function getOrderById(id: string): Promise<CafeOrder | null> {
       (o) => o.id === id || o.orderCode.toLowerCase() === id.toLowerCase(),
     ) || null
   );
+}
+
+export async function anonymizeOrderCustomer(id: string): Promise<CafeOrder | null> {
+  const orders = await getOrders();
+  const index = orders.findIndex((o) => o.id === id || o.orderCode === id);
+  if (index === -1) return null;
+
+  const anonymized = anonymizeCustomerRecord(orders[index]);
+  orders[index] = anonymized;
+  inMemoryOrders = orders;
+
+  try {
+    const filePath = await ensureDataFile();
+    await fs.writeFile(filePath, JSON.stringify(orders, null, 2), "utf-8");
+  } catch {}
+
+  return anonymized;
+}
+
+export async function deleteOrder(id: string): Promise<boolean> {
+  const orders = await getOrders();
+  const initialLen = orders.length;
+  const filtered = orders.filter((o) => o.id !== id && o.orderCode !== id);
+  if (filtered.length === initialLen) return false;
+
+  inMemoryOrders = filtered;
+
+  try {
+    const filePath = await ensureDataFile();
+    await fs.writeFile(filePath, JSON.stringify(filtered, null, 2), "utf-8");
+  } catch {}
+
+  return true;
 }
 
 export async function createOrder(
