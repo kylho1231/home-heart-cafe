@@ -14,6 +14,8 @@ import {
   DollarSign,
   Coffee,
   Sparkles,
+  GraduationCap,
+  Briefcase,
 } from "lucide-react";
 import { OrderItem } from "@/lib/types";
 import { playChime } from "@/lib/sound";
@@ -33,10 +35,12 @@ export function CheckoutVerificationModal({
   cartSubtotal,
   onOrderSuccess,
 }: CheckoutVerificationModalProps) {
-  // Student Form State
+  // Role & Form State
+  const [role, setRole] = useState<"student" | "teacher_staff">("student");
   const [fullName, setFullName] = useState("");
   const [lrn, setLrn] = useState("");
   const [gradeSection, setGradeSection] = useState("");
+  const [department, setDepartment] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [idPhotoPreview, setIdPhotoPreview] = useState<string | null>(null);
   const [selfiePhotoPreview, setSelfiePhotoPreview] = useState<string | null>(null);
@@ -47,7 +51,7 @@ export function CheckoutVerificationModal({
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
 
   // UI state
-  const [step, setStep] = useState<1 | 2>(1); // 1: Student Verification, 2: Payment & Review
+  const [step, setStep] = useState<1 | 2>(1); // 1: Customer Verification, 2: Payment & Review
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -93,15 +97,22 @@ export function CheckoutVerificationModal({
       return false;
     }
 
-    const cleanLrn = lrn.replace(/\D/g, "");
-    if (cleanLrn.length !== 12) {
-      setErrorMessage("LRN must be exactly 12 digits (DepEd Philippine standard).");
-      return false;
-    }
+    if (role === "student") {
+      const cleanLrn = lrn.replace(/\D/g, "");
+      if (cleanLrn.length !== 12) {
+        setErrorMessage("Student LRN must be exactly 12 digits (DepEd Philippine standard).");
+        return false;
+      }
 
-    if (!gradeSection.trim()) {
-      setErrorMessage("Please indicate your Grade & Section or Faculty department.");
-      return false;
+      if (!gradeSection.trim()) {
+        setErrorMessage("Please indicate your Grade & Section.");
+        return false;
+      }
+    } else {
+      if (!department.trim()) {
+        setErrorMessage("Please indicate your Faculty Department or Staff Designation.");
+        return false;
+      }
     }
 
     if (!contactNumber.trim() || contactNumber.length < 7) {
@@ -110,12 +121,16 @@ export function CheckoutVerificationModal({
     }
 
     if (!idPhotoPreview) {
-      setErrorMessage("Please upload a photo of your School ID to verify your order.");
+      setErrorMessage(
+        role === "student"
+          ? "Please upload a photo of your Student School ID."
+          : "Please upload a photo of your Faculty / Employee ID.",
+      );
       return false;
     }
 
     if (!selfiePhotoPreview) {
-      setErrorMessage("Please take or upload a quick Selfie / Student Photo.");
+      setErrorMessage("Please upload a quick face photo or selfie for order claim verification.");
       return false;
     }
 
@@ -144,9 +159,11 @@ export function CheckoutVerificationModal({
     try {
       const payload = {
         customer: {
+          role,
           fullName: fullName.trim(),
-          lrn: lrn.replace(/\D/g, ""),
-          gradeSection: gradeSection.trim(),
+          lrn: role === "student" ? lrn.replace(/\D/g, "") : undefined,
+          gradeSection: role === "student" ? gradeSection.trim() : undefined,
+          department: role === "teacher_staff" ? department.trim() : undefined,
           contactNumber: contactNumber.trim(),
           idPhotoUrl: idPhotoPreview,
           selfiePhotoUrl: selfiePhotoPreview,
@@ -184,61 +201,62 @@ export function CheckoutVerificationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-3xl bg-[#fffefc] border border-stone-200/80 shadow-2xl overflow-hidden my-6">
+      <div className="relative w-full max-w-2xl rounded-3xl bg-[#fffefc] border border-[#E9DCD3] shadow-2xl overflow-hidden my-6">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#b42356] to-[#d03a6e] text-white flex items-center justify-between">
+        <div className="px-6 py-4 bg-gradient-to-r from-[#B51F57] to-[#941743] text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-white/20 backdrop-blur-xs">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-lg leading-tight">
-                Student Verified Checkout
+              <h2 className="font-bold text-lg leading-tight text-white">
+                Campus Order Verification
               </h2>
-              <p className="text-xs text-white/80">
-                Home ❤️ Cafe Anti-Scam Order Protection
+              <p className="text-xs text-white/90">
+                Order ahead & pick up smoothly at Counter 1
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+            aria-label="Close checkout"
+            className="p-1.5 rounded-full hover:bg-white/20 text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Step Indicator */}
-        <div className="flex border-b border-stone-200 bg-stone-50/70 text-xs font-semibold">
+        <div className="flex border-b border-[#E9DCD3] bg-stone-50/70 text-xs font-semibold">
           <button
             type="button"
             onClick={() => setStep(1)}
-            className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${
+            className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors cursor-pointer ${
               step === 1
-                ? "text-[#b42356] border-b-2 border-[#b42356] bg-white"
-                : "text-stone-500 hover:text-stone-700"
+                ? "text-[#B51F57] border-b-2 border-[#B51F57] bg-white font-bold"
+                : "text-stone-600 hover:text-stone-900"
             }`}
           >
-            <span className="w-5 h-5 rounded-full bg-[#f7dce5] text-[#b42356] flex items-center justify-center font-bold text-[11px]">
+            <span className="w-5 h-5 rounded-full bg-[#FCE8EF] text-[#B51F57] flex items-center justify-center font-bold text-[11px]">
               1
             </span>
-            <span>Student & Teacher ID Verification</span>
+            <span>Identity & Pickup Details</span>
           </button>
           <button
             type="button"
             onClick={() => {
               if (validateStep1()) setStep(2);
             }}
-            className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${
+            className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors cursor-pointer ${
               step === 2
-                ? "text-[#b42356] border-b-2 border-[#b42356] bg-white"
-                : "text-stone-500 hover:text-stone-700"
+                ? "text-[#B51F57] border-b-2 border-[#B51F57] bg-white font-bold"
+                : "text-stone-600 hover:text-stone-900"
             }`}
           >
-            <span className="w-5 h-5 rounded-full bg-[#f7dce5] text-[#b42356] flex items-center justify-center font-bold text-[11px]">
+            <span className="w-5 h-5 rounded-full bg-[#FCE8EF] text-[#B51F57] flex items-center justify-center font-bold text-[11px]">
               2
             </span>
-            <span>GCash Payment & Order Summary</span>
+            <span>Payment & Review</span>
           </button>
         </div>
 
@@ -252,15 +270,56 @@ export function CheckoutVerificationModal({
           )}
 
           {step === 1 ? (
-            /* STEP 1: Anti-Scam Identity Details */
+            /* STEP 1: Customer Role & Identity Details */
             <div className="space-y-5">
-              <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-900 text-xs leading-relaxed flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              {/* Role Switcher Tab (Student vs Teacher/Staff) */}
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1.5">
+                  I am ordering as:
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRole("student");
+                      setErrorMessage(null);
+                    }}
+                    className={`py-2.5 px-4 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      role === "student"
+                        ? "border-[#B51F57] bg-[#FCE8EF] text-[#B51F57] ring-2 ring-[#B51F57]/20 shadow-xs"
+                        : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+                    }`}
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    <span>Student (LRN Required)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRole("teacher_staff");
+                      setErrorMessage(null);
+                    }}
+                    className={`py-2.5 px-4 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      role === "teacher_staff"
+                        ? "border-[#B51F57] bg-[#FCE8EF] text-[#B51F57] ring-2 ring-[#B51F57]/20 shadow-xs"
+                        : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+                    }`}
+                  >
+                    <Briefcase className="w-4 h-4" />
+                    <span>Teacher / Faculty / Staff</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Informative Hospitality Note */}
+              <div className="p-4 rounded-2xl bg-[#FFF8F0] border border-[#E9DCD3] text-stone-700 text-xs leading-relaxed flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-[#B51F57] shrink-0 mt-0.5" />
                 <div>
-                  <strong className="font-semibold block text-amber-950">
-                    Why do we verify your ID & LRN?
+                  <strong className="font-semibold block text-[#30231F] mb-0.5">
+                    Order Security & Quick Pickup
                   </strong>
-                  To prevent bogus or prank orders that waste fresh ingredients, Home ❤️ Cafe requires your student ID and 12-digit LRN. This also ensures nobody else claims your drink!
+                  To ensure your freshly made drinks are prepared and handed only to you during busy break times, we verify your campus identity.
                 </div>
               </div>
 
@@ -268,54 +327,74 @@ export function CheckoutVerificationModal({
                 {/* Full Name */}
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1">
-                    Student / Teacher Full Name <span className="text-red-500">*</span>
+                    {role === "student" ? "Student Full Name" : "Faculty / Staff Full Name"}{" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Juanita Dela Cruz"
+                    placeholder="e.g. Maria Santos"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#b42356] focus:ring-2 focus:ring-[#b42356]/20 outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
                   />
                 </div>
 
-                {/* 12-digit LRN */}
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">
-                    12-Digit LRN (Learner Reference No.) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={12}
-                    required
-                    placeholder="12 digits e.g. 109823456712"
-                    value={lrn}
-                    onChange={(e) => setLrn(e.target.value.replace(/\D/g, ""))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm font-mono tracking-wider focus:border-[#b42356] focus:ring-2 focus:ring-[#b42356]/20 outline-none"
-                  />
-                  <span className="text-[10px] text-stone-500 mt-0.5 block">
-                    {lrn.length}/12 digits entered
-                  </span>
-                </div>
+                {/* 12-digit LRN (Only for students) */}
+                {role === "student" ? (
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      12-Digit LRN (Learner Reference No.) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={12}
+                      required
+                      placeholder="e.g. 109823456712"
+                      value={lrn}
+                      onChange={(e) => setLrn(e.target.value.replace(/\D/g, ""))}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm font-mono tracking-wider focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
+                    />
+                    <span className="text-[10px] text-stone-500 mt-0.5 block">
+                      {lrn.length}/12 digits entered
+                    </span>
+                  </div>
+                ) : (
+                  /* Department / Faculty Designation (For Teachers) */
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Department / Faculty Designation <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Senior High Faculty / Math Dept"
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
+                    />
+                  </div>
+                )}
 
-                {/* Grade & Section */}
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">
-                    Grade & Section / Department <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Grade 11 - STEM A or Faculty"
-                    value={gradeSection}
-                    onChange={(e) => setGradeSection(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#b42356] focus:ring-2 focus:ring-[#b42356]/20 outline-none"
-                  />
-                </div>
+                {/* Grade & Section (Students only) */}
+                {role === "student" && (
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Grade & Section <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Grade 11 - STEM A"
+                      value={gradeSection}
+                      onChange={(e) => setGradeSection(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
+                    />
+                  </div>
+                )}
 
                 {/* Contact Number */}
-                <div>
+                <div className={role === "teacher_staff" ? "sm:col-span-2" : ""}>
                   <label className="block text-xs font-bold text-stone-700 mb-1">
                     Contact / Mobile Number <span className="text-red-500">*</span>
                   </label>
@@ -325,30 +404,31 @@ export function CheckoutVerificationModal({
                     placeholder="e.g. 0917-123-4567"
                     value={contactNumber}
                     onChange={(e) => setContactNumber(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#b42356] focus:ring-2 focus:ring-[#b42356]/20 outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-800 text-sm focus:border-[#B51F57] focus:ring-2 focus:ring-[#B51F57]/20 outline-none"
                   />
                 </div>
               </div>
 
-              {/* Photo Uploads: Student ID & Selfie */}
+              {/* Photo Uploads: ID & Selfie */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                {/* School ID Upload */}
+                {/* ID Photo */}
                 <div className="border border-dashed border-stone-300 rounded-2xl p-4 bg-stone-50/50 hover:bg-stone-50 transition-colors text-center relative">
                   <label className="block text-xs font-bold text-stone-800 mb-2">
-                    1. Upload School ID Photo <span className="text-red-500">*</span>
+                    {role === "student" ? "1. Student School ID Photo" : "1. Faculty / Staff ID Photo"}{" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   {idPhotoPreview ? (
                     <div className="relative h-32 w-full rounded-xl overflow-hidden border border-emerald-300 shadow-sm">
                       <Image
                         src={idPhotoPreview}
-                        alt="Student ID Preview"
+                        alt="ID Photo Preview"
                         fill
                         className="object-cover"
                       />
                       <button
                         type="button"
                         onClick={() => setIdPhotoPreview(null)}
-                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-stone-900/70 text-white hover:bg-stone-900 text-xs"
+                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-stone-900/70 text-white hover:bg-stone-900 text-xs cursor-pointer"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -357,12 +437,12 @@ export function CheckoutVerificationModal({
                       </div>
                     </div>
                   ) : (
-                    <label className="cursor-pointer flex flex-col items-center justify-center h-32 rounded-xl border border-stone-200 bg-white hover:border-[#b42356] transition-colors p-3">
-                      <Upload className="w-6 h-6 text-[#b42356] mb-1.5" />
+                    <label className="cursor-pointer flex flex-col items-center justify-center h-32 rounded-xl border border-stone-200 bg-white hover:border-[#B51F57] transition-colors p-3">
+                      <Upload className="w-6 h-6 text-[#B51F57] mb-1.5" />
                       <span className="text-xs font-semibold text-stone-700">
-                        Select School ID Image
+                        {role === "student" ? "Upload School ID" : "Upload Faculty ID"}
                       </span>
-                      <span className="text-[10px] text-stone-400 mt-0.5">
+                      <span className="text-[10px] text-stone-500 mt-0.5">
                         PNG, JPG or Camera snapshot
                       </span>
                       <input
@@ -375,23 +455,23 @@ export function CheckoutVerificationModal({
                   )}
                 </div>
 
-                {/* Student Selfie / Face Photo */}
+                {/* Face Photo / Selfie */}
                 <div className="border border-dashed border-stone-300 rounded-2xl p-4 bg-stone-50/50 hover:bg-stone-50 transition-colors text-center relative">
                   <label className="block text-xs font-bold text-stone-800 mb-2">
-                    2. Upload Student Face Photo / Selfie <span className="text-red-500">*</span>
+                    2. Face Photo / Selfie <span className="text-red-500">*</span>
                   </label>
                   {selfiePhotoPreview ? (
                     <div className="relative h-32 w-full rounded-xl overflow-hidden border border-emerald-300 shadow-sm">
                       <Image
                         src={selfiePhotoPreview}
-                        alt="Student Selfie Preview"
+                        alt="Selfie Preview"
                         fill
                         className="object-cover"
                       />
                       <button
                         type="button"
                         onClick={() => setSelfiePhotoPreview(null)}
-                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-stone-900/70 text-white hover:bg-stone-900 text-xs"
+                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-stone-900/70 text-white hover:bg-stone-900 text-xs cursor-pointer"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -400,13 +480,13 @@ export function CheckoutVerificationModal({
                       </div>
                     </div>
                   ) : (
-                    <label className="cursor-pointer flex flex-col items-center justify-center h-32 rounded-xl border border-stone-200 bg-white hover:border-[#b42356] transition-colors p-3">
-                      <Camera className="w-6 h-6 text-[#b42356] mb-1.5" />
+                    <label className="cursor-pointer flex flex-col items-center justify-center h-32 rounded-xl border border-stone-200 bg-white hover:border-[#B51F57] transition-colors p-3">
+                      <Camera className="w-6 h-6 text-[#B51F57] mb-1.5" />
                       <span className="text-xs font-semibold text-stone-700">
                         Take or Upload Selfie
                       </span>
-                      <span className="text-[10px] text-stone-400 mt-0.5">
-                        Matches your School ID face
+                      <span className="text-[10px] text-stone-500 mt-0.5">
+                        Verifies your pickup identity
                       </span>
                       <input
                         type="file"
@@ -421,15 +501,15 @@ export function CheckoutVerificationModal({
               </div>
             </div>
           ) : (
-            /* STEP 2: GCash Payment & Order Confirmation */
+            /* STEP 2: Payment & Order Confirmation */
             <div className="space-y-5">
               {/* Cart Review Pill */}
-              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200">
+              <div className="p-4 rounded-2xl bg-stone-50 border border-[#E9DCD3]">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-stone-700 uppercase">
                     Order Items ({cart.length})
                   </span>
-                  <span className="text-xs font-bold text-[#b42356]">
+                  <span className="text-xs font-bold text-[#B51F57]">
                     Total: ₱{totalAmount}
                   </span>
                 </div>
@@ -463,7 +543,7 @@ export function CheckoutVerificationModal({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("gcash_downpayment")}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                       paymentMethod === "gcash_downpayment"
                         ? "border-[#007DFE] bg-blue-50/70 ring-2 ring-blue-500/20"
                         : "border-stone-200 bg-white hover:border-blue-300"
@@ -487,7 +567,7 @@ export function CheckoutVerificationModal({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("gcash_full")}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                       paymentMethod === "gcash_full"
                         ? "border-[#007DFE] bg-blue-50/70 ring-2 ring-blue-500/20"
                         : "border-stone-200 bg-white hover:border-blue-300"
@@ -503,7 +583,7 @@ export function CheckoutVerificationModal({
                       Full Payment: <strong>₱{totalAmount}</strong>
                     </p>
                     <span className="text-[10px] text-stone-400 block mt-0.5">
-                      Fastest claim
+                      Fastest counter claim
                     </span>
                   </button>
 
@@ -511,23 +591,23 @@ export function CheckoutVerificationModal({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("counter_cash")}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                       paymentMethod === "counter_cash"
-                        ? "border-[#b42356] bg-[#fff4f8] ring-2 ring-[#b42356]/20"
+                        ? "border-[#B51F57] bg-[#FCE8EF] ring-2 ring-[#B51F57]/20"
                         : "border-stone-200 bg-white hover:border-stone-300"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-[#b42356]">
+                      <span className="font-bold text-xs text-[#B51F57]">
                         Counter Cash
                       </span>
-                      <DollarSign className="w-4 h-4 text-[#b42356]" />
+                      <DollarSign className="w-4 h-4 text-[#B51F57]" />
                     </div>
                     <p className="text-[11px] text-stone-600 font-medium">
                       Pay <strong>₱{totalAmount}</strong>
                     </p>
                     <span className="text-[10px] text-stone-400 block mt-0.5">
-                      Must show School ID
+                      Pay upon pickup
                     </span>
                   </button>
                 </div>
@@ -598,20 +678,20 @@ export function CheckoutVerificationModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 bg-stone-50 border-t border-stone-200 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 bg-stone-50 border-t border-[#E9DCD3] flex items-center justify-between gap-3">
           {step === 2 ? (
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="px-4 py-2.5 rounded-full border border-stone-300 text-stone-700 text-xs font-semibold hover:bg-stone-100 transition-colors"
+              className="px-4 py-2.5 rounded-full border border-stone-300 text-stone-700 text-xs font-semibold hover:bg-stone-100 transition-colors cursor-pointer"
             >
-              Back to ID Form
+              Back to Details
             </button>
           ) : (
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-full text-stone-500 text-xs font-semibold hover:text-stone-800 transition-colors"
+              className="px-4 py-2.5 rounded-full text-stone-600 text-xs font-semibold hover:text-stone-900 transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -621,27 +701,27 @@ export function CheckoutVerificationModal({
             <button
               type="button"
               onClick={handleProceedToPayment}
-              className="px-6 py-2.5 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+              className="px-6 py-2.5 rounded-full bg-[#B51F57] hover:bg-[#941743] text-white text-xs font-bold shadow-md transition-all flex items-center gap-2 cursor-pointer"
             >
               <span>Next: Payment & GCash</span>
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 text-white" />
             </button>
           ) : (
             <button
               type="button"
               disabled={isSubmitting}
               onClick={handleSubmitOrder}
-              className="px-8 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+              className="px-8 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
-                  <Sparkles className="w-4 h-4 animate-spin" />
+                  <Sparkles className="w-4 h-4 animate-spin text-white" />
                   <span>Submitting Order...</span>
                 </>
               ) : (
                 <>
                   <span>Send Order to Cafe</span>
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-4 h-4 text-white" />
                 </>
               )}
             </button>

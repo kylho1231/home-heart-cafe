@@ -25,6 +25,8 @@ import {
   Heart,
   Music,
   BookOpen,
+  Lock,
+  Star,
 } from "lucide-react";
 
 import catalogSource from "./menu-data.json";
@@ -143,25 +145,75 @@ function requireMenuPrice(
   return price;
 }
 
-function getProductPalette(category: string, name: string) {
-  const palette = productPalettes[category] ?? productPalettes["Coffee Series"];
+function getProductPalette(category: string, name: string): { colors: [string, string]; accent: string } {
   const lowerName = name.toLowerCase();
+
+  // Dark Chocolate
+  if (lowerName.includes("dark chocolate")) {
+    return { colors: ["#2d1b14", "#523326"], accent: "#1f120c" };
+  }
+  // Chocolate / Chuckie / Cocoa / Milo
+  if (
+    lowerName.includes("chocolate") ||
+    lowerName.includes("chuckie") ||
+    lowerName.includes("cocoa") ||
+    lowerName.includes("milo")
+  ) {
+    return { colors: ["#4a2c1d", "#7a4e37"], accent: "#382015" };
+  }
+  // Cookies & Cream / Oreo
+  if (lowerName.includes("cookies") || lowerName.includes("oreo")) {
+    return { colors: ["#d9d3cb", "#4a4441"], accent: "#23201f" };
+  }
+  // Red Velvet
+  if (lowerName.includes("red velvet")) {
+    return { colors: ["#9e2a3b", "#eecad1"], accent: "#6e1523" };
+  }
+  // Okinawa (Roasted Brown Sugar)
+  if (lowerName.includes("okinawa")) {
+    return { colors: ["#b57b48", "#e3b88a"], accent: "#6e421c" };
+  }
+  // Wintermelon
+  if (lowerName.includes("wintermelon") || lowerName.includes("winter melon")) {
+    return { colors: ["#c59d5f", "#f2e4cc"], accent: "#7a5927" };
+  }
+  // Strawberry
   if (lowerName.includes("strawberry")) {
-    return { colors: ["#f5adc4", "#fae3e7"] as [string, string], accent: "#b42356" };
+    return { colors: ["#f5adc4", "#fae3e7"], accent: "#b42356" };
   }
+  // Blueberry / Blue Lemonade
   if (lowerName.includes("blueberry") || lowerName.includes("blue lemonade")) {
-    return { colors: ["#9cb8fa", "#e2ecff"] as [string, string], accent: "#3e5ba0" };
+    return { colors: ["#9cb8fa", "#e2ecff"], accent: "#3e5ba0" };
   }
-  if (lowerName.includes("mango") || lowerName.includes("peach")) {
-    return { colors: ["#f1bb73", "#fff0cb"] as [string, string], accent: "#a65a25" };
+  // Mango / Peach / Orange
+  if (lowerName.includes("mango") || lowerName.includes("peach") || lowerName.includes("orange")) {
+    return { colors: ["#f1bb73", "#fff0cb"], accent: "#a65a25" };
   }
+  // Matcha / Green Apple
   if (lowerName.includes("matcha") || lowerName.includes("green apple")) {
-    return { colors: ["#b1c38a", "#edf0d5"] as [string, string], accent: "#4e6942" };
+    return { colors: ["#b1c38a", "#edf0d5"], accent: "#4e6942" };
   }
+  // Taro / Ube
   if (lowerName.includes("taro") || lowerName.includes("ube")) {
-    return { colors: ["#b6a4de", "#eee6f8"] as [string, string], accent: "#665090" };
+    return { colors: ["#9c89be", "#e4dcf1"], accent: "#5a457c" };
   }
-  return palette;
+  // Coffee / Latte / Espresso
+  if (
+    category === "Coffee Series" ||
+    lowerName.includes("latte") ||
+    lowerName.includes("coffee") ||
+    lowerName.includes("cappuccino") ||
+    lowerName.includes("espresso") ||
+    lowerName.includes("mocha")
+  ) {
+    return { colors: ["#6f4827", "#cbb092"], accent: "#422813" };
+  }
+  // Snacks / Fries
+  if (category === "Snacks" || lowerName.includes("fries")) {
+    return { colors: ["#edbd73", "#f6e1bb"], accent: "#b8782b" };
+  }
+
+  return productPalettes[category] ?? productPalettes["Coffee Series"];
 }
 
 const products: Product[] = menuData.categories.flatMap((category) =>
@@ -302,6 +354,20 @@ export default function Page() {
   const cartSubtotal = useMemo(
     () => cart.reduce((sum, it) => sum + it.subtotal, 0),
     [cart],
+  );
+
+  // Free Medium Fries promotion applies strictly to drink spend (excludes snacks and bundles)
+  const eligibleDrinkSpend = useMemo(
+    () =>
+      cart
+        .filter((it) => it.category !== "Snacks" && it.category !== "Bundles")
+        .reduce((sum, it) => sum + it.subtotal, 0),
+    [cart],
+  );
+
+  const featuredDrinks = useMemo(
+    () => products.filter((p) => p.badge === "Bestseller"),
+    [],
   );
 
   const cartItemCount = useMemo(
@@ -530,40 +596,57 @@ export default function Page() {
             </div>
           </Link>
 
+          {/* Desktop Quick Nav Links */}
+          <div className="hidden md:flex items-center gap-6 text-xs font-bold text-stone-600">
+            <a href="#featured" className="hover:text-[#b42356] transition-colors">
+              Featured
+            </a>
+            <a href="#menu" className="hover:text-[#b42356] transition-colors">
+              Menu
+            </a>
+            <a href="#bundles" className="hover:text-[#b42356] transition-colors">
+              Barkada Bundles
+            </a>
+            <a href="#events" className="hover:text-[#b42356] transition-colors">
+              Campus Events
+            </a>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Live Order Tracker Trigger */}
             <button
               type="button"
               onClick={() => setTrackerModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-xs font-bold text-stone-700 transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-xs font-bold text-stone-700 transition-colors shadow-2xs"
             >
               <BellRing className="w-3.5 h-3.5 text-amber-600" />
               <span className="hidden sm:inline">Track Order</span>
               {activeOrderCode && (
-                <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono">
+                <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
                   {activeOrderCode}
                 </span>
               )}
             </button>
 
-            {/* Store Admin Trigger */}
+            {/* Discreet Staff & Kitchen Desk Link */}
             <button
               type="button"
               onClick={() => setAdminModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-stone-200 bg-white hover:border-[#b42356] text-xs font-bold text-stone-700 transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+              title="Staff & Kitchen Desk (PIN Protected)"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#b42356]" />
-              <span className="hidden sm:inline">Store Admin</span>
+              <Lock className="w-3.5 h-3.5 text-stone-400" />
+              <span className="hidden lg:inline text-[11px] font-semibold">Staff</span>
             </button>
 
             {/* Cart Trigger */}
             <button
               type="button"
               onClick={() => setCartDrawerOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
+              className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#b42356] hover:bg-[#941743] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
             >
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4 text-white" />
               <span>Cart</span>
               <span className="px-1.5 py-0.5 rounded-full bg-white text-[#b42356] text-[10px] font-black">
                 {cartItemCount}
@@ -578,30 +661,30 @@ export default function Page() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Left Hero Copy */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#f7dce5] text-[#b42356] text-xs font-black uppercase tracking-wider shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#fce8ef] text-[#b42356] text-xs font-bold uppercase tracking-wider shadow-2xs">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Campus Cafe · Order Ahead, Skip The Wait!</span>
+              <span>Campus Cafe · Order Ahead for Break</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#382323] tracking-tight leading-[1.05]">
-              Fresh drinks, hot fries, and pure happiness.
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#30231f] tracking-tight leading-[1.05]">
+              Your next happy sip starts here.
             </h1>
 
-            <p className="text-base text-stone-600 leading-relaxed max-w-xl">
-              Order your favorite Milk Tea, Cream Cheese Series, or Fruit Sodas with your verified student ID. Zero waiting in line during short breaks!
+            <p className="text-base text-[#6f5d57] leading-relaxed max-w-xl">
+              Order drinks and crispy fries ahead of your break. Pick up at the counter freshly prepared.
             </p>
 
-            {/* Anti-Scam Verification Trust Pill */}
-            <div className="p-4 rounded-2xl bg-white/80 border border-stone-200/80 shadow-xs flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-6 h-6" />
+            {/* Campus Identity & Verification Trust Pill */}
+            <div className="p-4 rounded-2xl bg-white/90 border border-[#e9dcd3] shadow-xs flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 text-[#b42356] flex items-center justify-center shrink-0 border border-rose-100">
+                <ShieldCheck className="w-5 h-5" />
               </div>
               <div className="text-xs">
-                <strong className="text-stone-900 block font-bold">
-                  Anti-Scam Verified Guest Ordering
+                <strong className="text-[#30231f] block font-bold">
+                  Campus Identity & Pickup Verification
                 </strong>
-                <span className="text-stone-500">
-                  No account needed. Upload your School ID & 12-digit LRN to protect your drinks and secure your queue.
+                <span className="text-[#6f5d57]">
+                  No account needed. Quick guest checkout with school ID verification for students and faculty. Pick up freshly prepared at the counter.
                 </span>
               </div>
             </div>
@@ -610,18 +693,18 @@ export default function Page() {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <a
                 href="#menu"
-                className="px-6 py-3 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                className="px-6 py-3 rounded-full bg-[#b42356] hover:bg-[#941743] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
               >
-                <span>Browse Menu</span>
+                <span>Explore the menu</span>
                 <ArrowRight className="w-4 h-4" />
               </a>
               <button
                 type="button"
                 onClick={() => setAiModalOpen(true)}
-                className="px-5 py-3 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 text-sm font-bold shadow-xs transition-all flex items-center gap-2"
+                className="px-5 py-3 rounded-full bg-white hover:bg-stone-50 border border-[#e9dcd3] text-[#30231f] text-sm font-bold shadow-xs transition-all flex items-center gap-2"
               >
-                <Sparkles className="w-4 h-4 text-[#b42356]" />
-                <span>Ask AI Barista</span>
+                <Coffee className="w-4 h-4 text-[#b42356]" />
+                <span>Ask Hearty</span>
               </button>
             </div>
           </div>
@@ -800,6 +883,63 @@ export default function Page() {
           </div>
         </section>
       )}
+
+      {/* Featured Drinks & Bestsellers Row */}
+      <section id="featured" className="px-4 sm:px-8 py-8 max-w-7xl mx-auto border-b border-stone-200/60">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fce8ef] text-[#b42356] text-xs font-bold uppercase tracking-wider mb-1">
+              <Star className="w-3.5 h-3.5 fill-[#b42356]" />
+              <span>Campus Favorites</span>
+            </div>
+            <h2 className="text-2xl font-black text-[#30231f]">
+              Featured Drinks & Bestsellers
+            </h2>
+            <p className="text-xs text-[#6f5d57] mt-0.5">
+              The verified most-ordered student and teacher picks from Home ❤️ Cafe.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {featuredDrinks.map((product) => (
+            <div
+              key={product.id}
+              onClick={() => {
+                setSelectedProductId(product.id);
+                setSelectedFlavor(product.flavors[0]);
+                setSelectedSize(product.sizes[0].label);
+                document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="group p-4 rounded-2xl bg-white border border-[#e9dcd3] hover:border-[#b42356] shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-1 mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#b42356] bg-[#fce8ef] px-2 py-0.5 rounded-full">
+                    Bestseller
+                  </span>
+                  <span className="text-xs font-bold text-[#30231f]">
+                    ₱{product.sizes[0].price}
+                  </span>
+                </div>
+                <h3 className="font-bold text-sm text-[#30231f] group-hover:text-[#b42356] transition-colors leading-snug">
+                  {product.name}
+                </h3>
+                <p className="text-[11px] text-[#6f5d57] line-clamp-2 mt-1">
+                  {product.description || `${product.category} specialty`}
+                </p>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
+                <span className="text-[10px] text-stone-400 font-medium">3D Preview</span>
+                <span className="text-xs font-bold text-[#b42356] group-hover:translate-x-0.5 transition-transform">
+                  Customize →
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Category Navigation Bar */}
       <section
@@ -995,16 +1135,16 @@ export default function Page() {
       </section>
 
       {/* Featured Atmosphere & Cafe Events Section */}
-      <section className="px-4 sm:px-8 py-12 max-w-7xl mx-auto space-y-8">
+      <section id="events" className="px-4 sm:px-8 py-12 max-w-7xl mx-auto space-y-8">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f7dce5] text-[#b42356] text-xs font-black uppercase">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fce8ef] text-[#b42356] text-xs font-bold uppercase">
             <Calendar className="w-3.5 h-3.5" />
             <span>Campus Cafe Life & Events</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#382323] mt-1">
+          <h2 className="text-2xl sm:text-3xl font-black text-[#30231f] mt-1">
             Good things are better shared.
           </h2>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-[#6f5d57]">
             Join the campus events and activities happening at Home ❤️ Cafe.
           </p>
         </div>
@@ -1041,6 +1181,107 @@ export default function Page() {
           </div>
         </div>
       </section>
+
+      {/* Useful & Hospitable Cafe Footer */}
+      <footer className="border-t border-stone-200/80 bg-white py-12 px-4 sm:px-8 text-[#30231f]">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start justify-between gap-8">
+          <div className="space-y-3 max-w-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#b42356] to-[#d03a6e] text-white flex items-center justify-center shadow-xs">
+                <Coffee className="w-4 h-4 text-amber-200" />
+              </div>
+              <div className="flex items-center gap-1 font-black text-lg">
+                <span>Home</span>
+                <Heart className="w-4 h-4 fill-red-500 text-red-500" />
+                <span className="text-[#b42356]">Cafe</span>
+              </div>
+            </div>
+            <p className="text-xs text-[#6f5d57] leading-relaxed">
+              Campus cafe serving handcrafted milk tea, fruit sodas, rich coffee, and crispy golden fries. Order ahead for quick pickup during campus breaks.
+            </p>
+            <div className="text-[11px] text-stone-400">
+              © 2026 Home Heart Cafe. All rights reserved.
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-xs">
+            <div>
+              <span className="font-bold text-[#30231f] block mb-2.5 uppercase tracking-wider text-[11px]">
+                Quick Menu
+              </span>
+              <ul className="space-y-2 text-[#6f5d57]">
+                <li>
+                  <a href="#featured" className="hover:text-[#b42356] transition-colors">
+                    Featured Bestsellers
+                  </a>
+                </li>
+                <li>
+                  <a href="#menu" className="hover:text-[#b42356] transition-colors">
+                    Full Drink Menu
+                  </a>
+                </li>
+                <li>
+                  <a href="#bundles" className="hover:text-[#b42356] transition-colors">
+                    Barkada Bundles
+                  </a>
+                </li>
+                <li>
+                  <a href="#events" className="hover:text-[#b42356] transition-colors">
+                    Campus Events
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <span className="font-bold text-[#30231f] block mb-2.5 uppercase tracking-wider text-[11px]">
+                Customer Care
+              </span>
+              <ul className="space-y-2 text-[#6f5d57]">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setTrackerModalOpen(true)}
+                    className="hover:text-[#b42356] transition-colors text-left"
+                  >
+                    Track Active Order
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setAiModalOpen(true)}
+                    className="hover:text-[#b42356] transition-colors text-left"
+                  >
+                    Ask Hearty (AI Barista)
+                  </button>
+                </li>
+                <li>
+                  <span className="text-stone-400">GCash & Counter Cash</span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <span className="font-bold text-[#30231f] block mb-2.5 uppercase tracking-wider text-[11px]">
+                Internal
+              </span>
+              <ul className="space-y-2 text-[#6f5d57]">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setAdminModalOpen(true)}
+                    className="flex items-center gap-1.5 text-stone-400 hover:text-stone-700 transition-colors"
+                  >
+                    <Lock className="w-3 h-3" />
+                    <span>Staff Portal</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* Cart Slide-Over Drawer */}
       {cartDrawerOpen && (
@@ -1122,20 +1363,33 @@ export default function Page() {
 
             {/* Cart Footer */}
             {cart.length > 0 && (
-              <div className="p-6 bg-stone-50 border-t border-stone-200 space-y-3">
-                <div className="space-y-1.5 text-xs">
+              <div className="p-6 bg-[#fffdfa] border-t border-stone-200 space-y-3">
+                <div className="space-y-2 text-xs">
                   <div className="flex justify-between text-stone-600">
                     <span>Subtotal:</span>
                     <strong className="text-stone-900 text-sm">₱{cartSubtotal}</strong>
                   </div>
-                  {cartSubtotal >= 200 ? (
-                    <div className="p-2 rounded-xl bg-amber-100 text-amber-900 text-[11px] font-bold flex items-center gap-1.5">
-                      <Gift className="w-3.5 h-3.5 text-amber-700" />
-                      <span>Unlocked: Free Medium Fries Promo!</span>
+
+                  {/* Drink-only ₱200 promotion check */}
+                  {eligibleDrinkSpend >= 200 ? (
+                    <div className="p-2.5 rounded-xl bg-amber-100/90 border border-amber-300 text-amber-900 text-[11px] font-bold flex items-center justify-between shadow-2xs">
+                      <div className="flex items-center gap-1.5">
+                        <Gift className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Unlocked: Free Medium Fries!</span>
+                      </div>
+                      <span className="text-[10px] bg-white px-2 py-0.5 rounded-full text-amber-800 font-mono font-black">
+                        ₱{eligibleDrinkSpend} drinks
+                      </span>
                     </div>
                   ) : (
-                    <div className="text-[11px] text-stone-500">
-                      Add ₱{200 - cartSubtotal} more for Free Medium Fries!
+                    <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/60 text-stone-700 text-[11px] flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Gift className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Add <strong>₱{200 - eligibleDrinkSpend}</strong> more in drinks for Free Fries</span>
+                      </div>
+                      <span className="text-[10px] text-stone-500 font-mono">
+                        ₱{eligibleDrinkSpend}/₱200
+                      </span>
                     </div>
                   )}
                 </div>
@@ -1146,10 +1400,10 @@ export default function Page() {
                     setCartDrawerOpen(false);
                     setCheckoutModalOpen(true);
                   }}
-                  className="w-full py-3.5 rounded-full bg-[#b42356] hover:bg-[#921a44] text-white text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-full bg-[#b42356] hover:bg-[#941743] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                 >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Verified Student Checkout · ₱{cartSubtotal}</span>
+                  <ShieldCheck className="w-4 h-4 text-white" />
+                  <span>Verified Campus Checkout · ₱{cartSubtotal}</span>
                 </button>
               </div>
             )}

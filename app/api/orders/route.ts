@@ -29,32 +29,56 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { customer, items, payment } = body;
 
-    // Strict validation for Student Anti-Scam Verification
+    // Validate customer name
     if (!customer?.fullName?.trim()) {
       return NextResponse.json(
-        { success: false, error: "Student/Teacher Full Name is required." },
+        { success: false, error: "Full Name is required." },
         { status: 400 },
       );
     }
 
-    const cleanLrn = (customer?.lrn || "").replace(/\D/g, "");
-    if (cleanLrn.length !== 12) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Invalid LRN. Philippine DepEd Learner Reference Number must be exactly 12 digits.",
-        },
-        { status: 400 },
-      );
+    const isTeacher = customer.role === "teacher_staff";
+
+    let cleanLrn = "";
+    if (isTeacher) {
+      // Teachers & staff don't have a 12-digit student LRN
+      if (!customer?.department?.trim()) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Department or Faculty Designation is required for faculty orders.",
+          },
+          { status: 400 },
+        );
+      }
+    } else {
+      // Students require a 12-digit DepEd LRN
+      cleanLrn = (customer?.lrn || "").replace(/\D/g, "");
+      if (cleanLrn.length !== 12) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Invalid LRN. Philippine DepEd Learner Reference Number must be exactly 12 digits.",
+          },
+          { status: 400 },
+        );
+      }
+      if (!customer?.gradeSection?.trim()) {
+        return NextResponse.json(
+          { success: false, error: "Grade & Section is required for student orders." },
+          { status: 400 },
+        );
+      }
     }
 
     if (!customer?.idPhotoUrl) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Student ID photo upload is required to verify identity and prevent cafe scam orders.",
+          error: isTeacher
+            ? "Faculty / Employee ID photo is required for order verification."
+            : "Student School ID photo is required for order verification.",
         },
         { status: 400 },
       );
@@ -64,8 +88,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Student photo / selfie is required to confirm identity.",
+          error: "Verification selfie photo is required to ensure secure counter pickup.",
         },
         { status: 400 },
       );
@@ -78,7 +101,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify GCash if chosen
+    // Verify GCash details if chosen
     if (
       payment?.method === "gcash_downpayment" ||
       payment?.method === "gcash_full"
@@ -113,9 +136,12 @@ export async function POST(request: NextRequest) {
       status: "pending_verification",
       pickupEstimatedMinutes: 15,
       customer: {
+        role: isTeacher ? "teacher_staff" : "student",
         fullName: customer.fullName.trim(),
-        lrn: cleanLrn,
-        gradeSection: customer.gradeSection?.trim() || "Unspecified",
+        lrn: isTeacher ? undefined : cleanLrn,
+        gradeSection: isTeacher ? undefined : customer.gradeSection?.trim(),
+        department: isTeacher ? customer.department?.trim() : undefined,
+        employeeId: isTeacher ? customer.employeeId?.trim() : undefined,
         contactNumber: customer.contactNumber?.trim() || "N/A",
         idPhotoUrl: customer.idPhotoUrl,
         selfiePhotoUrl: customer.selfiePhotoUrl,
@@ -134,7 +160,9 @@ export async function POST(request: NextRequest) {
               ? "downpayment_pending_verification"
               : "downpayment_pending_verification",
       },
-      staffNotes: "Order received via web portal. Pending cashier review.",
+      staffNotes: isTeacher
+        ? "Faculty order received. Pending cashier verification."
+        : "Student order received. Pending cashier verification.",
     };
 
     const created = await createOrder(orderData);

@@ -105,12 +105,15 @@ export async function POST(request: NextRequest) {
       query.includes("verify")
     ) {
       reply =
-        "🛡️ **Why do we require Student ID, Selfie, and LRN?**\n\n" +
-        "We love serving our campus community! Because each drink and batch of fries is prepared fresh upon order, the verification helps us:\n" +
-        "1. **Prevent Fake / Prank Orders**: Ensures the cafe staff and kitchen ingredients aren't wasted by bogus requests.\n" +
-        "2. **Protect Student Downpayments**: Confirms that only the legitimate student with matching LRN can claim the order.\n" +
-        "3. **Zero Queue Waiting**: Once verified, your order begins preparing immediately so you can just grab and go during quick break times!\n\n" +
-        "🔒 *Your uploaded images and 12-digit LRN are treated with strict confidentiality and used solely for counter order verification.*";
+        "🛡️ **Campus Identity & Pickup Verification:**\n\n" +
+        "We love serving our campus community! Because each drink and batch of fries is prepared fresh upon order, verification helps us:\n" +
+        "• **Confirm Legitimate Orders**: Protects both customers and the cafe kitchen from unclaimed food waste.\n" +
+        "• **Secure Downpayments**: Ensures only the rightful student or faculty member claims the order.\n" +
+        "• **Streamlined Break Pickups**: Orders are prepped ahead of break time so you can grab your drink and go!\n\n" +
+        "**Verification Requirements:**\n" +
+        "• **Students**: School ID photo, quick claim photo, and 12-digit DepEd LRN.\n" +
+        "• **Teachers & Staff**: Employee ID photo, department name, and quick claim photo (no LRN required).\n\n" +
+        "🔒 *Your uploaded verification details are kept strictly confidential and used solely for counter pickup verification.*";
       suggestedActions = [
         { label: "Start Order Now", action: "openCheckout" },
         { label: "See Menu", action: "scrollToMenu" },
@@ -131,7 +134,7 @@ export async function POST(request: NextRequest) {
         "  - Enter your 13-digit Reference Number & upload the screenshot during checkout.\n" +
         "  - This guarantees your order is queued right away!\n\n" +
         "• **Pay at Counter (Cash)**:\n" +
-        "  - Pay in cash when you pick up at the counter. Requires valid Student ID and 12-digit LRN.";
+        "  - Pay in cash when you pick up at the counter with verified campus ID.";
       suggestedActions = [
         { label: "Order & Pay via GCash", action: "openCheckout" },
         { label: "Ask about Promos", action: "askPromos" },
@@ -145,7 +148,7 @@ export async function POST(request: NextRequest) {
         "• 🎁 **Promos & Discounts** (Barkada Bundles, Free Fries)\n" +
         "• 📅 **Campus Cafe Events** (Acoustic Friday, Study Lounge)\n" +
         "• ☕ **Drink Recommendations** based on what flavors you crave\n" +
-        "• 📋 **Student ID & Anti-Scam Order Guide**\n\n" +
+        "• 📋 **Campus Identity & Pickup Verification Guide**\n\n" +
         "How can I brighten your day today?";
       suggestedActions = [
         { label: "Show Promos", action: "askPromos" },

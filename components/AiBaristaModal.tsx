@@ -10,7 +10,7 @@ import {
   Coffee,
   Calendar,
   Gift,
-  ShieldAlert,
+  ShieldCheck,
   ThumbsUp,
 } from "lucide-react";
 import { playChime } from "@/lib/sound";
@@ -29,6 +29,62 @@ interface AiBaristaModalProps {
   onTriggerAction?: (action: string) => void;
 }
 
+function parseFormattedSpans(text: string): React.ReactNode[] {
+  // Regex to match **bold** or *italic*
+  const tokens = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return tokens.map((tok, idx) => {
+    if (tok.startsWith("**") && tok.endsWith("**") && tok.length >= 4) {
+      return (
+        <strong key={idx} className="font-bold text-stone-900">
+          {tok.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (tok.startsWith("*") && tok.endsWith("*") && tok.length >= 2) {
+      return (
+        <em key={idx} className="italic text-stone-600">
+          {tok.slice(1, -1)}
+        </em>
+      );
+    }
+    return <span key={idx}>{tok}</span>;
+  });
+}
+
+function FormattedMessageText({ text }: { text: string }) {
+  const lines = text.split("\n");
+
+  return (
+    <div className="space-y-1.5 leading-relaxed">
+      {lines.map((line, lineIdx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={lineIdx} className="h-1" />;
+        }
+
+        const isBullet = trimmed.startsWith("•") || trimmed.startsWith("* ") || trimmed.startsWith("- ");
+        const bulletText = isBullet ? trimmed.replace(/^[•*-]\s*/, "") : trimmed;
+        const renderedContent = parseFormattedSpans(bulletText);
+
+        if (isBullet) {
+          return (
+            <div key={lineIdx} className="flex items-start gap-1.5 pl-1">
+              <span className="text-[#b42356] font-bold text-xs select-none leading-normal">•</span>
+              <span className="flex-1 text-stone-800">{renderedContent}</span>
+            </div>
+          );
+        }
+
+        return (
+          <p key={lineIdx} className="text-stone-800">
+            {renderedContent}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export function AiBaristaModal({
   isOpen,
   onClose,
@@ -39,12 +95,12 @@ export function AiBaristaModal({
       id: "init",
       sender: "hearty",
       text:
-        "👋 **Kumusta! Welcome to Home ❤️ Cafe!**\n\nI'm **Hearty**, your digital barista concierge. Ask me anything about our:\n• 🎉 **Promos & Bundles**\n• 📅 **Campus Events**\n• ⭐ **Bestselling Drinks & Fries**\n• 🛡️ **Student ID Anti-Scam Verification**\n\nWhat can I brew for you today?",
+        "Kumusta! Welcome to Home ❤️ Cafe!\n\nI'm **Hearty**, your digital barista concierge. Ask me anything about our:\n• **Promos & Barkada Bundles**\n• **Campus Cafe Events & Acoustic Fridays**\n• **Bestselling Drinks & Fries**\n• **Campus Identity & Pickup Verification**\n\nWhat can I brew for you today?",
       actions: [
-        { label: "🎉 Active Promos", action: "askPromos" },
-        { label: "⭐ Top Bestsellers", action: "askBestsellers" },
-        { label: "📅 Cafe Events", action: "askEvents" },
-        { label: "🛡️ Why ID & LRN?", action: "askVerification" },
+        { label: "Active Promos", action: "askPromos" },
+        { label: "Top Bestsellers", action: "askBestsellers" },
+        { label: "Cafe Events", action: "askEvents" },
+        { label: "Why ID Verification?", action: "askVerification" },
       ],
       timestamp: "Just now",
     },
@@ -189,11 +245,11 @@ export function AiBaristaModal({
           </button>
           <button
             type="button"
-            onClick={() => handleSendMessage("Why is student ID and LRN required?")}
+            onClick={() => handleSendMessage("Why is school ID verification required?")}
             className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-[#b42356] hover:text-white border border-stone-200 transition-all flex items-center gap-1 shadow-xs"
           >
-            <ShieldAlert className="w-3 h-3 text-emerald-600" />
-            <span>Anti-Scam</span>
+            <ShieldCheck className="w-3 h-3 text-emerald-600" />
+            <span>ID Verification</span>
           </button>
         </div>
 
@@ -208,10 +264,14 @@ export function AiBaristaModal({
                 className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs ${
                   msg.sender === "user"
                     ? "bg-[#b42356] text-white rounded-tr-xs"
-                    : "bg-white border border-stone-200/80 text-stone-800 rounded-tl-xs whitespace-pre-line"
+                    : "bg-white border border-stone-200/80 text-stone-800 rounded-tl-xs"
                 }`}
               >
-                {msg.text}
+                {msg.sender === "user" ? (
+                  <p className="whitespace-pre-line">{msg.text}</p>
+                ) : (
+                  <FormattedMessageText text={msg.text} />
+                )}
               </div>
 
               {/* Action Buttons if provided */}

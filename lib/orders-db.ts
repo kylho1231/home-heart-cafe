@@ -13,6 +13,7 @@ const INITIAL_ORDERS: CafeOrder[] = [
     status: "ready_for_pickup",
     pickupEstimatedMinutes: 10,
     customer: {
+      role: "student",
       fullName: "Maria Clara Santos",
       lrn: "109823456712",
       gradeSection: "Grade 11 - STEM A",
@@ -68,6 +69,7 @@ const INITIAL_ORDERS: CafeOrder[] = [
     status: "preparing",
     pickupEstimatedMinutes: 15,
     customer: {
+      role: "student",
       fullName: "Jose Rizal Mercado",
       lrn: "123456789012",
       gradeSection: "Grade 12 - HUMSS B",
@@ -99,6 +101,46 @@ const INITIAL_ORDERS: CafeOrder[] = [
       paymentStatus: "paid_in_full",
     },
     staffNotes: "Full GCash received. Currently blending.",
+  },
+  {
+    id: "ord-seed-003",
+    orderCode: "HHC-3106",
+    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 60 * 1000).toISOString(),
+    status: "pending_verification",
+    pickupEstimatedMinutes: 10,
+    customer: {
+      role: "teacher_staff",
+      fullName: "Prof. Maria Santos",
+      department: "Science & Mathematics Dept",
+      contactNumber: "09183334444",
+      idPhotoUrl: "/products/straw-chees.webp",
+      selfiePhotoUrl: "/products/straw-chees.webp",
+    },
+    items: [
+      {
+        id: "item-4",
+        productId: "spanish-latte",
+        productName: "Spanish Latte",
+        category: "Coffee Series",
+        flavor: "Spanish Latte",
+        size: "16 oz",
+        sugarLevel: "50%",
+        iceLevel: "Regular Ice",
+        addBoba: false,
+        quantity: 2,
+        unitPrice: 69,
+        subtotal: 138,
+      },
+    ],
+    payment: {
+      method: "gcash_full",
+      downPaymentAmount: 138,
+      totalAmount: 138,
+      gcashReferenceNumber: "9988776655443",
+      paymentStatus: "downpayment_pending_verification",
+    },
+    staffNotes: "Faculty order awaiting ID verification.",
   },
 ];
 

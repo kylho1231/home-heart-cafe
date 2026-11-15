@@ -135,7 +135,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                 Home ❤️ Cafe · Store & Kitchen Admin
               </h2>
               <p className="text-xs text-white/70">
-                Live Kitchen Queue & Anti-Scam Verification Desk
+                Live Kitchen Queue & Campus Order Verification Desk
               </p>
             </div>
           </div>
@@ -322,6 +322,15 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                           >
                             {order.status.replace(/_/g, " ").toUpperCase()}
                           </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                              order.customer.role === "teacher_staff"
+                                ? "bg-indigo-100 text-indigo-800"
+                                : "bg-rose-100 text-rose-800"
+                            }`}
+                          >
+                            {order.customer.role === "teacher_staff" ? "Faculty / Staff" : "Student"}
+                          </span>
                           <span className="text-[11px] text-stone-400">
                             {new Date(order.createdAt).toLocaleTimeString([], {
                               hour: "2-digit",
@@ -330,31 +339,39 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                           </span>
                         </div>
 
-                        {/* Student Anti-Scam Details */}
+                        {/* Customer Verification Details */}
                         <div className="p-3 rounded-2xl bg-stone-50 border border-stone-100 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                           <div>
                             <span className="text-[10px] text-stone-400 block font-medium">
-                              Student Name & Section
+                              {order.customer.role === "teacher_staff"
+                                ? "Faculty/Staff Name & Contact"
+                                : "Student Name & Section"}
                             </span>
                             <strong className="text-stone-800 text-sm">
                               {order.customer.fullName}
                             </strong>
                             <span className="text-stone-500 block text-[11px]">
-                              {order.customer.gradeSection} · {order.customer.contactNumber}
+                              {order.customer.role === "teacher_staff"
+                                ? `${order.customer.department || "Faculty/Staff"} · ${order.customer.contactNumber}`
+                                : `${order.customer.gradeSection} · ${order.customer.contactNumber}`}
                             </span>
                           </div>
 
                           <div>
                             <span className="text-[10px] text-stone-400 block font-medium">
-                              12-Digit LRN (Verified)
+                              {order.customer.role === "teacher_staff"
+                                ? "Department / Designation"
+                                : "12-Digit LRN (DepEd)"}
                             </span>
                             <strong className="font-mono text-sm text-[#b42356]">
-                              {order.customer.lrn}
+                              {order.customer.role === "teacher_staff"
+                                ? order.customer.department || "Faculty / Staff"
+                                : order.customer.lrn || "—"}
                             </strong>
                           </div>
                         </div>
 
-                        {/* Anti-Scam Photo Previews */}
+                        {/* Verification Photo Previews */}
                         <div className="flex items-center gap-3">
                           {order.customer.idPhotoUrl && (
                             <button
@@ -362,13 +379,20 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                               onClick={() =>
                                 setInspectedImage({
                                   url: order.customer.idPhotoUrl!,
-                                  title: `School ID: ${order.customer.fullName} (LRN: ${order.customer.lrn})`,
+                                  title:
+                                    order.customer.role === "teacher_staff"
+                                      ? `Faculty ID: ${order.customer.fullName} (${order.customer.department || "Faculty"})`
+                                      : `School ID: ${order.customer.fullName} (LRN: ${order.customer.lrn})`,
                                 })
                               }
                               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 transition-colors shadow-2xs"
                             >
                               <Eye className="w-3.5 h-3.5 text-[#b42356]" />
-                              <span>View School ID Photo</span>
+                              <span>
+                                {order.customer.role === "teacher_staff"
+                                  ? "View Faculty ID"
+                                  : "View School ID"}
+                              </span>
                             </button>
                           )}
 
@@ -378,13 +402,13 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                               onClick={() =>
                                 setInspectedImage({
                                   url: order.customer.selfiePhotoUrl!,
-                                  title: `Student Selfie: ${order.customer.fullName}`,
+                                  title: `Claim Verification Photo: ${order.customer.fullName}`,
                                 })
                               }
                               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 transition-colors shadow-2xs"
                             >
                               <Eye className="w-3.5 h-3.5 text-blue-600" />
-                              <span>View Student Selfie</span>
+                              <span>View Claim Photo</span>
                             </button>
                           )}
 

@@ -16,7 +16,7 @@ export default function AdminPage() {
         </div>
         <h1 className="text-2xl font-black">Home ❤️ Cafe Admin Portal</h1>
         <p className="text-sm text-stone-600">
-          Kitchen Queue, Anti-Scam Verification Desk & Sales Reporting
+          Kitchen Queue, Campus Order Verification Desk & Sales Reporting
         </p>
 
         <div className="pt-4 flex gap-3 justify-center">

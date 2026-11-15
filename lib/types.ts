@@ -5,6 +5,8 @@ export type OrderStatus =
   | "completed"
   | "rejected";
 
+export type CustomerRole = "student" | "teacher_staff";
+
 export interface OrderItem {
   id: string;
   productId: string;
@@ -24,10 +26,13 @@ export interface OrderItem {
   bundleSelections?: string[];
 }
 
-export interface StudentVerification {
+export interface CustomerVerification {
+  role: CustomerRole;
   fullName: string;
-  lrn: string; // 12-digit Learner Reference Number
-  gradeSection: string;
+  lrn?: string; // 12-digit LRN for students
+  gradeSection?: string; // Grade & Section for students
+  department?: string; // Faculty / Department for teachers & staff
+  employeeId?: string; // Optional Faculty ID for teachers
   contactNumber: string;
   idPhotoUrl: string; // Base64 or uploaded URL
   selfiePhotoUrl: string; // Base64 or uploaded selfie photo
@@ -49,7 +54,7 @@ export interface CafeOrder {
   updatedAt: string;
   status: OrderStatus;
   rejectionReason?: string;
-  customer: StudentVerification;
+  customer: CustomerVerification;
   items: OrderItem[];
   payment: PaymentInfo;
   pickupEstimatedMinutes: number;

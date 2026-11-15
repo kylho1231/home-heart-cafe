@@ -63,3 +63,51 @@ test("Order DB: creates and tracks an anti-scam verified student order", async (
   assert.ok(stats.totalOrders > 0, "Stats should show orders");
   assert.ok(stats.readyCount > 0, "Stats should show ready orders");
 });
+
+test("Order DB: creates and tracks a faculty / teacher order without requiring LRN", async () => {
+  const teacherOrder = await createOrder({
+    status: "pending_verification",
+    pickupEstimatedMinutes: 10,
+    customer: {
+      role: "teacher_staff",
+      fullName: "Prof. Maria Santos",
+      department: "Science & Mathematics Dept",
+      contactNumber: "09183334444",
+      idPhotoUrl: "data:image/png;base64,mockFacultyId",
+      selfiePhotoUrl: "data:image/png;base64,mockFacultySelfie",
+    },
+    items: [
+      {
+        id: "item-teacher-1",
+        productId: "spanish-latte",
+        productName: "Spanish Latte",
+        category: "Coffee Series",
+        flavor: "Spanish Latte",
+        size: "16 oz",
+        sugarLevel: "50%",
+        iceLevel: "Regular Ice",
+        addBoba: false,
+        quantity: 2,
+        unitPrice: 69,
+        subtotal: 138,
+      },
+    ],
+    payment: {
+      method: "gcash_full",
+      downPaymentAmount: 138,
+      totalAmount: 138,
+      gcashReferenceNumber: "9988776655443",
+      paymentStatus: "downpayment_pending_verification",
+    },
+    staffNotes: "Teacher Appreciation Order",
+  });
+
+  assert.ok(teacherOrder.id, "Teacher order should have an ID");
+  assert.equal(teacherOrder.customer.role, "teacher_staff");
+  assert.equal(teacherOrder.customer.department, "Science & Mathematics Dept");
+  assert.equal(teacherOrder.customer.lrn, undefined, "Faculty does not have LRN");
+
+  const fetched = await getOrderById(teacherOrder.orderCode);
+  assert.ok(fetched, "Teacher order should be retrievable by order code");
+  assert.equal(fetched.customer.fullName, "Prof. Maria Santos");
+});
