@@ -428,7 +428,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/70 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-5xl rounded-3xl bg-[#fbf9f6] border border-stone-200/90 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden my-4">
         {/* Top Header */}
-        <div className="px-6 py-4 bg-[#382323] text-white flex items-center justify-between shadow-md">
+        <div className="px-6 py-4 bg-gradient-to-r from-[#2563eb] via-[#1d4ed8] to-[#1e40af] text-white flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-white/10 text-amber-300">
               <ShieldCheck className="w-5 h-5" />
@@ -437,7 +437,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
               <h2 className="font-bold text-lg leading-tight">
                 Home ❤️ Cafe · Store & Kitchen Admin
               </h2>
-              <p className="text-xs text-white/70">
+              <p className="text-xs text-white/80">
                 Live Kitchen Queue · Stock Control · Sales Reporting
               </p>
             </div>
@@ -519,7 +519,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
           /* Authenticated Admin Dashboard */
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Navigation Tabs (Queue, New Sale, Products, Reports) */}
-            <div className="px-6 py-2 bg-stone-900 text-white flex items-center justify-between text-xs font-bold border-b border-stone-800 flex-wrap gap-2">
+            <div className="px-6 py-2.5 bg-slate-100 text-slate-700 flex items-center justify-between text-xs font-bold border-b border-slate-200 flex-wrap gap-2">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                   type="button"
@@ -527,7 +527,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTab === "queue"
                       ? "bg-[#2563eb] text-white shadow-xs"
-                      : "text-stone-300 hover:text-white hover:bg-stone-800"
+                      : "text-slate-600 hover:text-[#2563eb] hover:bg-white"
                   }`}
                 >
                   <ChefHat className="w-3.5 h-3.5" />
@@ -540,10 +540,10 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTab === "new_sale"
                       ? "bg-[#2563eb] text-white shadow-xs"
-                      : "text-stone-300 hover:text-white hover:bg-stone-800"
+                      : "text-slate-600 hover:text-[#2563eb] hover:bg-white"
                   }`}
                 >
-                  <DollarSign className="w-3.5 h-3.5 text-amber-300" />
+                  <DollarSign className="w-3.5 h-3.5 text-amber-500" />
                   <span>New Walk-in Sale</span>
                 </button>
 
@@ -553,7 +553,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTab === "products"
                       ? "bg-[#2563eb] text-white shadow-xs"
-                      : "text-stone-300 hover:text-white hover:bg-stone-800"
+                      : "text-slate-600 hover:text-[#2563eb] hover:bg-white"
                   }`}
                 >
                   <Coffee className="w-3.5 h-3.5" />
@@ -566,7 +566,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTab === "reports"
                       ? "bg-[#2563eb] text-white shadow-xs"
-                      : "text-stone-300 hover:text-white hover:bg-stone-800"
+                      : "text-slate-600 hover:text-[#2563eb] hover:bg-white"
                   }`}
                 >
                   <TrendingUp className="w-3.5 h-3.5" />
@@ -589,7 +589,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                       type="button"
                       onClick={fetchOrders}
                       disabled={loading}
-                      className="flex items-center gap-1 text-[11px] font-semibold text-stone-300 hover:text-white shrink-0 cursor-pointer"
+                      className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-[#2563eb] shrink-0 cursor-pointer"
                     >
                       <RotateCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
                       <span>Refresh</span>
@@ -751,7 +751,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                           {/* Left Side: Order & Anti-Scam Student Credentials */}
                           <div className="flex-1 space-y-3">
                             <div className="flex items-center gap-2.5 flex-wrap">
-                              <span className="font-mono text-base font-black px-2.5 py-0.5 rounded-lg bg-stone-900 text-white">
+                              <span className="font-mono text-base font-black px-2.5 py-0.5 rounded-lg bg-[#2563eb] text-white shadow-xs">
                                 #{order.orderCode}
                               </span>
                               <span
@@ -779,7 +779,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                                 className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                                   order.customer.role === "teacher_staff"
                                     ? "bg-indigo-100 text-indigo-800"
-                                    : "bg-rose-100 text-rose-800"
+                                    : "bg-blue-100 text-blue-800"
                                 }`}
                               >
                                 {order.customer.role === "teacher_staff" ? "Faculty / Staff" : "Student"}
@@ -987,9 +987,9 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                                 <button
                                   type="button"
                                   onClick={() => handleMarkPaid(order.id)}
-                                  className="w-full py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                  className="w-full py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#2563eb] border border-blue-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                                 >
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                  <CheckCircle2 className="w-4 h-4 text-[#2563eb]" />
                                   <span>Mark ₱{balance} Paid</span>
                                 </button>
                               )}
@@ -1020,7 +1020,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                                 <button
                                   type="button"
                                   onClick={() => handleUpdateStatus(order.id, "completed")}
-                                  className="w-full py-2.5 rounded-2xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                  className="w-full py-2.5 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                                 >
                                   <CheckCircle2 className="w-4 h-4" />
                                   <span>Mark Paid & Claimed</span>
@@ -1243,7 +1243,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
                   <button
                     type="button"
                     onClick={exportOrdersCsv}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#382323] hover:bg-black text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
                   >
                     <Download className="w-4 h-4 text-amber-300" />
                     <span>Export CSV Report</span>
@@ -1333,7 +1333,7 @@ export function AdminPortalModal({ isOpen, onClose }: AdminPortalModalProps) {
         {inspectedImage && (
           <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <div className="relative max-w-lg w-full rounded-3xl bg-white overflow-hidden shadow-2xl">
-              <div className="px-4 py-3 bg-stone-900 text-white flex items-center justify-between text-xs font-bold">
+              <div className="px-4 py-3 bg-[#2563eb] text-white flex items-center justify-between text-xs font-bold">
                 <span>{inspectedImage.title}</span>
                 <button
                   type="button"

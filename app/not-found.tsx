@@ -3,7 +3,7 @@ import { Coffee, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#ffffff] text-[#382323] flex items-center justify-center p-6 selection:bg-[#dbeafe] selection:text-[#2563eb]">
+    <div className="min-h-screen bg-[#ffffff] text-[#0f172a] flex items-center justify-center p-6 selection:bg-[#dbeafe] selection:text-[#2563eb]">
       <div className="max-w-md w-full text-center space-y-6 p-8 rounded-3xl bg-white border border-stone-200 shadow-xl">
         <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#2563eb] to-[#60a5fa] text-white flex items-center justify-center mx-auto shadow-md">
           <Coffee className="w-8 h-8 text-amber-200" />

@@ -251,7 +251,7 @@ export function InteractiveCup3D({
               <Heart className="w-2.5 h-2.5 fill-red-500 text-red-500 inline-block" />
               <span>Café</span>
             </div>
-            <div className="text-[12px] font-semibold text-[#382323] truncate max-w-[100px] mx-auto mt-0.5">
+            <div className="text-[12px] font-semibold text-[#0f172a] truncate max-w-[100px] mx-auto mt-0.5">
               {flavor}
             </div>
             <div className="text-[9px] font-medium text-stone-500 uppercase tracking-tight">

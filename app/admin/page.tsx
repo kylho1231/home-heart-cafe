@@ -9,7 +9,7 @@ export default function AdminPage() {
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="min-h-screen bg-[#ffffff] text-[#382323] flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-[#ffffff] text-[#0f172a] flex flex-col items-center justify-center p-6">
       <div className="text-center max-w-md space-y-4">
         <div className="w-16 h-16 rounded-2xl bg-[#2563eb] text-white flex items-center justify-center mx-auto shadow-lg">
           <Coffee className="w-8 h-8 text-amber-200" />

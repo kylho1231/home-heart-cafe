@@ -332,7 +332,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
       {/* Right: Cashier Order Ticket (POS Cart) */}
       <div className="w-full lg:w-96 flex flex-col bg-white border-l border-stone-200 overflow-hidden shrink-0">
         {/* Ticket Header & Customer Fields */}
-        <div className="p-4 bg-stone-900 text-white space-y-3 shrink-0">
+        <div className="p-4 bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] text-white space-y-3 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-amber-300" />
@@ -347,7 +347,7 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
 
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <label className="text-[10px] text-stone-400 block mb-0.5">
+              <label className="text-[10px] text-white/80 block mb-0.5">
                 Customer Name
               </label>
               <input
@@ -355,19 +355,19 @@ export function AdminNewSalePOS({ menuItems, onSaleCompleted, onCancel }: AdminN
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Name or Table"
-                className="w-full px-2.5 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-white text-xs outline-none focus:border-amber-400"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-white/15 border border-white/25 text-white placeholder-white/60 text-xs outline-none focus:border-white focus:bg-white/20"
               />
             </div>
             <div>
-              <label className="text-[10px] text-stone-400 block mb-0.5">Role / Type</label>
+              <label className="text-[10px] text-white/80 block mb-0.5">Role / Type</label>
               <select
                 value={customerRole}
                 onChange={(e) => setCustomerRole(e.target.value as any)}
-                className="w-full px-2 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-white text-xs outline-none focus:border-amber-400 cursor-pointer"
+                className="w-full px-2 py-1.5 rounded-lg bg-white/15 border border-white/25 text-white text-xs outline-none focus:border-white focus:bg-white/20 cursor-pointer"
               >
-                <option value="walk_in_customer">Walk-in Counter</option>
-                <option value="student">Student</option>
-                <option value="teacher_staff">Faculty / Staff</option>
+                <option value="walk_in_customer" className="text-slate-800">Walk-in Counter</option>
+                <option value="student" className="text-slate-800">Student</option>
+                <option value="teacher_staff" className="text-slate-800">Faculty / Staff</option>
               </select>
             </div>
           </div>
