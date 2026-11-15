@@ -1087,15 +1087,11 @@ export default function Page() {
       <section className="px-4 sm:px-8 py-10 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#2563eb] text-xs font-bold mb-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>3D Product Collection</span>
-            </div>
             <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a]">
               {activeCategory === "All" ? "Complete Cafe Menu" : activeCategory}
             </h2>
             <p className="text-xs text-stone-500 mt-1">
-              Scroll left to right to explore all {filteredProducts.length} handcrafted drinks and snacks.
+              {searchTerm ? `Found ${filteredProducts.length} matching items` : `Showing ${filteredProducts.length} items`}
             </p>
           </div>
 
@@ -1219,16 +1215,14 @@ export default function Page() {
             <ChevronRight className="w-5 h-5" />
           </button>
 
-          {/* Carousel Navigation Hint */}
-          <div className="flex items-center justify-between text-xs text-stone-500 pt-2 px-1">
-            <span className="flex items-center gap-1.5 font-medium">
-              <ArrowRight className="w-3.5 h-3.5 text-[#2563eb]" />
-              Swipe or click arrows to scroll left and right
-            </span>
-            <span className="font-semibold text-stone-400">
-              {filteredProducts.length} items
-            </span>
-          </div>
+          {/* Subtle Navigation Indicator */}
+          {searchTerm && (
+            <div className="flex items-center justify-between text-xs text-stone-500 pt-2 px-1">
+              <span className="font-semibold text-stone-500">
+                Found {filteredProducts.length} results for &ldquo;{searchTerm}&rdquo;
+              </span>
+            </div>
+          )}
         </div>
       </section>
 

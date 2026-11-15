@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
-import { Plus, Sparkles, Check, Ban, Coffee } from "lucide-react";
-import { playChime } from "@/lib/sound";
+import { Plus, Coffee, Ban, Sparkles } from "lucide-react";
 
 interface ProductSize {
   label: string;
@@ -16,14 +15,14 @@ interface Product3DCardProps {
   category: string;
   description: string;
   sizes: ProductSize[];
-  colors: [string, string];
-  accent: string;
+  colors?: [string, string];
+  accent?: string;
   image?: string;
   badge?: string;
   isAvailable?: boolean;
-  isSelected: boolean;
+  isSelected?: boolean;
   onSelect: () => void;
-  onQuickAdd: (size: string) => void;
+  onQuickAdd?: (size: string) => void;
 }
 
 export function Product3DCard({
@@ -31,142 +30,119 @@ export function Product3DCard({
   category,
   description,
   sizes,
-  colors,
   image,
   badge,
   isAvailable = true,
-  isSelected,
+  isSelected = false,
   onSelect,
-  onQuickAdd,
 }: Product3DCardProps) {
-  const [addedAnimation, setAddedAnimation] = useState(false);
-
-  const handleQuickAddClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!isAvailable) return;
-    playChime("add");
-    setAddedAnimation(true);
-    setTimeout(() => setAddedAnimation(false), 800);
-    onQuickAdd(sizes[0]?.label || "12 oz");
-  };
-
   const startingPrice = sizes[0]?.price ?? 0;
-  const sizeCountLabel = sizes.length > 1 ? `${sizes.length} sizes` : sizes[0]?.label || "Regular";
+  const sizeCountLabel =
+    sizes.length > 1 ? `${sizes.length} sizes` : sizes[0]?.label || "Regular";
 
   return (
     <div
-      onClick={onSelect}
-      className={`group relative flex flex-col justify-between rounded-3xl p-4 bg-white/95 border text-left cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl select-none ${
+      onClick={() => {
+        if (isAvailable) onSelect();
+      }}
+      className={`group relative flex flex-col justify-between rounded-3xl p-4 bg-white border text-left cursor-pointer transition-all duration-200 select-none ${
         !isAvailable
-          ? "opacity-60 bg-stone-100/80 border-stone-300 pointer-events-none"
+          ? "opacity-60 bg-stone-50 border-stone-200 cursor-not-allowed"
           : isSelected
-            ? "border-[#2563eb] ring-2 ring-[#2563eb]/20 bg-[#f8faff] shadow-md"
-            : "border-stone-200/80 hover:border-[#2563eb]/40 shadow-sm"
+            ? "border-[#2563eb] ring-2 ring-[#2563eb]/20 shadow-md"
+            : "border-stone-200/90 hover:border-[#2563eb]/50 hover:shadow-lg hover:-translate-y-0.5 shadow-xs"
       }`}
     >
-      {/* Top Card Badge / Category */}
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-          {category}
-        </span>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-stone-100 text-stone-600">
-            {sizeCountLabel}
+      <div>
+        {/* Top Header: Category & Badges */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            {category}
           </span>
-          {badge && isAvailable && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#dbeafe] text-[#2563eb] shadow-xs">
-              <Sparkles className="w-2.5 h-2.5" />
-              {badge}
-            </span>
-          )}
-          {!isAvailable && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-800 text-white shadow-xs">
-              Sold Out
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Visual Drink Stage */}
-      <div
-        className="relative h-48 w-full rounded-2xl overflow-hidden mb-3.5 flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]"
-        style={{
-          background: `radial-gradient(circle at center, ${colors[1]} 0%, ${colors[0]}25 75%, #ffffff 100%)`,
-        }}
-      >
-        {image ? (
-          <div className="relative w-full h-full p-2.5">
-            <Image
-              src={image}
-              alt={name}
-              fill
-              unoptimized={image.startsWith("http")}
-              className="object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
-            />
-          </div>
-        ) : (
-          /* Stylized Fallback Icon */
-          <div className="flex flex-col items-center justify-center text-stone-400">
-            <Coffee className="w-10 h-10 text-[#2563eb]/60 mb-1" />
-            <span className="text-[10px] font-bold text-stone-500">{name}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Product Information */}
-      <div className="flex-1 flex flex-col justify-between">
-        <div>
-          <h3 className="font-bold text-stone-800 text-base leading-snug group-hover:text-[#2563eb] transition-colors">
-            {name}
-          </h3>
-          {description && (
-            <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">
-              {description}
-            </p>
-          )}
-        </div>
-
-        {/* Sizes & Price footer */}
-        <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
-          <div>
-            <span className="text-[11px] text-stone-400 block">Starts at</span>
-            <div className="text-lg font-black text-[#0f172a] tracking-tight">
-              ₱{startingPrice}
-            </div>
-          </div>
-
           <div className="flex items-center gap-1.5">
-            {isAvailable ? (
-              <button
-                type="button"
-                onClick={handleQuickAddClick}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-xs transition-all cursor-pointer ${
-                  addedAnimation
-                    ? "bg-emerald-600 text-white scale-95"
-                    : "bg-[#2563eb] hover:bg-[#1d4ed8] text-white active:scale-95"
-                }`}
-                title="Add to cart"
-              >
-                {addedAnimation ? (
-                  <>
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Added!</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Order</span>
-                  </>
-                )}
-              </button>
-            ) : (
-              <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-stone-200 text-stone-500">
-                <Ban className="w-3.5 h-3.5" />
-                <span>Unavailable</span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+              {sizeCountLabel}
+            </span>
+            {badge && isAvailable && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200">
+                <Sparkles className="w-2.5 h-2.5 text-blue-600" />
+                {badge}
+              </span>
+            )}
+            {!isAvailable && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-800 text-white">
+                Sold Out
               </span>
             )}
           </div>
+        </div>
+
+        {/* Product Image Stage with Fixed Aspect Ratio */}
+        <div className="relative h-44 w-full rounded-2xl overflow-hidden mb-3 bg-gradient-to-b from-blue-50/60 to-slate-50/40 border border-slate-100 flex items-center justify-center p-2 group-hover:scale-[1.02] transition-transform duration-300">
+          {image ? (
+            <div className="relative w-full h-full">
+              <Image
+                src={image}
+                alt={name}
+                fill
+                loading="lazy"
+                sizes="(max-width: 640px) 240px, 300px"
+                className="object-contain drop-shadow-xs transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
+          ) : (
+            /* Branded Placeholder (Never Raw Text) */
+            <div className="flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#2563eb] shadow-2xs mb-1.5">
+                <Coffee className="w-6 h-6 text-[#2563eb]" />
+              </div>
+              <span className="text-xs font-bold text-slate-700 truncate max-w-[140px]">{name}</span>
+              <span className="text-[10px] text-slate-400 font-medium">Home ❤️ Cafe</span>
+            </div>
+          )}
+        </div>
+
+        {/* Product Info */}
+        <h3 className="font-extrabold text-slate-900 text-sm leading-snug group-hover:text-[#2563eb] transition-colors line-clamp-1">
+          {name}
+        </h3>
+        {description && (
+          <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+            {description}
+          </p>
+        )}
+      </div>
+
+      {/* Footer: Price & Add Button */}
+      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+        <div>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+            Starts at
+          </span>
+          <div className="text-base font-black text-slate-900 tracking-tight">
+            ₱{startingPrice}
+          </div>
+        </div>
+
+        <div>
+          {isAvailable ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect();
+              }}
+              className="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] active:scale-95 transition-all shadow-xs cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add</span>
+            </button>
+          ) : (
+            <span className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
+              <Ban className="w-3.5 h-3.5" />
+              <span>Sold out</span>
+            </span>
+          )}
         </div>
       </div>
     </div>
