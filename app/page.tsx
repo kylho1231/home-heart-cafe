@@ -739,9 +739,17 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen bg-[#ffffff] text-[#0f172a] selection:bg-[#dbeafe] selection:text-[#2563eb] font-sans">
-      {/* Top Navigation Bar */}
-      <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 transition-shadow">
+    <div className="min-h-screen bg-[#ffffff] text-[#0f172a] selection:bg-[#dbeafe] selection:text-[#2563eb] font-sans">
+      {/* Skip to Main Content Link for Keyboard / Screen Reader Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-xl focus:shadow-lg focus:font-bold focus:text-xs"
+      >
+        Skip to main content
+      </a>
+
+      {/* Top Header Navigation Bar */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 transition-shadow">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-2 group">
@@ -765,7 +773,7 @@ export default function Page() {
           </Link>
 
           {/* Desktop Quick Nav Links */}
-          <div className="hidden md:flex items-center gap-6 text-xs font-bold text-stone-600">
+          <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-6 text-xs font-bold text-stone-600">
             <a href="#featured" className="hover:text-[#2563eb] transition-colors">
               Campus Favorites
             </a>
@@ -778,7 +786,7 @@ export default function Page() {
             <a href="#events" className="hover:text-[#2563eb] transition-colors">
               Campus Events
             </a>
-          </div>
+          </nav>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -883,7 +891,9 @@ export default function Page() {
             </div>
           </div>
         )}
-      </nav>
+      </header>
+
+      <main id="main-content">
 
       {/* Slim Free Medium Fries Promo Banner */}
       <div className="bg-amber-500/10 border-b border-amber-200/80 px-4 py-2.5 text-center text-xs font-semibold text-amber-950 flex items-center justify-center gap-2">
@@ -1547,6 +1557,7 @@ export default function Page() {
           </div>
         </div>
       </section>
+      </main>
 
       {/* Useful & Hospitable Cafe Footer */}
       <footer className="border-t border-slate-200 bg-white py-12 px-4 sm:px-8 text-slate-900">
@@ -1934,6 +1945,6 @@ export default function Page() {
         onClose={() => setCustomizingProduct(null)}
         onAddToCart={handleSheetAddToCart}
       />
-    </main>
+    </div>
   );
 }
