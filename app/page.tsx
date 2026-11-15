@@ -736,7 +736,7 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-[#ffffff] text-[#0f172a] selection:bg-[#dbeafe] selection:text-[#2563eb] font-sans">
       {/* Top Navigation Bar */}
-      <nav className="sticky top-0 z-40 bg-[#ffffff]/90 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 transition-shadow">
+      <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3 transition-shadow">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-2 group">
@@ -762,7 +762,7 @@ export default function Page() {
           {/* Desktop Quick Nav Links */}
           <div className="hidden md:flex items-center gap-6 text-xs font-bold text-stone-600">
             <a href="#featured" className="hover:text-[#2563eb] transition-colors">
-              Featured
+              Campus Favorites
             </a>
             <a href="#menu" className="hover:text-[#2563eb] transition-colors">
               Menu
@@ -777,14 +777,14 @@ export default function Page() {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Audio Chime Mute Toggle */}
+            {/* Audio Chime Mute Toggle (Desktop) */}
             <button
               type="button"
               onClick={() => {
                 const next = toggleSound();
                 setSoundMutedState(next);
               }}
-              className={`p-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] transition-colors shadow-2xs cursor-pointer ${
+              className={`hidden sm:inline-flex p-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] transition-colors shadow-2xs cursor-pointer ${
                 soundMuted ? "text-stone-400" : "text-[#2563eb]"
               }`}
               aria-label={soundMuted ? "Unmute cafe chimes" : "Mute cafe chimes"}
@@ -797,7 +797,7 @@ export default function Page() {
             <button
               type="button"
               onClick={() => setTrackerModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] text-xs font-bold text-stone-700 transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full border border-stone-200 bg-white hover:border-[#2563eb] text-xs font-bold text-stone-700 transition-colors shadow-2xs cursor-pointer"
             >
               <BellRing className="w-3.5 h-3.5 text-amber-600" />
               <span className="hidden sm:inline">Track Order</span>
@@ -812,16 +812,72 @@ export default function Page() {
             <button
               type="button"
               onClick={() => setCartDrawerOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
+              aria-label={`Shopping cart with ${cartItemCount} items`}
+              className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
             >
-              <ShoppingBag className="w-4 h-4 text-white" />
-              <span>Cart</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-white text-[#2563eb] text-[10px] font-black">
-                {cartItemCount}
-              </span>
+              <ShoppingBag className="w-4 h-4" />
+              <span className="font-black">{cartItemCount}</span>
+            </button>
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl border border-stone-200 bg-white hover:border-[#2563eb] text-stone-700 transition-colors cursor-pointer"
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden mt-3 pt-3 border-t border-stone-100 flex flex-col gap-2.5 pb-2 animate-in slide-in-from-top-2 duration-200">
+            <a
+              href="#featured"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-xl hover:bg-stone-50 text-xs font-bold text-stone-700 hover:text-[#2563eb] transition-colors"
+            >
+              Campus Favorites
+            </a>
+            <a
+              href="#menu"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-xl hover:bg-stone-50 text-xs font-bold text-stone-700 hover:text-[#2563eb] transition-colors"
+            >
+              Complete Cafe Menu
+            </a>
+            <a
+              href="#bundles"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-xl hover:bg-stone-50 text-xs font-bold text-stone-700 hover:text-[#2563eb] transition-colors"
+            >
+              Barkada Saver Bundles
+            </a>
+            <a
+              href="#events"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-xl hover:bg-stone-50 text-xs font-bold text-stone-700 hover:text-[#2563eb] transition-colors"
+            >
+              Campus Life & Events
+            </a>
+            <div className="pt-2 border-t border-stone-100 flex items-center justify-between px-3 text-xs text-stone-500">
+              <span>Cafe Chime Sounds</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = toggleSound();
+                  setSoundMutedState(next);
+                }}
+                className="text-xs font-bold text-[#2563eb]"
+              >
+                {soundMuted ? "Unmute" : "Mute"}
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Slim Free Medium Fries Promo Banner */}
@@ -949,7 +1005,7 @@ export default function Page() {
       </section>
 
       {/* Featured Drinks & Bestsellers Row — Curved SVG Spotlight Rail */}
-      <section id="featured" className="px-4 sm:px-8 py-10 max-w-7xl mx-auto border-b border-stone-200/60">
+      <section id="featured" className="scroll-mt-20 px-4 sm:px-8 py-10 max-w-7xl mx-auto border-b border-stone-200/60">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dbeafe] text-[#2563eb] text-xs font-bold uppercase tracking-wider mb-1">
@@ -1177,7 +1233,7 @@ export default function Page() {
       </section>
 
       {/* Barkada Bundles Interactive Builder */}
-      <section id="bundles" className="px-4 sm:px-8 py-12 bg-stone-50/60 border-t border-b border-stone-200">
+      <section id="bundles" className="scroll-mt-20 px-4 sm:px-8 py-12 bg-stone-50/60 border-t border-b border-stone-200">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
@@ -1381,7 +1437,7 @@ export default function Page() {
       </section>
 
       {/* Featured Atmosphere & Cafe Events Section */}
-      <section id="events" className="px-4 sm:px-8 py-12 max-w-7xl mx-auto space-y-8">
+      <section id="events" className="scroll-mt-20 px-4 sm:px-8 py-12 max-w-7xl mx-auto space-y-8">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dbeafe] text-[#2563eb] text-xs font-bold uppercase">
             <Calendar className="w-3.5 h-3.5" />
