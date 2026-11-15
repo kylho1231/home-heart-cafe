@@ -36,6 +36,7 @@ import {
   SlidersHorizontal,
   Play,
   Pause,
+  Shuffle,
 } from "lucide-react";
 
 import catalogSource from "./menu-data.json";
@@ -46,6 +47,7 @@ import eventsData from "../data/events.json";
 import { OrderItem } from "@/lib/types";
 import { playChime, isSoundMuted, toggleSound } from "@/lib/sound";
 import { Product3DCard } from "@/components/Product3DCard";
+import { CurvedSpotlightRail } from "@/components/CafeMenuExperience";
 import { CheckoutVerificationModal } from "@/components/CheckoutVerificationModal";
 import { OrderTrackerModal } from "@/components/OrderTrackerModal";
 import { AiBaristaModal } from "@/components/AiBaristaModal";
@@ -286,6 +288,21 @@ export default function Page() {
   const [productList, setProductList] = useState<Product[]>(products);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isShuffling, setIsShuffling] = useState(false);
+
+  const handleShuffleProducts = useCallback(() => {
+    setIsShuffling(true);
+    playChime("add");
+    setProductList((prev) => {
+      const copy = [...prev];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    });
+    setTimeout(() => setIsShuffling(false), 200);
+  }, []);
 
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(productList.map((p) => p.category)))],
@@ -1209,61 +1226,45 @@ export default function Page() {
         </section>
       )}
 
-      {/* Featured Drinks & Bestsellers Row */}
-      <section id="featured" className="px-4 sm:px-8 py-8 max-w-7xl mx-auto border-b border-stone-200/60">
-        <div className="flex items-center justify-between mb-5">
+      {/* Featured Drinks & Bestsellers Row — Curved SVG Spotlight Rail */}
+      <section id="featured" className="px-4 sm:px-8 py-10 max-w-7xl mx-auto border-b border-stone-200/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dbeafe] text-[#2563eb] text-xs font-bold uppercase tracking-wider mb-1">
               <Star className="w-3.5 h-3.5 fill-[#2563eb]" />
               <span>Campus Favorites</span>
             </div>
-            <h2 className="text-2xl font-black text-[#0f172a]">
-              Featured Drinks & Bestsellers
+            <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a]">
+              Featured Drinks &amp; Bestsellers
             </h2>
-            <p className="text-xs text-[#475569] mt-0.5">
-              The verified most-ordered student and teacher picks from Home ❤️ Cafe.
+            <p className="text-xs sm:text-sm text-[#475569] mt-0.5">
+              Hover or tap any card along the curved spotlight rail to explore top campus picks.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {featuredDrinks.map((product) => (
-            <div
-              key={product.id}
-              onClick={() => {
-                setSelectedProductId(product.id);
-                setSelectedFlavor(product.flavors[0]);
-                setSelectedSize(product.sizes[0].label);
-                document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="group p-4 rounded-2xl bg-white border border-[#e9dcd3] hover:border-[#2563eb] shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-1 mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563eb] bg-[#dbeafe] px-2 py-0.5 rounded-full">
-                    Bestseller
-                  </span>
-                  <span className="text-xs font-bold text-[#0f172a]">
-                    ₱{product.sizes[0].price}
-                  </span>
-                </div>
-                <h3 className="font-bold text-sm text-[#0f172a] group-hover:text-[#2563eb] transition-colors leading-snug">
-                  {product.name}
-                </h3>
-                <p className="text-[11px] text-[#475569] line-clamp-2 mt-1">
-                  {product.description || `${product.category} specialty`}
-                </p>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
-                <span className="text-[10px] text-stone-400 font-medium">3D Preview</span>
-                <span className="text-xs font-bold text-[#2563eb] group-hover:translate-x-0.5 transition-transform">
-                  Customize →
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Curved SVG Spotlight Rail Component */}
+        <CurvedSpotlightRail
+          bestsellers={featuredDrinks.map((product) => ({
+            id: product.id,
+            name: product.name,
+            category: product.category,
+            price: product.sizes[0]?.price ?? 49,
+            description: product.description || `${product.category} specialty`,
+            image: product.image || "/products/chocolate-milk-tea.webp",
+            sizes: product.sizes.length,
+            isBestseller: true,
+          }))}
+          onSelect={(item) => {
+            setSelectedProductId(item.id);
+            const foundProduct = products.find((p) => p.id === item.id);
+            if (foundProduct) {
+              setSelectedFlavor(foundProduct.flavors[0]);
+              setSelectedSize(foundProduct.sizes[0].label);
+            }
+            document.getElementById("customizer")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
       </section>
 
       {/* Category Navigation Bar */}
@@ -1325,6 +1326,16 @@ export default function Page() {
 
           {/* Carousel Controls & Animation Toggle */}
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleShuffleProducts}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 hover:bg-blue-100 text-xs font-bold text-[#2563eb] transition-all active:scale-95 shadow-2xs cursor-pointer"
+              title="Shuffle menu items randomly"
+            >
+              <Shuffle className={`w-3.5 h-3.5 ${isShuffling ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">Shuffle</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setIsAutoplay(!isAutoplay)}
@@ -1391,7 +1402,9 @@ export default function Page() {
           {/* Horizontal Scroll Track */}
           <div
             ref={menuCarouselRef}
-            className="flex gap-5 overflow-x-auto pb-6 pt-2 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x"
+            className={`flex gap-5 overflow-x-auto pb-6 pt-2 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x transition-opacity duration-200 ${
+              isShuffling ? "opacity-50" : "opacity-100"
+            }`}
           >
             {filteredProducts.map((product) => (
               <div
