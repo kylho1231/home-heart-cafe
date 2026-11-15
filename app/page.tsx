@@ -1160,75 +1160,94 @@ export default function Page() {
         </div>
 
         {/* Carousel View (Scroll Left to Right) */}
-        <div
-          className="relative group/carousel"
-          onMouseEnter={() => setIsCarouselHovered(true)}
-          onMouseLeave={() => setIsCarouselHovered(false)}
-        >
-          {/* Left Floating Arrow on Desktop */}
-          <button
-            type="button"
-            onClick={() => scrollMenuCarousel("left")}
-            className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
-            aria-label="Previous items"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-
-          {/* Horizontal Scroll Track */}
-          <div
-            ref={menuCarouselRef}
-            className={`flex gap-5 overflow-x-auto pb-6 pt-2 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x transition-opacity duration-200 ${
-              isShuffling ? "opacity-50" : "opacity-100"
-            }`}
-          >
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="shrink-0 w-[275px] sm:w-[310px] snap-start"
-              >
-                <Product3DCard
-                  id={product.id}
-                  name={product.name}
-                  category={product.category}
-                  description={product.description}
-                  sizes={product.sizes}
-                  colors={product.colors}
-                  accent={product.accent}
-                  image={product.image}
-                  badge={product.badge}
-                  isAvailable={!unavailableSlugs.includes(product.id)}
-                  isSelected={selectedProductId === product.id}
-                  onSelect={() => {
-                    setCustomizingProduct(product);
-                  }}
-                  onQuickAdd={() => {
-                    setCustomizingProduct(product);
-                  }}
-                />
-              </div>
-            ))}
+        {filteredProducts.length === 0 ? (
+          <div className="p-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-300 my-4 space-y-3">
+            <Coffee className="w-10 h-10 text-slate-400 mx-auto" />
+            <h3 className="font-extrabold text-slate-800 text-base">
+              No drinks match &ldquo;{searchTerm}&rdquo;
+            </h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              Try searching for popular favorites like &ldquo;boba&rdquo;, &ldquo;cheese&rdquo;, or &ldquo;coffee&rdquo;!
+            </p>
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+            >
+              Clear Search
+            </button>
           </div>
-
-          {/* Right Floating Arrow on Desktop */}
-          <button
-            type="button"
-            onClick={() => scrollMenuCarousel("right")}
-            className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
-            aria-label="Next items"
+        ) : (
+          <div
+            className="relative group/carousel"
+            onMouseEnter={() => setIsCarouselHovered(true)}
+            onMouseLeave={() => setIsCarouselHovered(false)}
           >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+            {/* Left Floating Arrow on Desktop */}
+            <button
+              type="button"
+              onClick={() => scrollMenuCarousel("left")}
+              className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+              aria-label="Previous items"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
 
-          {/* Subtle Navigation Indicator */}
-          {searchTerm && (
-            <div className="flex items-center justify-between text-xs text-stone-500 pt-2 px-1">
-              <span className="font-semibold text-stone-500">
-                Found {filteredProducts.length} results for &ldquo;{searchTerm}&rdquo;
-              </span>
+            {/* Horizontal Scroll Track */}
+            <div
+              ref={menuCarouselRef}
+              className={`flex gap-5 overflow-x-auto pb-6 pt-2 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x transition-opacity duration-200 ${
+                isShuffling ? "opacity-50" : "opacity-100"
+              }`}
+            >
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="shrink-0 w-[275px] sm:w-[310px] snap-start"
+                >
+                  <Product3DCard
+                    id={product.id}
+                    name={product.name}
+                    category={product.category}
+                    description={product.description}
+                    sizes={product.sizes}
+                    colors={product.colors}
+                    accent={product.accent}
+                    image={product.image}
+                    badge={product.badge}
+                    isAvailable={!unavailableSlugs.includes(product.id)}
+                    isSelected={selectedProductId === product.id}
+                    onSelect={() => {
+                      setCustomizingProduct(product);
+                    }}
+                    onQuickAdd={() => {
+                      setCustomizingProduct(product);
+                    }}
+                  />
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+
+            {/* Right Floating Arrow on Desktop */}
+            <button
+              type="button"
+              onClick={() => scrollMenuCarousel("right")}
+              className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 border border-stone-200 shadow-xl items-center justify-center text-stone-700 hover:text-[#2563eb] hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+              aria-label="Next items"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+
+            {/* Subtle Navigation Indicator */}
+            {searchTerm && (
+              <div className="flex items-center justify-between text-xs text-stone-500 pt-2 px-1">
+                <span className="font-semibold text-stone-500">
+                  Found {filteredProducts.length} results for &ldquo;{searchTerm}&rdquo;
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Barkada Bundles Interactive Builder */}
